@@ -1,0 +1,3296 @@
+/* =====================================================================
+   MCGINNIS ARCHITECTURE — SITE STYLESHEET
+   Shared by index.html and project1.html.
+
+   TABLE OF CONTENTS
+   -----------------
+    1. Design tokens (colors, shadows) — the :root variables
+    2. Global reset & base page styles
+    3. Site header (logo, hearts badge, sticky + shrink-on-scroll)
+    4. Links & small text elements (a, code)
+    5. Page layout containers (main, .hero, .card)
+    6. Contact form elements (project1.html)
+    7. Buttons & button-styled links
+    8. Footer
+    9. Legacy unused (.logo) + success.html styles (.success-hero, etc.)
+   10. Scroll-reveal animation ([data-reveal])
+   11. Live status pulse dot (.status-dot)
+   12. Nav menu + "Projects" dropdown
+   13. Home hero blueprint-grid animation (index.html only)
+   14. Projects section: grid, cards, hover, shimmer, thumbnail patterns
+   15. About / practice section (index.html only)
+   16. "How it works" architecture diagram (project1.html only)
+   17. Use cases (project1.html only)
+   18. Pricing (project1.html only)
+   19. Back-to-top button (both pages)
+   20. Expanding mobile menu button (mobile only, all pages)
+   21. Mobile responsive overrides (max-width: 760px)
+   22. Reduced-motion accessibility override
+
+   Search for the "-----" section headers below to jump around.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. DESIGN TOKENS
+   All site colors and the card shadow live here as CSS variables.
+   Change a value once here and it updates everywhere that uses it —
+   this is the fastest way to re-theme the whole site.
+   --------------------------------------------------------------------- */
+:root {
+  --bg: #f6f7fb;              /* page background */
+  --surface: #ffffff;         /* card / dropdown background */
+  --text: #172033;            /* main navy — body text, headings, logo ink */
+  --muted: #5f6b7a;           /* secondary/gray text */
+  --border: #d9dee8;          /* hairline borders */
+  --accent: #3454d1;          /* main blue — links, buttons, eyebrows */
+  --accent-dark: #263fa0;     /* hover/pressed state of accent blue */
+  --success-bg: #eaf8ef;      /* contact form success message background */
+  --success-text: #17633a;
+  --error-bg: #fdecec;        /* contact form error message background */
+  --error-text: #982727;
+  --info-bg: #eef3ff;         /* light blue used for hover states, stat tiles */
+  --info-text: #2946a3;
+  --shadow: 0 24px 60px rgba(23, 32, 51, 0.12); /* the soft shadow on cards */
+  --grid-line: rgba(52, 84, 209, 0.14); /* faint blueprint-grid line color */
+}
+
+/* ---------------------------------------------------------------------
+   2. GLOBAL RESET & BASE PAGE STYLES
+   Affects every element on every page: box-sizing, smooth anchor
+   scrolling, base font, and the body background (a subtle radial
+   gradient over --bg).
+   --------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth; /* smooth-scrolls to #anchors like #projects */
+}
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+  color: var(--text);
+  overflow-x: hidden; /* safety net: content should never force horizontal
+                          scroll — if something miscalculates its width,
+                          this clips it instead of widening the whole page */
+  background:
+    radial-gradient(circle at top left, rgba(52, 84, 209, 0.18), transparent 32rem),
+    var(--bg);
+}
+
+/* ---------------------------------------------------------------------
+   3. SITE HEADER
+   HTML shape (both pages):
+     <header class="site-header">
+       <div class="site-header-inner">   <- centered 1080px row, 3-column grid
+         <div class="brand-row"><a class="logo-mark"><img></a></div>  <- left
+         <img class="top-mark">                                       <- center (hearts badge)
+         <nav>...</nav>                                                <- right
+       </div>
+     </header>
+
+   The header is "position: sticky" so it stays pinned to the top of the
+   viewport while scrolling. A small inline <script> at the bottom of
+   each HTML file toggles the ".is-scrolled" class on <header> once the
+   user scrolls more than 12px — that's what shrinks the logo/badge and
+   adds the drop shadow. To change the shrink trigger distance, edit the
+   "window.scrollY > 12" check in that script, not this file.
+   --------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow 0.25s ease;
+  overflow-anchor: none;
+}
+
+/* Applied via JS once the page is scrolled — see note above. */
+.site-header.is-scrolled {
+  box-shadow: 0 12px 30px rgba(23, 32, 51, 0.12);
+}
+
+.site-header.is-scrolled .site-header-inner {
+  padding: 0.3rem 1.25rem; /* shrinks header padding while scrolled */
+}
+
+.site-header.is-scrolled .logo-mark img {
+  height: 64px; /* shrunk logo size while scrolled — normal size is below */
+}
+
+.site-header.is-scrolled .top-mark {
+  height: 32px; /* shrunk hearts-badge size while scrolled */
+}
+
+/* The 3-column row that actually holds logo / hearts / nav.
+   grid-template-columns: 1fr auto 1fr is what keeps the hearts badge
+   perfectly centered no matter how wide the logo or nav are. */
+.site-header-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0.6rem 1.25rem;
+  gap: 1rem;
+  transition: padding 0.25s ease;
+}
+
+.site-header-inner .brand-row {
+  justify-self: start; /* logo pinned left */
+}
+
+.site-header-inner .top-mark {
+  justify-self: center; /* hearts badge pinned to true center */
+}
+
+.site-header-inner nav {
+  justify-self: end; /* nav pinned right */
+}
+
+/* --- Logo (the "McGinnis Architecture" wordmark image) --- */
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+}
+
+.logo-mark img {
+  display: block;
+  height: 112px;     /* <-- MAIN LOGO SIZE. Change this one number to resize it. */
+  width: auto;        /* width follows automatically to keep proportions */
+  transition: height 0.25s ease;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* --- Hearts badge (assets/heart-badge.png, the three recolored hearts) --- */
+.top-mark {
+  display: block;
+  height: 55px;      /* <-- HEARTS BADGE SIZE. Change this one number to resize it. */
+  width: auto;
+  transition: height 0.25s ease;
+}
+
+/* ---------------------------------------------------------------------
+   4. LINKS & SMALL TEXT ELEMENTS
+   Generic <a> styling used site-wide, plus the small <code> tags used
+   in the project1.html instructions ("...in config.js").
+   --------------------------------------------------------------------- */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.74);
+  font-size: 0.92em;
+}
+
+/* ---------------------------------------------------------------------
+   5. PAGE LAYOUT CONTAINERS
+   .hero is the big intro text block under the header (used on both
+   pages — index.html also layers .home-hero on top of it, see
+   Section 13). .card is the two-column panel that wraps the contact
+   form on project1.html.
+   --------------------------------------------------------------------- */
+main {
+  width: min(1080px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.hero {
+  padding: 1.25rem 0 3rem; /* top value controls space below the header */
+  max-width: 760px;
+}
+
+.hero h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(2.25rem, 7vw, 4.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.hero-arrow {
+  color: var(--accent);
+  margin-left: 0.8em;
+}
+
+.hero-deployed {
+  display: inline-block;
+  opacity: 0;
+  margin-left: 0.15em; /* space + rightward position after the dash */
+  transform: translateX(-60px);
+}
+
+.hero-dot {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+/* Only start these once the section's own scroll-reveal has finished
+   fading in — otherwise the delay counts from page load, and part of
+   the animation can silently finish while the section is still
+   invisible, so what you actually see once it fades in looks abrupt
+   or already-partway-done instead of a clean fade. */
+.home-hero.is-visible .hero-deployed {
+  animation: heroDeployedIn 3.4s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+}
+
+.home-hero.is-visible .hero-dot {
+  animation: heroDotIn 3.4s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+}
+
+@keyframes heroDeployedIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes heroDotIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hero p {
+  max-width: 660px;
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+
+.eyebrow {
+  /* the small uppercase label above headings, e.g. "SELECTED WORK" */
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.card {
+  /* two-column panel: intro copy on the left, form on the right
+     (project1.html only) */
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(280px, 1fr);
+  gap: 2rem;
+  margin-bottom: 4rem;
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+}
+
+.card h2 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  letter-spacing: -0.04em;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small-note {
+  font-size: 0.95rem;
+}
+
+/* ---------------------------------------------------------------------
+   6. CONTACT FORM ELEMENTS (project1.html)
+   Styles the <form class="contact-form"> fields: labels, inputs,
+   textarea, the character-count hint, the consent checkbox row, the
+   invisible honeypot field, and the status message that appears after
+   submit (info/success/error color variants).
+   --------------------------------------------------------------------- */
+.contact-form {
+  display: grid;
+  gap: 1rem;
+  padding-top: 5rem; /* aligns the Email field below the "Smoke Test"
+                         heading in the left column, rather than at the
+                         very top of the row next to the "Demo" eyebrow */
+}
+
+label {
+  display: grid;
+  gap: 0.45rem;
+  font-weight: 700;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.55rem 1rem;
+  font: inherit;
+  color: var(--text);
+  background: #fff;
+}
+
+input:focus,
+textarea:focus {
+  outline: 3px solid rgba(52, 84, 209, 0.22);
+  border-color: var(--accent);
+}
+
+textarea {
+  resize: vertical;
+}
+
+.hint {
+  /* the "0/1000 characters" counter under the message field */
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  font-weight: 500;
+}
+
+.checkbox-row input {
+  width: auto;
+  margin-top: 0.25rem;
+}
+
+.honeypot {
+  /* hides the spam-trap "Website" field from real visitors */
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.form-status {
+  /* base style for the message shown after submit; color comes from
+     one of the three modifier classes below */
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+}
+
+.form-status.info {
+  color: var(--info-text);
+  background: var(--info-bg);
+}
+
+.form-status.success {
+  color: var(--success-text);
+  background: var(--success-bg);
+}
+
+.form-status.error {
+  color: var(--error-text);
+  background: var(--error-bg);
+}
+
+/* ---------------------------------------------------------------------
+   7. BUTTONS & BUTTON-STYLED LINKS
+   Applies to <button> elements and any <a class="button-link">.
+   Add class "ghost" for the outlined secondary style (see
+   .button-link.ghost below) — used for secondary calls to action.
+   --------------------------------------------------------------------- */
+button,
+.button-link {
+  justify-self: start;
+  display: inline-block;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.95rem 1.35rem;
+  font: inherit;
+  line-height: 1;
+  font-weight: 800;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(52, 84, 209, 0.25);
+  transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+button:hover,
+.button-link:hover {
+  background: var(--accent-dark);
+  text-decoration: none;
+  transform: translateY(-3px);
+  box-shadow: 0 16px 34px rgba(52, 84, 209, 0.32);
+}
+
+button:active,
+.button-link:active {
+  transform: translateY(-1px);
+  transition-duration: 0.1s;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+/* Secondary/outlined button style — add class="button-link ghost" */
+.button-link.ghost {
+  color: var(--accent);
+  background: transparent;
+  box-shadow: none;
+  border: 1px solid var(--border);
+}
+
+.button-link.ghost:hover {
+  color: #fff;
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+  box-shadow: 0 16px 34px rgba(38, 63, 160, 0.28);
+}
+
+/* ---------------------------------------------------------------------
+   8. FOOTER
+   The <footer><div class="footer-row">...</div></footer> at the
+   bottom of every page: copyright line on the left, nav links on the
+   right (wraps to stacked on narrow screens automatically via flex-wrap).
+   --------------------------------------------------------------------- */
+footer {
+  width: min(1080px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0;
+  color: var(--muted);
+}
+
+.footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.footer-row nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.footer-row nav a {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.footer-row nav a:hover {
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------------
+   9. LEGACY / CURRENTLY UNUSED
+   .logo was for a plain-text wordmark, from before the header switched
+   to the logo.png image. Safe to delete if you're confident you'll
+   never go back to a text-only logo.
+   --------------------------------------------------------------------- */
+.logo {
+  color: var(--text);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* ----- success.html: the page the contact form redirects to after a
+   submit. Reuses the standard .hero layout/typography (that's why
+   there's no separate heading size rule here) with a checkmark icon
+   and centered actions added on top. ----- */
+.success-hero {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.success-hero .hero-actions {
+  justify-content: center;
+}
+
+.success-icon {
+  display: inline-flex;
+  margin-bottom: 1.25rem;
+}
+
+.success-icon svg {
+  width: 64px;
+  height: 64px;
+}
+
+.success-icon-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  opacity: 0.35;
+}
+
+.success-icon-check {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;
+  animation: successCheckDraw 0.6s ease-out 0.15s forwards;
+}
+
+@keyframes successCheckDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   10. SCROLL-REVEAL ANIMATION
+   Any element with the HTML attribute data-reveal starts invisible and
+   slides/fades up into place. A small IntersectionObserver script
+   (bottom of index.html) adds the "is-visible" class when the element
+   scrolls into view. The nth-child rules below stagger the project
+   cards slightly so they don't all animate at once.
+   --------------------------------------------------------------------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(.16,.84,.44,1), transform 0.7s cubic-bezier(.16,.84,.44,1);
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.project-card[data-reveal]:nth-child(1) { transition-delay: 0s; }
+.project-card[data-reveal]:nth-child(2) { transition-delay: 0.08s; }
+.project-card[data-reveal]:nth-child(3) { transition-delay: 0.16s; }
+.project-card[data-reveal]:nth-child(4) { transition-delay: 0.24s; }
+.project-card[data-reveal]:nth-child(5) { transition-delay: 0.32s; }
+
+/* ---------------------------------------------------------------------
+   11. LIVE STATUS PULSE DOT
+   The small pulsing dot next to "Live" on the Site Contact Form project
+   card (index.html), signaling that project is actually deployed.
+   --------------------------------------------------------------------- */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 84, 209, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(52, 84, 209, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 84, 209, 0);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   12. NAV MENU + "PROJECTS" DROPDOWN
+   .site-header nav holds the top-level links (Home / About / Contact
+   etc.) plus the <details class="nav-dropdown"> "Projects" menu. The
+   dropdown is a native <details>/<summary> element (no JS needed to
+   open/close it) — the "dropdownIn" keyframes + a tiny script handle
+   the fade/slide-in animation when it opens, since browsers can't
+   transition display:none on their own.
+   --------------------------------------------------------------------- */
+.site-header nav {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  font-weight: 700;
+}
+
+/* animated underline that sweeps in on hover, for top-level nav links */
+.site-header nav > a {
+  position: relative;
+  padding-bottom: 0.2rem;
+  transition: color 0.2s ease;
+}
+
+.site-header nav > a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: right 0.25s ease;
+}
+
+.site-header nav > a:hover,
+.site-header nav > a:focus-visible {
+  text-decoration: none;
+}
+
+.site-header nav > a:hover::after,
+.site-header nav > a:focus-visible::after {
+  right: 0;
+}
+
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown summary {
+  /* the clickable "Projects" trigger text */
+  list-style: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.nav-dropdown summary::-webkit-details-marker {
+  display: none; /* hides the default browser triangle marker */
+}
+
+.nav-dropdown summary::after {
+  /* the custom chevron, drawn from two borders and rotated */
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s ease;
+}
+
+.nav-dropdown[open] summary::after {
+  transform: rotate(-135deg) translateY(2px); /* flips chevron when open */
+}
+
+.nav-dropdown summary:focus-visible {
+  outline: 3px solid rgba(52, 84, 209, 0.35);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.nav-dropdown-menu {
+  /* the floating panel of project links */
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 0.15rem;
+  min-width: 230px;
+  padding: 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  z-index: 20;
+}
+
+/* fade + slide-in animation, triggered by JS when <details> opens */
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.nav-dropdown-menu a {
+  color: var(--text);
+  font-weight: 600;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+}
+
+.nav-dropdown-menu a:hover {
+  background: var(--info-bg);
+  text-decoration: none;
+  color: var(--accent);
+  padding-left: 0.9rem;
+}
+
+.nav-dropdown-all {
+  /* the "View all projects" link at the bottom of the dropdown */
+  margin-top: 0.3rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.7rem !important;
+  color: var(--accent) !important;
+}
+
+/* ---------------------------------------------------------------------
+   13. HOME HERO — BLUEPRINT GRID (index.html only)
+   .home-hero is layered on top of the base .hero styles (Section 5) on
+   index.html specifically. The ::before pseudo-element draws the
+   faint animated grid pattern in the top-right of the hero, meant to
+   evoke a blueprint/schematic. gridDrift slowly scrolls that pattern.
+   --------------------------------------------------------------------- */
+.home-hero {
+  position: relative;
+  max-width: none;
+  padding: 1.125rem 0 3.5rem;
+}
+
+.home-hero::before {
+  content: "";
+  position: absolute;
+  top: -1.25rem;
+  right: 0;
+  width: min(46%, 480px);
+  aspect-ratio: 1;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-mask-image: radial-gradient(circle at 70% 30%, black 55%, transparent 78%);
+  mask-image: radial-gradient(circle at 70% 30%, black 55%, transparent 78%);
+  pointer-events: none;
+  z-index: -1;
+  animation: gridDrift 16s linear infinite;
+}
+
+@keyframes gridDrift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 28px 28px;
+  }
+}
+
+.hero-actions {
+  /* the row of buttons under the hero heading, e.g. "Browse projects" */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 1.75rem;
+}
+
+/* ---------------------------------------------------------------------
+   14. PROJECTS SECTION (index.html only)
+   Covers the whole #projects section: the grid layout, each
+   .project-card, its hover lift, and the "shimmer" sweep that plays on
+   placeholder (not-yet-live) cards.
+
+   Each card's .project-thumb holds an inline SVG illustration:
+   - Live projects (class="is-live" on the card, e.g. Site Contact Form)
+     get the .mockup-scene browser/form graphic with a blinking cursor
+     and a pulsing send button.
+   - Placeholder projects get the .arch-scene graphic — three simple
+     service nodes connecting left to right, revealing themselves one
+     at a time on a loop, like a small architecture diagram slowly
+     being drawn.
+   --------------------------------------------------------------------- */
+.projects {
+  padding: 1rem 0 3rem;
+}
+
+.projects h2 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  letter-spacing: -0.04em;
+}
+
+.section-intro {
+  max-width: 620px;
+  margin-bottom: 2rem;
+}
+
+.project-grid {
+  /* responsive grid: as many 260px+ columns as fit, wrapping automatically */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Keeps the sticky header from covering these sections/cards when the
+   page jumps to them (e.g. via the nav dropdown or #about link).
+   If you change the header's height, increase these values to match. */
+#projects,
+#about,
+#contact,
+#how-it-works,
+#use-cases,
+#pricing,
+#design-decisions {
+  scroll-margin-top: 9.5rem;
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  scroll-margin-top: 9.5rem;
+  transition: transform 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.project-card:hover,
+.project-card:focus-within {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 70px rgba(23, 32, 51, 0.18);
+  border-color: var(--accent);
+}
+
+.project-thumb {
+  /* the illustrated rectangle at the top of each card */
+  aspect-ratio: 16 / 10;
+  background-color: var(--info-bg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+}
+
+.project-card:hover .arch-scene,
+.project-card:hover .mockup-scene,
+.project-card:hover .icon-scene {
+  transform: scale(1.04);
+}
+
+/* Placeholder projects (any card WITHOUT class="is-live") get a soft
+   build/deploy shimmer sweep to signal "not live yet". Add
+   class="is-live" to a .project-card to turn the shimmer off once
+   that project has a real page. */
+.project-card:not(.is-live) .project-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 3.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 160% 0;
+  }
+  100% {
+    background-position: -60% 0;
+  }
+}
+
+/* ----- "Coming soon" illustration: three simple service nodes that
+   reveal themselves left to right on a loop, like a small architecture
+   diagram slowly being drawn. Used on the one remaining placeholder
+   project card (thumb-arch). ----- */
+.thumb-arch,
+.thumb-mockup,
+.thumb-icons,
+.thumb-envelope,
+.thumb-reel {
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.arch-scene,
+.mockup-scene,
+.icon-scene {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease;
+}
+
+.arch-node rect {
+  fill: var(--accent);
+}
+
+.arch-glyph-stroke {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.arch-line line {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.arch-node-1 {
+  transform-origin: 65px 110px;
+  animation: archNode1 8s ease-in-out infinite;
+}
+
+.arch-line-1 {
+  animation: archLine1 8s ease-in-out infinite;
+}
+
+.arch-node-2 {
+  transform-origin: 160px 110px;
+  animation: archNode2 8s ease-in-out infinite;
+}
+
+.arch-line-2 {
+  animation: archLine2 8s ease-in-out infinite;
+}
+
+.arch-node-3 {
+  transform-origin: 255px 110px;
+  animation: archNode3 8s ease-in-out infinite;
+}
+
+/* Real-icon thumbnails (Contact Form, Movie Poll) reuse the exact same
+   arch-node-1/2/3 + arch-line-1/2 timing/stagger as the placeholder
+   card above, just with a neutral card background instead of a solid
+   accent fill (the real AWS icons already carry their own brand
+   color), plus a soft glow to read as "lightly animated" rather than
+   a full step-by-step walkthrough. */
+.icon-node-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.thumb-icons image {
+  filter: drop-shadow(0 0 8px rgba(52, 84, 209, 0.35));
+}
+
+/* ----- Contact Form thumbnail: an envelope whose flap opens and stays
+   open (revealing a lighter blue interior), with the four services it
+   uses (S3, API Gateway, Lambda, SES) bursting outward from that single
+   opening point to an evenly-spaced row above, then fading back toward
+   center as the flap closes. ----- */
+.envelope-body {
+  fill: var(--accent);
+}
+
+.envelope-top-quad {
+  animation: envelopeQuadColor 6s ease-in-out infinite;
+}
+
+@keyframes envelopeQuadColor {
+  0%, 10% { fill: var(--accent); }
+  25%, 75% { fill: #7d99e3; }
+  90%, 100% { fill: var(--accent); }
+}
+
+.envelope-seams {
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.envelope-flap {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: envelopeFlap 6s ease-in-out infinite;
+}
+
+@keyframes envelopeFlap {
+  0%, 10% { transform: scaleY(0); fill: var(--accent); }
+  25%, 75% { transform: scaleY(1); fill: #7d99e3; }
+  90%, 100% { transform: scaleY(0); fill: var(--accent); }
+}
+
+.envelope-node {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  opacity: 0;
+}
+
+.envelope-node-1 { animation: envelopeRise1 6s ease-in-out infinite; animation-delay: 0s; }
+.envelope-node-2 { animation: envelopeRise2 6s ease-in-out infinite; animation-delay: 0.15s; }
+.envelope-node-3 { animation: envelopeRise3 6s ease-in-out infinite; animation-delay: 0.3s; }
+.envelope-node-4 { animation: envelopeRise4 6s ease-in-out infinite; animation-delay: 0.45s; }
+
+/* Each icon bursts from the same envelope-opening point (160, 130) out
+   to its own evenly-spaced resting position — the translate distance is
+   simply that point minus the icon's own final center, so all four
+   start exactly on top of each other at the envelope and fan out from
+   there, rather than each just rising straight up from where it ends.
+   The staggered delays above make sure they visibly separate one after
+   another instead of moving together. */
+@keyframes envelopeRise1 {
+  0%, 20% { opacity: 0; transform: translate(117px, 64px) scale(0.3); }
+  32%, 68% { opacity: 1; transform: translate(0, 0) scale(1); }
+  80%, 100% { opacity: 0; transform: translate(117px, 64px) scale(0.3); }
+}
+
+@keyframes envelopeRise2 {
+  0%, 20% { opacity: 0; transform: translate(39px, 64px) scale(0.3); }
+  32%, 68% { opacity: 1; transform: translate(0, 0) scale(1); }
+  80%, 100% { opacity: 0; transform: translate(39px, 64px) scale(0.3); }
+}
+
+@keyframes envelopeRise3 {
+  0%, 20% { opacity: 0; transform: translate(-39px, 64px) scale(0.3); }
+  32%, 68% { opacity: 1; transform: translate(0, 0) scale(1); }
+  80%, 100% { opacity: 0; transform: translate(-39px, 64px) scale(0.3); }
+}
+
+@keyframes envelopeRise4 {
+  0%, 20% { opacity: 0; transform: translate(-117px, 64px) scale(0.3); }
+  32%, 68% { opacity: 1; transform: translate(0, 0) scale(1); }
+  80%, 100% { opacity: 0; transform: translate(-117px, 64px) scale(0.3); }
+}
+
+/* ----- Movie Poll thumbnail: a continuously spinning film reel — a
+   nod to the "if you were a movie" poll theme, simpler and more fitting
+   here than another AWS icon row. ----- */
+.film-reel {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: reelSpin 7s linear infinite;
+}
+
+@keyframes reelSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.reel-disc {
+  fill: var(--text);
+}
+
+.reel-hole,
+.reel-hole-tiny {
+  fill: var(--bg);
+}
+
+.reel-icon-counter {
+  animation: reelSpinReverse 7s linear infinite;
+}
+
+@keyframes reelSpinReverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes archNode1 {
+  0%, 8% { opacity: 0; transform: scale(0.75); }
+  20% { opacity: 1; transform: scale(1); }
+  85% { opacity: 1; transform: scale(1); }
+  95%, 100% { opacity: 0; transform: scale(0.75); }
+}
+
+@keyframes archLine1 {
+  0%, 24% { opacity: 0; }
+  32% { opacity: 1; }
+  85% { opacity: 1; }
+  95%, 100% { opacity: 0; }
+}
+
+@keyframes archNode2 {
+  0%, 32% { opacity: 0; transform: scale(0.75); }
+  40% { opacity: 1; transform: scale(1); }
+  85% { opacity: 1; transform: scale(1); }
+  95%, 100% { opacity: 0; transform: scale(0.75); }
+}
+
+@keyframes archLine2 {
+  0%, 44% { opacity: 0; }
+  52% { opacity: 1; }
+  85% { opacity: 1; }
+  95%, 100% { opacity: 0; }
+}
+
+@keyframes archNode3 {
+  0%, 52% { opacity: 0; transform: scale(0.75); }
+  60% { opacity: 1; transform: scale(1.1); }
+  66% { opacity: 1; transform: scale(1); }
+  85% { opacity: 1; transform: scale(1); }
+  95%, 100% { opacity: 0; transform: scale(0.75); }
+}
+
+
+/* ----- Live "Site Contact Form" illustration: a small animated
+   browser/form mockup. Over a 12s loop: the cursor types an email
+   address, the Send button gets pressed, an envelope flies up and out
+   of the form (sent), then the form fades out and a small mailbox
+   fades in — the envelope reappears inside it, slides out to the side, and
+   a letter slides out of it (opened) — before the scene resets to the
+   form for a seamless loop. All timed against the same 12s duration —
+   see the keyframe percentage comments below before changing any of
+   them, since they're all synchronized to one shared timeline. ----- */
+.mockup-frame {
+  fill: var(--surface);
+  stroke: var(--border);
+}
+
+.mockup-bar {
+  fill: var(--info-bg);
+}
+
+.mockup-dot {
+  fill: var(--border);
+}
+
+.mockup-address {
+  fill: var(--border);
+  opacity: 0.6;
+}
+
+.mockup-form-content {
+  animation: mockupFormContent 12s ease-in-out infinite;
+}
+
+.mockup-field {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.mockup-field-text {
+  font-size: 10px;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  fill: var(--text);
+  opacity: 0;
+  animation: mockupTypeEmail 12s linear infinite;
+}
+
+.mockup-button-group {
+  transform-origin: 72px 110px;
+  animation: mockupButtonPress 12s ease-in-out infinite;
+}
+
+.mockup-button {
+  fill: var(--accent);
+}
+
+.mockup-button-text {
+  font-size: 9px;
+  font-weight: 700;
+  fill: #fff;
+}
+
+.mockup-cursor {
+  stroke: var(--accent);
+  stroke-width: 2;
+  animation: mockupCursorBlink 0.9s steps(1) infinite;
+}
+
+.mockup-cursor-group {
+  animation: mockupCursorMove 12s ease-in-out infinite;
+}
+
+.mockup-mailbox {
+  opacity: 0;
+  animation: mockupMailbox 12s ease-in-out infinite;
+}
+
+.mockup-mailbox-post {
+  fill: var(--muted);
+  opacity: 0.5;
+}
+
+.mockup-mailbox-roof {
+  fill: var(--accent-dark);
+}
+
+.mockup-mailbox-body {
+  fill: var(--accent);
+}
+
+.mockup-mailbox-side {
+  fill: var(--accent-dark);
+}
+
+.mockup-mailbox-opening {
+  fill: var(--text);
+  opacity: 0.55;
+}
+
+.mockup-mailbox-doorflap {
+  fill: var(--accent);
+  stroke: var(--accent-dark);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.mockup-mailbox-dash {
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+.mockup-envelope {
+  opacity: 0;
+  animation: mockupEnvelopeTrip 12s ease-in-out infinite;
+}
+
+.mockup-envelope-body {
+  fill: var(--accent);
+}
+
+.mockup-envelope-flap {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.mockup-letter {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  opacity: 0;
+  animation: mockupLetter 12s ease-out infinite;
+}
+
+/* ---- timeline (12s total, all keyframes below share this duration) ----
+   0-24%    cursor + typing: Email
+   24-32%   hold (email visible, cursor blinking)
+   32-36%   cursor exits, button press
+   36-44%   envelope appears at the button and flies up out of the form (sent)
+   40-46%   the form content fades out — the "screen" is clearing
+   53-60%   the mailbox fades in
+   61-70%   the envelope reappears inside the mailbox and slides out to the side
+   70-94%   hold (envelope resting beside the mailbox)
+   78-86%   a letter slides up out of the envelope (opened)
+   86-94%   extra hold once the letter is fully open, before resetting
+   94-100%  everything resets — mailbox fades out, form fades back in
+--------------------------------------------------------------------- */
+@keyframes mockupFormContent {
+  0%, 40% { opacity: 1; }
+  46%, 94% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes mockupCursorMove {
+  0% { transform: translate(44px, 66px); opacity: 1; }
+  28% { transform: translate(44px, 66px); opacity: 1; }
+  32% { opacity: 0; }
+  95% { opacity: 0; transform: translate(44px, 66px); }
+  100% { opacity: 1; transform: translate(44px, 66px); }
+}
+
+@keyframes mockupCursorBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes mockupTypeEmail {
+  0%, 6% { opacity: 0; }
+  20% { opacity: 1; }
+  40% { opacity: 1; }
+  44%, 100% { opacity: 0; }
+}
+
+@keyframes mockupButtonPress {
+  0%, 32% { transform: scale(1); }
+  34% { transform: scale(0.88); }
+  36% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes mockupMailbox {
+  0%, 53% { opacity: 0; }
+  60% { opacity: 1; }
+  94% { opacity: 1; }
+  96%, 100% { opacity: 0; }
+}
+
+@keyframes mockupEnvelopeTrip {
+  /* trip 1: sent — fades in at the button, flies up, fades out in place
+     (no position change while opacity is animating — that overlap was
+     what caused the diagonal "zoom" look), then jumps to inside the
+     mailbox while fully invisible */
+  0%, 40% { opacity: 0; transform: translate(0, 0); }
+  44% { opacity: 1; transform: translate(0, -4px); }
+  51% { opacity: 1; transform: translate(0, -85px); }
+  52% { opacity: 0; transform: translate(0, -85px); }
+  53%, 60% { opacity: 0; transform: translate(92px, 22px); }
+  /* trip 2: arrives — fades in at the mailbox door (stationary), then
+     slides out to the side while fully visible, holds through the
+     letter opening plus an extra second before the loop resets */
+  61% { opacity: 1; transform: translate(92px, 22px); }
+  70% { opacity: 1; transform: translate(40px, 20px); }
+  94% { opacity: 1; transform: translate(40px, 20px); }
+  96%, 100% { opacity: 0; transform: translate(40px, 20px); }
+}
+
+@keyframes mockupLetter {
+  0%, 78% { opacity: 0; transform: translateY(0); }
+  86% { opacity: 1; transform: translateY(-13px); }
+  94% { opacity: 1; transform: translateY(-13px); }
+  96%, 100% { opacity: 0; transform: translateY(-13px); }
+}
+
+.project-body {
+  /* the text area below each thumbnail: meta line, title, blurb, link */
+  padding: 1.4rem 1.5rem 1.6rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.project-meta {
+  /* small uppercase line, e.g. "RESIDENTIAL · SONOMA COUNTY, CA · 2024" */
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.project-body h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.project-body p.muted {
+  margin: 0;
+  font-size: 0.96rem;
+}
+
+.project-link {
+  /* Now wraps the entire card (thumb + body) so the whole panel is
+     clickable, not just a text label — see the hover tint/button below
+     for the visual affordance. Cancelling text-decoration here matters:
+     without it, the site-wide a:hover{text-decoration:underline} rule
+     would underline the title and description too, since they're now
+     all inside this one link. */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.project-link:hover,
+.project-link:focus {
+  text-decoration: none;
+}
+
+.project-card.is-live {
+  position: relative;
+}
+
+.project-card.is-live::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(52, 84, 209, 0.06);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.project-card.is-live:hover::before,
+.project-card.is-live:focus-within::before {
+  opacity: 1;
+}
+
+.project-hover-cta {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) translateY(6px);
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.project-hover-cta span {
+  display: inline-block;
+  background: #d97706;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 0.65rem 1.3rem;
+  border-radius: 999px;
+  box-shadow: 0 12px 30px rgba(217, 119, 6, 0.35);
+}
+
+.project-card.is-live:hover .project-hover-cta,
+.project-card.is-live:focus-within .project-hover-cta {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(0);
+}
+
+/* ---------------------------------------------------------------------
+   15. ABOUT / PRACTICE SECTION (index.html only)
+   The two-column panel near the bottom: copy on the left (.about-copy),
+   the AWS certification badge grid on the right (.about-badges /
+   .badge-grid / .badge-card). Each .badge-card is a real <a> link to
+   that certification's public Credly page (opens in a new tab), using
+   the actual Credly badge image (assets/badges/*.png) with the
+   certification name as plain text underneath for accessibility/SEO.
+   Add more .badge-card links + images to .badge-grid as you earn more
+   certifications; it wraps automatically, left to right.
+   --------------------------------------------------------------------- */
+.about {
+  padding: 1rem 0 3rem;
+}
+
+.about .eyebrow {
+  font-size: 0.95rem;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.7fr);
+  gap: 2rem;
+  align-items: start;
+  margin-top: 1.5rem;
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+}
+
+.about h2 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  letter-spacing: -0.04em;
+}
+
+.badges-label {
+  margin: 0 0 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  align-items: start; /* stops cards in the same row from stretching to
+                          match the tallest one — that stretch was what
+                          pushed shorter cards' text away from the top */
+  gap: 0.85rem;
+}
+
+.badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* centers the icon+name as a block within the
+                               fixed min-height below, so shorter names
+                               don't leave the content stranded at the top */
+  gap: 0.5rem;
+  min-width: 0; /* without this, a grid item's implicit minimum width is
+                   based on its content's widest unbreakable word — here,
+                   the long certification names — which can force this
+                   card's column wider than the container allows and
+                   collapse the whole grid down to fewer columns than
+                   intended (this is the same fix .flow-node needed) */
+  min-height: 11rem; /* keeps every tile the same size regardless of how
+                         long its certification name is */
+  text-align: center;
+  padding: 0.85rem 0.5rem;
+  border-radius: 16px;
+  background: var(--info-bg);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.badge-card:hover,
+.badge-card:focus-visible {
+  border-color: var(--accent);
+  background: var(--surface);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+}
+
+.badge-card:active {
+  transform: translateY(-1px);
+  transition-duration: 0.1s;
+}
+
+.badge-card:focus-visible {
+  outline: 3px solid rgba(52, 84, 209, 0.35);
+  outline-offset: 3px;
+}
+
+/* Fixed-size, centered window for the badge art. The four Credly badges
+   aren't all the same shape (hexagons vs. shield/ribbon shapes) or the
+   same intrinsic proportions, so sizing the <img> itself with a fixed
+   width+height could crop or unevenly inset some of them; centering a
+   naturally-sized image inside a fixed box instead keeps every badge
+   fully visible and consistently sized regardless of its shape. */
+.badge-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  flex-shrink: 0;
+}
+
+.badge-icon {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  transition: transform 0.2s ease;
+}
+
+.badge-card:hover .badge-icon,
+.badge-card:focus-visible .badge-icon {
+  transform: scale(1.05);
+}
+
+.badge-name {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+
+.badges-note {
+  margin: 1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------------
+   16. "HOW IT WORKS" ARCHITECTURE DIAGRAM (project1.html only)
+   The animated AWS flow diagram below the contact form: 7 .flow-node
+   icons (Users, Route 53, CloudFront, S3, API Gateway, Lambda, SES) in
+   a bordered .flow-diagram box, connected by 6 numbered .flow-connector
+   arrows, plus a matching .flow-steps list with the written walkthrough.
+
+   Icons intentionally have no circular frame — the "lit up" state is
+   shown by desaturating inactive icons (grayscale + low opacity) and
+   restoring full color on the active/done ones instead. .flow-track
+   uses align-items: flex-start so every icon's top edge lines up even
+   when one node's label wraps to two lines (e.g. "API Gateway") —
+   .flow-node-icon and .flow-connector both have a fixed 60px height so
+   the connector lines land exactly at icon-center height.
+
+   How the animation works: a small inline <script> at the bottom of
+   project1.html calls setActiveStep(n) on a timer, which adds
+   "is-active"/"is-done" classes to the diagram nodes/connectors and the
+   matching list item — the CSS below just reacts to those classes.
+   Clicking a connector or list item jumps to that step and pauses
+   autoplay; it resumes itself after a few seconds idle (see
+   IDLE_RESUME_MS in that script). Edit STEP_MS there to change how long
+   each step stays highlighted during autoplay.
+   --------------------------------------------------------------------- */
+.how-it-works {
+  padding: 1rem 0 4rem;
+}
+
+.how-it-works .eyebrow,
+.use-cases .eyebrow,
+.pricing .eyebrow,
+.decisions .eyebrow {
+  font-size: 0.95rem;
+}
+
+.how-it-works h2,
+.use-cases h2,
+.pricing h2,
+.decisions h2 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  letter-spacing: -0.04em;
+}
+
+.how-it-works .section-intro,
+.use-cases .section-intro,
+.pricing .section-intro,
+.decisions .section-intro {
+  margin-bottom: 2.5rem;
+}
+
+.flow-diagram-sentinel {
+  height: 1px;
+}
+
+.flow-diagram {
+  overflow: visible;
+  padding: 1.5rem;
+  position: sticky;
+  top: 6rem;
+  z-index: 10;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  transform-origin: top center;
+  transition: transform 0.25s ease;
+  overflow-anchor: none;
+}
+
+/* Added via IntersectionObserver + a sentinel element right before the
+   diagram in the HTML — .is-stuck means the diagram is currently pinned
+   to the top of the viewport by its own sticky positioning, rather than
+   sitting in its normal scroll position. */
+.flow-diagram.is-stuck {
+  transform: scale(0.78);
+}
+
+.flow-track {
+  display: flex;
+  align-items: flex-start; /* keeps every icon's top edge level, regardless
+                               of whether a node's label wraps to two lines */
+  width: 100%;
+}
+
+.flow-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  width: 80px;
+  text-align: center;
+}
+
+.flow-node-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px; /* fixed height on every icon box keeps the row aligned */
+  color: var(--muted);
+}
+
+.flow-node-icon svg {
+  width: 64px;
+  height: 64px;
+  transition: filter 0.35s ease, transform 0.35s ease;
+}
+
+.flow-node-icon img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  /* Start desaturated; each icon "lights up" in its original AWS color
+     once its step becomes active or done — this is the state cue now
+     that there's no circular frame to recolor. */
+  filter: grayscale(100%) opacity(0.45);
+  transition: filter 0.35s ease, transform 0.35s ease;
+}
+
+.flow-node-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.25;
+  transition: color 0.35s ease;
+}
+
+/* A node "lights up" once the step feeding into it is active or done.
+   is-done (already passed, or jumped to directly via a click) recolors
+   instantly. is-active waits ~1.1s — matching flowDotTravel's duration —
+   so the icon doesn't turn on until the traveling dot actually arrives. */
+.flow-node.is-done .flow-node-icon img {
+  filter: grayscale(0%) opacity(1);
+  transition: filter 0.35s ease, transform 0.35s ease;
+}
+
+.flow-node.is-active .flow-node-icon img {
+  transform: scale(1.1);
+  filter: grayscale(0%) opacity(1) drop-shadow(0 6px 14px rgba(52, 84, 209, 0.45));
+  transition: filter 0.35s ease 1.05s, transform 0.35s ease 1.05s;
+}
+
+.flow-node.is-done .flow-node-icon svg {
+  color: var(--accent);
+  transition: color 0.35s ease, transform 0.35s ease;
+}
+
+.flow-node.is-active .flow-node-icon svg {
+  color: var(--accent);
+  transform: scale(1.1);
+  transition: color 0.35s ease 1.05s, transform 0.35s ease 1.05s;
+}
+
+.flow-node.is-done .flow-node-label {
+  color: var(--text);
+  transition: color 0.35s ease;
+}
+
+.flow-node.is-active .flow-node-label {
+  color: var(--text);
+  transition: color 0.35s ease 1.05s;
+}
+
+/* project2.html's ws-diagram already waits for the dot's real
+   animationend event before adding is-active, so the 1.05s delay above
+   (designed for project1.html's simpler synchronous timing) would
+   double up here and make highlighting look later than it should. */
+.ws-diagram .flow-node.is-active .flow-node-icon img,
+.ws-diagram .flow-node.is-active .flow-node-icon svg,
+.ws-diagram .flow-node.is-active .flow-node-label {
+  transition-delay: 0s;
+}
+
+.flow-connector {
+  position: relative;
+  height: 68px; /* matches .flow-node-icon so the line centers on it */
+  flex: 1 1 24px;
+  min-width: 20px;
+  cursor: default;
+  border: none;
+  background: none;
+  font: inherit;
+  pointer-events: none; /* purely decorative now — the node handles clicks */
+}
+
+.flow-connector-num {
+  /* Small circle badge, styled to match .flow-step-num in the written
+     list below — sits just above the connector line. */
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--info-bg);
+  color: var(--accent-dark);
+  font-size: 0.64rem;
+  font-weight: 800;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+.flow-connector-line {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: 2px;
+  background: var(--border);
+  transform: translateY(-50%);
+  transition: background 0.35s ease;
+}
+
+.flow-connector-line::after {
+  /* arrowhead */
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  transform: translateY(-50%) rotate(-45deg);
+  transition: border-color 0.35s ease;
+}
+
+.flow-dot {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+.flow-connector.is-active .flow-connector-num {
+  background: var(--accent);
+  color: #fff;
+}
+
+.flow-connector.is-active .flow-connector-line,
+.flow-connector.is-done .flow-connector-line {
+  background: var(--accent);
+}
+
+.flow-connector.is-active .flow-connector-line::after,
+.flow-connector.is-done .flow-connector-line::after {
+  border-color: var(--accent);
+}
+
+.flow-connector.is-active .flow-dot {
+  animation: flowDotTravel 1.1s ease-in-out;
+}
+
+@keyframes flowDotTravel {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+/* Mobile counterpart: the connector line runs top-to-bottom instead of
+   left-to-right (see the vertical layout override under the 760px
+   media query), so the dot travels via "top" instead of "left". */
+@keyframes flowDotTravelVertical {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.flow-node[data-step] {
+  cursor: pointer;
+}
+
+.flow-node[data-step]:focus-visible {
+  outline: 3px solid rgba(52, 84, 209, 0.35);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+.flow-steps {
+  list-style: none;
+  margin: 2rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.flow-step {
+  display: flex;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.flow-step-num {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--info-bg);
+  color: var(--accent-dark);
+  font-weight: 800;
+  font-size: 0.9rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.flow-step-body h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.flow-step-body p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.flow-step-body ul {
+  margin: 0.6rem 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.flow-step-body li {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.flow-step-body code {
+  font-size: 0.85em;
+}
+
+.flow-step.is-active {
+  border-color: var(--accent);
+  background: var(--info-bg);
+  box-shadow: var(--shadow);
+}
+
+.flow-step.is-active .flow-step-num {
+  background: var(--accent);
+  color: #fff;
+}
+
+.flow-step:focus-visible {
+  outline: 3px solid rgba(52, 84, 209, 0.35);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------------
+   17. USE CASES (project1.html only)
+   Three simple cards below the "How it works" diagram, describing
+   other situations this same S3 + API Gateway + Lambda + SES pattern
+   fits. Add more by copying a .usecase-card into .usecase-grid — it
+   wraps automatically.
+   --------------------------------------------------------------------- */
+.use-cases {
+  padding: 1rem 0 4rem;
+}
+
+.usecase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.usecase-card {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.usecase-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  background: var(--info-bg);
+  color: var(--accent);
+}
+
+.usecase-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.usecase-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+/* ---------------------------------------------------------------------
+   18. PRICING (project1.html only)
+   Three cost-tier cards plus a breakdown list of what drives cost.
+   All three cards use the same plain .pricing-card styling.
+   --------------------------------------------------------------------- */
+.pricing {
+  padding: 1rem 0 4rem;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.pricing-card {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.pricing-tier {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pricing-amount {
+  margin: 0 0 0.75rem;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.pricing-period {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.pricing-breakdown {
+  margin-top: 2rem;
+  padding: 1.5rem clamp(1.25rem, 4vw, 2rem);
+  background: var(--info-bg);
+  border-radius: 20px;
+}
+
+.pricing-breakdown h3 {
+  margin: 0 0 0.85rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.pricing-breakdown ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.pricing-breakdown li {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.pricing-breakdown strong {
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------
+   19. BACK-TO-TOP BUTTON (both pages)
+   The floating circular arrow button in the bottom-right corner.
+   Hidden by default (opacity 0 + pointer-events: none); a small script
+   at the bottom of each HTML file adds "is-visible" once the page has
+   scrolled past 500px, and smooth-scrolls to the top on click.
+   --------------------------------------------------------------------- */
+.back-to-top {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  width: 48px;
+  height: 48px;
+  padding: 0; /* overrides the generic button rule's padding, which was
+                 eating almost the entire box and squeezing the icon
+                 down to nearly nothing via flexbox's default shrink */
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(52, 84, 209, 0.32);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease;
+  z-index: 90;
+}
+
+.back-to-top svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.back-to-top.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.back-to-top:hover {
+  background: var(--accent-dark);
+}
+
+.back-to-top:focus-visible {
+  outline: 3px solid rgba(52, 84, 209, 0.35);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------------
+   20. EXPANDING MOBILE MENU BUTTON (mobile only, all pages)
+   A small circular hamburger button, fixed to the top-right corner.
+   Hidden entirely on desktop (display: none below), and hidden-but-
+   present on mobile until a script adds "is-visible" once the page has
+   scrolled past 220px — same fade pattern as .back-to-top, just a
+   shorter trigger distance since finding the nav again is useful
+   sooner than "scroll to top" is. It's a native <details>/<summary>,
+   so opening/closing needs no JS; the hamburger swaps to an X via the
+   [open] attribute selector below.
+   --------------------------------------------------------------------- */
+.mobile-menu {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .mobile-menu {
+    display: block;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 95;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .mobile-menu.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .mobile-menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 12px 30px rgba(52, 84, 209, 0.32);
+    list-style: none;
+    transition: background 0.2s ease;
+  }
+
+  .mobile-menu-button::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-menu-button:hover {
+    background: var(--accent-dark);
+  }
+
+  .mobile-menu-button:focus-visible {
+    outline: 3px solid rgba(52, 84, 209, 0.35);
+    outline-offset: 3px;
+  }
+
+  .mobile-menu-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mobile-menu-icon-close {
+    display: none;
+  }
+
+  .mobile-menu[open] .mobile-menu-icon-open {
+    display: none;
+  }
+
+  .mobile-menu[open] .mobile-menu-icon-close {
+    display: block;
+  }
+
+  .mobile-menu-panel {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    right: 0;
+    display: grid;
+    gap: 0.15rem;
+    min-width: 210px;
+    padding: 0.6rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  @keyframes mobileMenuIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .mobile-menu-panel a {
+    color: var(--text);
+    font-weight: 600;
+    padding: 0.6rem 0.7rem;
+    border-radius: 10px;
+  }
+
+  .mobile-menu-group-label {
+    padding: 0.65rem 0.7rem 0.15rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  .mobile-menu-panel a.mobile-menu-sublink {
+    padding-left: 1.5rem;
+    font-weight: 500;
+    font-size: 0.92rem;
+  }
+
+  .mobile-menu-panel a:hover {
+    background: var(--info-bg);
+    color: var(--accent);
+    text-decoration: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   21. MOBILE RESPONSIVE OVERRIDES
+   Everything below applies only at 760px and narrower (phones/small
+   tablets). Mostly: stack the header/cards/about section vertically,
+   shrink the logo and hearts badge, and give jump-to-section anchors
+   extra top clearance since the stacked header is taller on mobile.
+   --------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  .site-header-inner,
+  .card,
+  .about-grid {
+    display: block;
+  }
+
+  /* Centering technique: the parent is a block box with text-align:
+     center, and .brand-row / nav are switched from full-width
+     display:flex to shrink-to-fit display:inline-flex — an
+     inline-level box respects the parent's text-align, so this
+     reliably centers each row as a group regardless of its content
+     width, rather than depending on justify-content inside an
+     already-full-width flex container. */
+  .site-header-inner {
+    text-align: center;
+  }
+
+  /* The header stacks logo/hearts/nav vertically here, which makes it
+     too tall to comfortably pin in place while scrolling (it would
+     eat a big chunk of a phone screen permanently). Let it scroll
+     away like normal content instead — this is why the scroll-margin
+     values below are much smaller than the desktop ones too, since
+     there's no sticky header left to clear when a link jumps to an
+     anchor. */
+  .site-header {
+    position: static;
+  }
+
+  #projects,
+  #about,
+  #contact,
+  #how-it-works,
+  #use-cases,
+  #pricing,
+  .project-card {
+    scroll-margin-top: 1.5rem;
+  }
+
+  .brand-row {
+    display: inline-flex;
+  }
+
+  .top-mark {
+    margin: 0.4rem auto; /* block-level centering — text-align on the parent
+                            doesn't apply here since this stays display:block */
+  }
+
+  .site-header nav {
+    display: inline-flex;
+    margin-top: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem 1.25rem;
+  }
+
+  .hero {
+    padding-top: 0.75rem;
+  }
+
+  .top-mark {
+    height: 28px; /* mobile hearts-badge size */
+  }
+
+  .logo-mark img {
+    height: 60px; /* mobile logo size */
+  }
+
+  .home-hero::before {
+    display: none; /* hide the blueprint grid animation on small screens */
+  }
+
+  .contact-form {
+    padding-top: 0;
+    margin-top: 1.5rem;
+  }
+
+  .about-badges {
+    margin-top: 1.5rem;
+  }
+
+  .flow-step {
+    padding: 0.9rem 1rem;
+  }
+
+  /* The horizontal diagram becomes a 2-column grid of icons on small
+     screens — no room to fit 7 icons in a row, and a single-column
+     list left too much horizontal space unused. The connecting lines
+     don't translate well to a wrapping grid, so they're hidden here;
+     each node shows its own step number as a small corner badge
+     instead (see the data-step attribute on the node elements in the
+     HTML — the same is-active/is-done classes the JS already applies
+     to nodes drive this badge's color, no extra script needed). A tall
+     vertical stack also isn't worth pinning in place, so sticky
+     positioning is turned off too.
+
+     Everything in this block is scoped with :not(.ws-diagram) —
+     project2.html's WebSocket diagram uses the same generic
+     .flow-node/.flow-diagram/.flow-connector class names (with its own
+     distinct .ws-diagram class added alongside), so without this guard
+     these rules — being more specific than project2's own
+     [data-node="..."] selectors — would win the cascade and hijack its
+     icons into this diagram's grid positions instead. */
+  .flow-diagram:not(.ws-diagram) {
+    position: static;
+    top: auto;
+    padding: 1.25rem 1rem 1rem;
+  }
+
+  .flow-diagram:not(.ws-diagram).is-stuck {
+    transform: none;
+    padding: 1.25rem 1rem 1rem;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-track {
+    display: grid;
+    grid-template-columns: 1fr 56px 1fr;
+    grid-template-rows: auto 32px auto 32px auto 32px auto;
+    align-items: center;
+    justify-items: center;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* 2-column snake: reads left-to-right, then right-to-left, then
+     left-to-right again, then the last (odd) node alone on the final
+     row — same zigzag principle as project2.html's mobile diagram,
+     extended to this flow's 7 nodes instead of 4. */
+  .flow-diagram:not(.ws-diagram) .flow-node[data-node="users"] { grid-column: 1; grid-row: 1; }
+  .flow-diagram:not(.ws-diagram) .flow-node[data-node="route53"] { grid-column: 3; grid-row: 1; }
+  .flow-diagram:not(.ws-diagram) .flow-node[data-node="cloudfront"] { grid-column: 3; grid-row: 3; }
+  .flow-diagram:not(.ws-diagram) .flow-node[data-node="s3"] { grid-column: 1; grid-row: 3; }
+  .flow-diagram:not(.ws-diagram) .flow-node[data-node="apigateway"] { grid-column: 1; grid-row: 5; }
+  .flow-diagram:not(.ws-diagram) .flow-node[data-node="lambda"] { grid-column: 3; grid-row: 5; }
+  .flow-diagram:not(.ws-diagram) .flow-node[data-node="ses"] { grid-column: 3; grid-row: 7; }
+
+  .flow-diagram:not(.ws-diagram) .flow-connector {
+    display: block;
+    pointer-events: none;
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="1"] { grid-column: 2; grid-row: 1; }
+  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="2"] { grid-column: 3; grid-row: 2; }
+  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="3"] { grid-column: 2; grid-row: 3; }
+  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="4"] { grid-column: 1; grid-row: 4; }
+  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="5"] { grid-column: 2; grid-row: 5; }
+  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="6"] { grid-column: 3; grid-row: 6; }
+
+  /* The written step number moves to a corner badge on the node itself
+     (below) — the connector's own number label is redundant here. */
+  .flow-diagram:not(.ws-diagram) .flow-connector-num {
+    display: none;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-connector.is-vertical {
+    height: 100%;
+    width: 68px;
+    align-self: stretch;
+    justify-self: center;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-connector.is-vertical .flow-connector-line {
+    left: 50%;
+    right: auto;
+    top: 8px;
+    bottom: 8px;
+    height: auto;
+    width: 2px;
+    transform: translateX(-50%);
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-connector.is-vertical .flow-connector-line::after {
+    right: auto;
+    left: 50%;
+    bottom: -1px;
+    top: auto;
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-connector.is-vertical .flow-dot {
+    left: 50%;
+    top: 0;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-connector.is-active.is-vertical .flow-dot {
+    animation: flowDotTravelVertical 1.1s ease-in-out;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-connector.is-reversed .flow-connector-line {
+    transform: translateY(-50%) scaleX(-1);
+  }
+
+  /* var(--border) is too light to read clearly against this card's
+     background at mobile sizes, especially before a step has become
+     active/done - darken the resting (not-yet-visited) arrow color. */
+  .flow-diagram:not(.ws-diagram) .flow-connector-line {
+    background: var(--muted);
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-connector-line::after {
+    border-color: var(--muted);
+    background: transparent;
+    border-left-width: 0;
+    border-top-width: 0;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-node {
+    position: relative;
+    flex-direction: column;
+    width: 68px;
+    min-width: 0;
+    justify-self: center;
+    text-align: center;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-node-label {
+    overflow-wrap: break-word;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-node-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-node-icon svg,
+  .flow-diagram:not(.ws-diagram) .flow-node-icon img {
+    width: 46px;
+    height: 46px;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-node.is-active .flow-node-icon img,
+  .flow-diagram:not(.ws-diagram) .flow-node.is-active .flow-node-icon svg,
+  .flow-diagram:not(.ws-diagram) .flow-node.is-active .flow-node-label {
+    transition-delay: 0s;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-node[data-step]::after {
+    content: attr(data-step);
+    position: absolute;
+    top: -6px;
+    right: 2px;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: var(--info-bg);
+    color: var(--accent-dark);
+    font-size: 0.65rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.35s ease, color 0.35s ease;
+  }
+
+  .flow-diagram:not(.ws-diagram) .flow-node.is-active[data-step]::after,
+  .flow-diagram:not(.ws-diagram) .flow-node.is-done[data-step]::after {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .back-to-top {
+    right: 1rem;
+    bottom: 1rem;
+    width: 42px;
+    height: 42px;
+  }
+
+  .back-to-top svg {
+    width: 19px;
+    height: 19px;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   22. REDUCED-MOTION ACCESSIBILITY
+   If the visitor's OS has "reduce motion" turned on, this collapses
+   every animation/transition on the page to near-zero duration
+   (scroll reveal, hover lifts, pulse dot, shimmer, grid drift, dropdown
+   fade, header shrink — all of it). Leave this last in the file so it
+   always wins.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  [data-reveal] {
+    transition: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* ==========================================================================
+   Live Poll (project/polling)
+   ========================================================================== */
+
+:root {
+  --poll-color-1: #3454d1;
+  --poll-color-2: #6c3fd1;
+  --poll-color-3: #2f8fbf;
+  --poll-color-4: #17633a;
+  --poll-color-5: #263fa0;
+}
+
+/* The poll section stacks (header text, then the voting panel below it)
+   instead of using .card's default two-column layout. */
+.poll-card {
+  display: block;
+}
+
+.poll-card > .poll-panel {
+  margin-top: 2rem;
+}
+
+.poll-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  background: var(--info-bg);
+  color: var(--info-text);
+}
+
+.poll-status::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.poll-status[data-state="live"] {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.poll-status[data-state="reconnecting"] {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.poll-activity {
+  margin-top: 1.75rem;
+}
+
+.poll-panel {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+}
+
+.poll-total {
+  font-weight: 800;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.poll-rows {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.poll-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(0, 1.25fr) auto;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.7rem 0.9rem;
+  background: #fff;
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.poll-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.poll-row-label {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.poll-row-desc {
+  font-weight: 400;
+  font-size: 0.82rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.poll-row:hover {
+  border-color: var(--accent);
+  background: var(--accent-dark);
+  color: #fff;
+  transform: none;
+  box-shadow: none;
+}
+
+.poll-row:hover .poll-row-desc {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.poll-row.is-mine:hover {
+  box-shadow: 0 0 0 3px rgba(52, 84, 209, 0.14);
+}
+
+.poll-row:active {
+  transform: none;
+}
+
+.poll-row:hover .poll-row-count,
+.poll-row:hover .poll-row-you {
+  color: #fff;
+}
+
+.poll-row.is-mine {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(52, 84, 209, 0.14);
+}
+
+.poll-row-track-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+}
+
+.poll-row-you {
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.poll-row-track {
+  position: relative;
+  width: 100%;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.poll-row-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.poll-row-count {
+  font-weight: 800;
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.poll-feed {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.poll-feed li {
+  font-size: 0.88rem;
+  color: var(--muted);
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border-radius: 10px;
+}
+
+@media (max-width: 640px) {
+  .poll-row {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+}
+
+/* ==========================================================================
+   Design decisions section (project/polling)
+   ========================================================================== */
+
+.decision-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.decision-item {
+  padding: 1.25rem clamp(1.25rem, 4vw, 1.75rem);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 16px;
+}
+
+.decision-item h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.decision-item p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+
+/* ==========================================================================
+   WebSocket persistent-connection diagram (project/polling only)
+   ========================================================================== */
+
+.ws-diagram {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2.75rem 2.5rem;
+}
+
+.ws-loop-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+#ws-loop-path {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  transition: stroke 0.4s ease;
+}
+
+#ws-loop-path.active {
+  stroke-dasharray: 6 6;
+  animation: wsMarchingDash 1.2s linear infinite;
+}
+
+#ws-loop-path.closed {
+  stroke: var(--border);
+  stroke-dasharray: none;
+  animation: none;
+}
+
+@keyframes wsMarchingDash {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+.ws-loop-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: var(--bg);
+  padding: 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--accent);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease, color 0.3s ease;
+  pointer-events: none;
+}
+
+.ws-loop-label.on {
+  opacity: 1;
+}
+
+.ws-loop-label.closed {
+  color: var(--error-text);
+}
+
+.ws-track {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.ws-loop-group {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 auto;
+}
+
+.ws-arrow {
+  position: relative;
+  height: 68px;
+  flex: 1 1 60px;
+  min-width: 50px;
+}
+
+.ws-line {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 50%;
+  height: 2px;
+  background: var(--border);
+  transform: translateY(-50%);
+}
+
+.ws-line::before,
+.ws-line::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-top: 2px solid var(--border);
+  border-right: 2px solid var(--border);
+}
+
+.ws-line::before {
+  left: -1px;
+  transform: translateY(-50%) rotate(-135deg);
+}
+
+.ws-line::after {
+  right: -1px;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.ws-line-l,
+.ws-line-r {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.ws-line-l {
+  left: 14px;
+  width: calc(50% - 10px);
+  right: auto;
+}
+
+.ws-line-l::after {
+  display: none;
+}
+
+.ws-line-r {
+  right: 14px;
+  width: calc(50% - 10px);
+  left: auto;
+}
+
+.ws-line-r::before {
+  display: none;
+}
+
+/* Reusable on any .ws-line — used by the mobile stub arrows to show only
+   one arrowhead (the one pointing into the node they connect to). */
+.ws-line.hide-before::before {
+  display: none;
+}
+
+.ws-line.hide-after::after {
+  display: none;
+}
+
+.ws-line-l.cracked {
+  transform: translate(-6px, -50%);
+}
+
+.ws-line-r.cracked {
+  transform: translate(6px, -50%);
+}
+
+.ws-line-l.highlight-fwd,
+.ws-line-l.highlight-rev,
+.ws-line-r.highlight-fwd,
+.ws-line-r.highlight-rev {
+  background: var(--accent);
+  height: 3px;
+  transition: background 0.2s ease, height 0.2s ease, transform 0.5s ease, opacity 0.5s ease;
+}
+
+.ws-line-r.highlight-fwd::after {
+  border-color: var(--accent);
+}
+
+.ws-line-l.highlight-rev::before {
+  border-color: var(--accent);
+}
+
+.ws-crack {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  color: var(--error-text);
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.ws-crack.show {
+  opacity: 1;
+}
+
+.ws-line.highlight-fwd,
+.ws-line.highlight-rev {
+  background: var(--accent);
+  height: 3px;
+  transition: background 0.2s ease, height 0.2s ease;
+}
+
+.ws-line.highlight-fwd::after {
+  border-color: var(--accent);
+}
+
+.ws-line.highlight-rev::before {
+  border-color: var(--accent);
+}
+
+.ws-dot {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+.ws-dot.dot-fwd {
+  animation: wsDotFwd 1.6s linear;
+}
+
+.ws-dot.dot-rev {
+  animation: wsDotRev 1.6s linear;
+}
+
+@keyframes wsDotFwd {
+  0% { left: 14px; opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { left: calc(100% - 14px); opacity: 0; }
+}
+
+@keyframes wsDotRev {
+  0% { left: calc(100% - 14px); opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { left: 14px; opacity: 0; }
+}
+
+.ws-step {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  transform: translateX(-50%) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: var(--info-bg);
+  color: var(--accent-dark);
+  font-size: 0.64rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.ws-step-top {
+  top: -10px;
+}
+
+.ws-step-bottom {
+  top: auto;
+  bottom: -10px;
+}
+
+.ws-step:hover,
+.ws-step:active,
+.ws-step:focus {
+  transform: translateX(-50%) !important;
+}
+
+.ws-step:hover {
+  border-color: var(--accent);
+}
+
+.ws-step:focus-visible {
+  outline: 3px solid rgba(52, 84, 209, 0.35);
+  outline-offset: 2px;
+}
+
+.ws-step.is-active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.ws-close-note {
+  margin-top: 1.5rem;
+}
+
+.ws-arrow-stub {
+  display: none;
+  position: relative;
+  height: 68px;
+}
+
+/* The mobile stub dots run as two sequential legs (lambda, then API
+   Gateway) instead of one continuous trip, so each leg needs to be
+   quicker than the standard dot speed — otherwise the full sequence
+   runs longer than the phase's hold time and overlaps with the next
+   phase's dot, which is what caused multiple dots to appear at once. */
+.ws-arrow-stub .ws-dot.dot-fwd,
+.ws-arrow-stub .ws-dot.dot-rev {
+  animation-duration: 0.7s;
+}
+
+@media (max-width: 760px) {
+  .ws-diagram {
+    max-width: none;
+    padding: 1.25rem 1rem 1rem;
+  }
+
+  /* The loop visualization is desktop-only: .ws-loop-group uses
+     display:contents here so its children can become direct grid items
+     (for the zigzag layout below), but that means the group itself has
+     no measurable box for positionLoop() to read — and even if it did,
+     a rectangle can't cleanly wrap just API Gateway + Lambda + DynamoDB
+     without also covering Browser, since they're not a clean row/column
+     block in this layout. */
+  .ws-loop-svg,
+  .ws-loop-label {
+    display: none;
+  }
+
+  /* No click-to-jump on mobile — it just autoplays on a continuous
+     loop, so the numbered step buttons and the lightning-bolt crack
+     glyph (tied to a "closed" state that isn't shown here either) are
+     both hidden. */
+  .ws-step,
+  .ws-crack {
+    display: none;
+  }
+
+  .ws-track {
+    display: grid;
+    grid-template-columns: 36px 1fr 60px 1fr 36px;
+    grid-template-rows: auto 16px auto;
+    align-items: center;
+    justify-items: center;
+    row-gap: 0.3rem;
+  }
+
+  .ws-loop-group {
+    display: contents;
+  }
+
+  /* Zigzag: browser top-left, API Gateway top-right, lambda bottom-left,
+     DynamoDB bottom-right — bottom row reads left-to-right in the same
+     order votes actually flow (lambda, then DynamoDB). The API Gateway
+     <-> lambda connection can't be one clean line once lambda sits in
+     the opposite corner, so instead of a full-width divider it's shown
+     as a dashed line exiting API Gateway's right side and a dashed
+     arrow appearing on lambda's left side — implying the connection
+     continues off to the side rather than drawing a literal path
+     across empty space. */
+  [data-node="browser"] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  [data-node="apigateway"] {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  [data-node="lambda"] {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  [data-node="dynamodb"] {
+    grid-column: 4;
+    grid-row: 3;
+  }
+
+  #ws-arrow-connect {
+    grid-column: 3;
+    grid-row: 1;
+    width: 100%;
+    height: 32px;
+  }
+
+  #ws-arrow-tally {
+    grid-column: 3;
+    grid-row: 3;
+    width: 100%;
+    height: 32px;
+  }
+
+  .ws-step-top {
+    top: -10px;
+  }
+
+  .ws-step-bottom {
+    bottom: -10px;
+    top: auto;
+  }
+
+  #ws-arrow-stub-apigw {
+    grid-column: 5;
+    grid-row: 1;
+    width: 100%;
+    height: 32px;
+  }
+
+  #ws-arrow-stub-lambda {
+    grid-column: 1;
+    grid-row: 3;
+    width: 100%;
+    height: 32px;
+  }
+
+  .ws-arrow-stub {
+    display: block;
+  }
+
+  .ws-arrow-stub .ws-line {
+    left: 4px;
+    right: 4px;
+    width: auto;
+    border-top: 1px dashed var(--border);
+    background: none;
+    height: 0;
+  }
+
+  .ws-arrow-stub .ws-line.highlight-fwd,
+  .ws-arrow-stub .ws-line.highlight-rev {
+    border-top-color: var(--accent);
+  }
+
+  /* The original full-width vote connector is no longer shown on
+     mobile (replaced by the two dashed stubs above), but it's kept in
+     the layout — just collapsed and invisible — rather than
+     display:none, because its dot's animationend event is what the JS
+     actually waits on to know when "the vote reached its destination"
+     and light up the next node. A display:none element never fires
+     that event at all, which would silently break the highlight
+     timing; opacity:0 lets the animation keep running unseen. */
+  #ws-arrow-vote {
+    grid-column: 3;
+    grid-row: 2;
+    width: 100%;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+

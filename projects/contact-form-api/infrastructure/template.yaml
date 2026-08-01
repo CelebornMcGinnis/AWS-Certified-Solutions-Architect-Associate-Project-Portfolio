@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Contact form backend for McGinnisArchitecture.com.
+  API Gateway (HTTP API) -> Lambda -> SES.
+
+Parameters:
+  SiteOrigin:
+    Type: String
+    Description: >
+      Allowed CORS origin for the static site, e.g. https://www.mcginnisarchitecture.com
+      (use the CloudFront or S3 website URL if you haven't attached a custom domain yet).
+
+  SesFromAddress:
+    Type: String
+    Description: >
+      Verified SES sender address, or any address at a verified SES domain
+      (e.g. contact@mcginnisarchitecture.com).
+
+  SesToAddress:
+    Type: String
+    Description: Inbox that should receive contact form submissions.
+
+Globals:
+  Function:
+    Runtime: python3.14
+    Timeout: 10
+    MemorySize: 128
+
+Resources:
+  ContactApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref SiteOrigin
+        AllowMethods:
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+
+  ContactFormFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      CodeUri: ../backend/
+      Environment:
+        Variables:
+          SES_FROM_ADDRESS: !Ref SesFromAddress
+          SES_TO_ADDRESS: !Ref SesToAddress
+          ALLOWED_ORIGIN: !Ref SiteOrigin
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: ses:SendEmail
+              Resource: "*"
+      Events:
+        ContactPost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ContactApi
+            Path: /contact
+            Method: POST
+
+Outputs:
+  ContactApiEndpoint:
+    Description: Value to paste into projects/contact-form-api/frontend/config.js as apiEndpoint
+    Value: !Sub "https://${ContactApi}.execute-api.${AWS::Region}.amazonaws.com/contact"
+
+  ContactFormFunctionName:
+    Description: Lambda function name (useful for tailing logs)
+    Value: !Ref ContactFormFunction

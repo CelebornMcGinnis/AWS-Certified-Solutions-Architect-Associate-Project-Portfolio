@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Movie Poll — McGinnis Architecture</title>
+  <meta name="description" content="A real-time voting demo built on API Gateway WebSockets, Lambda, and DynamoDB." />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand-row">
+        <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
+          <img src="/assets/logo.png" alt="McGinnis Architecture" />
+        </a>
+      </div>
+      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <nav aria-label="Main navigation">
+        <a href="/">Home</a>
+        <details class="nav-dropdown">
+          <summary>Projects</summary>
+          <div class="nav-dropdown-menu">
+            <a href="/project/contactform/project1.html">Contact Form</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+          </div>
+        </details>
+        <a href="/#about">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Project</p>
+      <h1>Movie Poll</h1>
+      <p>
+        Cast a vote and watch it move — this poll runs over a persistent
+        WebSocket connection through API Gateway, Lambda, and DynamoDB.
+        No polling, no refreshing: when a vote lands anywhere, every open
+        tab watching this page updates on its own.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href="#how-it-works">See how it works</a>
+        <a class="button-link" href="#use-cases">Use cases</a>
+        <a class="button-link" href="#pricing">Pricing</a>
+        <a class="button-link" href="#design-decisions">Why I built it this way</a>
+      </div>
+    </section>
+
+    <section class="card poll-card" id="poll" aria-labelledby="poll-heading">
+      <div>
+        <p class="eyebrow">Demo</p>
+        <h2 id="poll-heading">If you were a movie, what movie would you be?</h2>
+        <p class="muted">
+          Pick the one that fits. Your vote goes out over an open WebSocket
+          connection to a Lambda function, updates the tallies in DynamoDB,
+          and gets broadcast back to every connected browser — including
+          this one — in real time.
+        </p>
+        <p class="muted small-note">
+          <strong>Privacy notice:</strong> your browser stores a random,
+          anonymous ID in <code>localStorage</code> — not a cookie — so the
+          poll remembers which option is yours. Nothing personally
+          identifiable is collected, and it's never sent anywhere beyond
+          this one poll.
+        </p>
+        <p class="muted small-note">
+          Changed your mind? Tap a different option any time — your vote
+          moves with you.
+        </p>
+        <p class="muted small-note">
+          <strong>Try this:</strong> open this page in a second tab and
+          vote there. Watch this tab's chart update on its own — that's
+          the WebSocket push, not a page refresh.
+        </p>
+        <div class="poll-status" id="poll-status" data-state="connecting">Connecting…</div>
+      </div>
+
+      <div class="poll-panel">
+        <div class="poll-total" id="poll-total">0 votes</div>
+        <div class="poll-rows" id="poll-rows">
+          <p class="muted small-note">Loading live results…</p>
+        </div>
+      </div>
+
+      <div class="poll-activity">
+        <p class="eyebrow">Live activity</p>
+        <ul class="poll-feed" id="poll-feed" aria-live="polite"></ul>
+      </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture</p>
+        <h2 id="how-it-works-heading">How it works</h2>
+        <p class="muted section-intro">
+          This isn't a series of one-off requests — it's a single WebSocket
+          connection that stays open the whole time you're on this page.
+          Step 1 happens once, when you arrive. Steps 2 through 5 repeat
+          every single time anyone votes, without ever reconnecting. Click
+          any numbered step to jump to it, or let it play through on its
+          own.
+        </p>
+      </div>
+
+      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
+      <div class="flow-diagram ws-diagram" id="flow-diagram">
+        <svg class="ws-loop-svg" id="ws-loop-svg" aria-hidden="true" focusable="false">
+          <defs>
+            <clipPath id="ws-loop-clip">
+              <rect id="ws-loop-clip-rect" x="0" y="0" width="0" height="0"></rect>
+            </clipPath>
+          </defs>
+          <path id="ws-loop-path" fill="none" clip-path="url(#ws-loop-clip)"></path>
+        </svg>
+        <p class="ws-loop-label" id="ws-loop-label" aria-hidden="true">WebSocket stays open</p>
+
+        <div class="ws-track">
+          <div class="flow-node" data-node="browser">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 11h26" stroke="currentColor" stroke-width="2"/><path d="M11 28h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 24v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <span class="flow-node-label">Browser</span>
+          </div>
+
+          <div class="ws-arrow" id="ws-arrow-connect">
+            <span class="ws-line ws-line-l" id="ws-line-l"></span>
+            <svg class="ws-crack" id="ws-crack" viewBox="0 0 16 20" aria-hidden="true"><path d="M6 2L11 9L4 12L10 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="ws-line ws-line-r" id="ws-line-r"></span>
+            <span class="ws-dot" id="ws-dot-connect"></span>
+            <button type="button" class="ws-step" data-step="1" aria-label="Step 1: Connect">1</button>
+          </div>
+
+          <div class="ws-loop-group" id="ws-loop-group">
+            <div class="ws-arrow-stub" id="ws-arrow-stub-apigw">
+              <span class="ws-line hide-after"></span>
+              <span class="ws-dot" id="ws-dot-vote-stub-a"></span>
+            </div>
+
+            <div class="flow-node" data-node="apigateway">
+              <span class="flow-node-icon" aria-hidden="true">
+                <img src="/assets/aws-icons/apigateway.png" alt="" />
+              </span>
+              <span class="flow-node-label">API Gateway</span>
+            </div>
+
+            <div class="ws-arrow" id="ws-arrow-vote">
+              <span class="ws-line"></span>
+              <span class="ws-dot" id="ws-dot-vote"></span>
+              <button type="button" class="ws-step ws-step-top" data-step="2" aria-label="Step 2: Vote sent">2</button>
+              <button type="button" class="ws-step ws-step-bottom" data-step="5" aria-label="Step 5: Broadcast">5</button>
+            </div>
+
+            <div class="flow-node" data-node="lambda">
+              <span class="flow-node-icon" aria-hidden="true">
+                <img src="/assets/aws-icons/lambda.png" alt="" />
+              </span>
+              <span class="flow-node-label">Lambda</span>
+            </div>
+
+            <div class="ws-arrow-stub" id="ws-arrow-stub-lambda">
+              <span class="ws-line hide-before"></span>
+              <span class="ws-dot" id="ws-dot-vote-stub-b"></span>
+            </div>
+
+            <div class="ws-arrow" id="ws-arrow-tally">
+              <span class="ws-line"></span>
+              <span class="ws-dot" id="ws-dot-tally"></span>
+              <button type="button" class="ws-step ws-step-top" data-step="3" aria-label="Step 3: Tally updates">3</button>
+              <button type="button" class="ws-step ws-step-bottom" data-step="4" aria-label="Step 4: Tallies read back">4</button>
+            </div>
+
+            <div class="flow-node" data-node="dynamodb">
+              <span class="flow-node-icon" aria-hidden="true">
+                <img src="/assets/aws-icons/dynamodb.png" alt="" />
+              </span>
+              <span class="flow-node-label">DynamoDB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ol class="flow-steps" id="flow-steps">
+        <li class="flow-step" data-step="1" tabindex="0">
+          <span class="flow-step-num">1</span>
+          <div class="flow-step-body">
+            <h3>Connect</h3>
+            <p>Your browser opens a WebSocket connection to API Gateway when this page loads — this happens once. It stays open, ready for anything that happens next, until you leave.</p>
+          </div>
+        </li>
+        <li class="flow-step" data-step="2" tabindex="0">
+          <span class="flow-step-num">2</span>
+          <div class="flow-step-body">
+            <h3>Vote sent</h3>
+            <p>Tapping an option sends a small message over that already-open connection to a Lambda function — no new request, no reconnecting, no page reload.</p>
+          </div>
+        </li>
+        <li class="flow-step" data-step="3" tabindex="0">
+          <span class="flow-step-num">3</span>
+          <div class="flow-step-body">
+            <h3>Tally updates</h3>
+            <p>Lambda records your choice and updates the shared vote counts in DynamoDB — changing your vote moves the count instead of adding a duplicate.</p>
+          </div>
+        </li>
+        <li class="flow-step" data-step="4" tabindex="0">
+          <span class="flow-step-num">4</span>
+          <div class="flow-step-body">
+            <h3>Tallies read back</h3>
+            <p>That same Lambda function reads the fresh totals for every option back out of DynamoDB, ready to send.</p>
+          </div>
+        </li>
+        <li class="flow-step" data-step="5" tabindex="0">
+          <span class="flow-step-num">5</span>
+          <div class="flow-step-body">
+            <h3>Broadcast</h3>
+            <p>Lambda pushes the updated results back out through API Gateway to every open connection at once — including yours, without you doing anything.</p>
+          </div>
+        </li>
+      </ol>
+      <p class="muted small-note ws-close-note">
+        Steps 2 through 5 can repeat any number of times — that's what happens
+        every time anyone votes. The connection itself only closes when you
+        actually leave the page, at which point it disconnects cleanly rather
+        than staying open in the background.
+      </p>
+    </section>
+
+    <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
+      <div data-reveal>
+        <p class="eyebrow">Use cases</p>
+        <h2 id="use-cases-heading">Where this pattern fits</h2>
+        <p class="muted section-intro">
+          This real-time push pattern isn't specific to a movie poll — the
+          same WebSocket API + Lambda + DynamoDB combination covers anything
+          that needs to update instantly across multiple viewers at once.
+        </p>
+      </div>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 4h16v12H9l-4 4V4z" stroke-linejoin="round" />
+              <line x1="8" y1="9" x2="16" y2="9" />
+              <line x1="8" y1="12.5" x2="13" y2="12.5" />
+            </svg>
+          </span>
+          <h3>Live audience Q&amp;A and polling</h3>
+          <p class="muted">
+            Conference talks, webinars, or classrooms where the audience
+            votes or asks questions and everyone sees results shift live,
+            without refreshing anything.
+          </p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="3" y="3" width="7" height="9" rx="1" />
+              <rect x="14" y="3" width="7" height="5" rx="1" />
+              <rect x="14" y="12" width="7" height="9" rx="1" />
+              <rect x="3" y="16" width="7" height="5" rx="1" />
+            </svg>
+          </span>
+          <h3>Real-time dashboards</h3>
+          <p class="muted">
+            Order status boards, live metrics, or ticket queues that need
+            to reflect changes the instant they happen instead of on a
+            fixed refresh interval.
+          </p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="8" cy="9" r="3" />
+              <circle cx="17" cy="9" r="3" />
+              <path d="M3 20c0-3 2.5-5 5-5s5 2 5 5" />
+              <path d="M12 20c0-3 2.5-5 5-5s4 2 4 5" />
+            </svg>
+          </span>
+          <h3>Collaborative &amp; multiplayer features</h3>
+          <p class="muted">
+            Shared cursors, "who's online" presence indicators, or
+            lightweight multiplayer state — anywhere multiple people need
+            to see the same live picture at once.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
+      <div data-reveal>
+        <p class="eyebrow">Pricing</p>
+        <h2 id="pricing-heading">What this actually costs</h2>
+        <p class="muted section-intro">
+          Every piece of this architecture is pay-per-use, but WebSocket
+          connections add a cost dimension a plain HTTP API doesn't have:
+          you pay for connection time, not just requests. These are
+          estimates based on public AWS list pricing, not a guarantee.
+        </p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-tier">Low volume</p>
+          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Casual portfolio traffic — a handful of visitors keeping a tab
+            open here and there. Comfortably inside free-tier-level cost
+            for Lambda and DynamoDB, with negligible WebSocket charges.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">Moderate volume</p>
+          <p class="pricing-amount">~$1–3<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            A steady trickle of visitors, or a short burst — a few hundred
+            connection-minutes and a few thousand messages a month.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">High volume</p>
+          <p class="pricing-amount">~$10–25<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            A viral moment with thousands of concurrent connections —
+            connection-minutes and broadcast costs both start to add up.
+          </p>
+        </div>
+      </div>
+      <div class="pricing-breakdown">
+        <h3>What drives the cost</h3>
+        <ul>
+          <li><strong>API Gateway (WebSocket)</strong> — billed per million messages sent, plus per million connection-minutes for every second a socket stays open, even idle.</li>
+          <li><strong>Lambda</strong> — three functions (connect, disconnect, vote), each billed per request and per millisecond of compute time.</li>
+          <li><strong>DynamoDB</strong> — on-demand pricing per read/write; the vote broadcast currently scans the full connections table on every vote, which is fine at demo scale but is the first thing that'd need to change at real scale.</li>
+          <li><strong>S3 + CloudFront</strong> — a few cents a month at most, same as the rest of this static site.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
+      <div data-reveal>
+        <p class="eyebrow">Design decisions</p>
+        <h2 id="decisions-heading">Why I built it this way</h2>
+        <p class="muted section-intro">
+          Every architecture involves tradeoffs. Here's the reasoning
+          behind some of the choices in this project — including a couple
+          I only landed on after real deployment testing proved the
+          original plan wrong.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>A WebSocket API instead of polling</h3>
+          <p class="muted">
+            Having the browser poll for updates every few seconds would
+            have been simpler to build. I chose the WebSocket API
+            anyway, because the payoff is worth the extra complexity:
+            two tabs on this page update each other instantly, with no
+            visible lag — a much stronger demonstration of real-time
+            push architecture than a polling loop would be.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Three DynamoDB tables instead of one</h3>
+          <p class="muted">
+            Connections, votes, and tallies each answer a different
+            question, so each gets its own table with its own natural
+            key. DynamoDB supports "single-table design" for cases
+            where minimizing table count matters at scale, but for a
+            project this size, three small, clearly-named tables are
+            easier to read and reason about than one table doing three
+            jobs at once.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Separate Lambda functions per event</h3>
+          <p class="muted">
+            <code>$connect</code>, <code>$disconnect</code>, and
+            <code>vote</code>/<code>sync</code> each get their own
+            function instead of one large Lambda branching on event
+            type. Smaller functions are easier to read in isolation,
+            and CloudWatch logs stay naturally separated by concern
+            instead of interleaving unrelated events.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Sync-after-connect, not push-from-connect</h3>
+          <p class="muted">
+            The first version tried to push initial results to a
+            client from inside its own <code>$connect</code>
+            invocation — and it turned out that's an unreliable
+            pattern in API Gateway's WebSocket API; a connection isn't
+            always immediately postable during its own connect event.
+            Real deployment testing caught this, not local reasoning
+            alone. The fix: the client asks for results in a separate
+            message right after opening, which sidesteps the race
+            entirely.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Sequential writes instead of a transaction</h3>
+          <p class="muted">
+            Recording a vote and updating both the new and old
+            option's tallies happens as two or three separate DynamoDB
+            calls, not one atomic transaction. A production vote
+            system handling real stakes should use a transaction so a
+            mid-request failure can't leave the tally out of sync. For
+            a demo poll, the added complexity wasn't worth it — and
+            that tradeoff is documented directly in the code, not left
+            as a silent shortcut.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Connect always emails; disconnect carries the stats</h3>
+          <p class="muted">
+            Early on, every single vote sent me an email — useful
+            while debugging, but far too noisy for something people
+            would actually vote on. Connect events stay lightweight
+            (just confirming someone showed up), and the full results
+            snapshot moved to disconnect, so I get one meaningful
+            summary per visit instead of one email per click.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>A movie poll instead of a dry sample dataset</h3>
+          <p class="muted">
+            The architecture didn't need a fun topic to work, but a
+            portfolio piece does more work when people actually want
+            to interact with it. A quick, low-stakes, slightly funny
+            question gets more real votes than a generic "Option A vs
+            Option B" would — and that matters when the whole point is
+            demonstrating the system live.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>A config.js scoped to this project alone</h3>
+          <p class="muted">
+            Rather than one shared config file for the whole site,
+            this project keeps its own, holding only what it needs. As
+            more projects get added here, a single growing config file
+            would start implying a coupling between unrelated backends
+            that doesn't actually exist.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
+      <nav aria-label="Footer navigation">
+        <a href="/">Home</a>
+        <a href="/#projects">Projects</a>
+        <a href="/#about">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <details class="mobile-menu" id="mobile-menu">
+    <summary class="mobile-menu-button" aria-label="Open menu">
+      <svg class="mobile-menu-icon-open" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+      <svg class="mobile-menu-icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+    </summary>
+    <nav class="mobile-menu-panel" aria-label="Mobile navigation">
+      <a href="/">Home</a>
+      <span class="mobile-menu-group-label">Projects</span>
+      <a class="mobile-menu-sublink" href="/project/contactform/project1.html">Contact Form</a>
+      <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
+      <a class="mobile-menu-sublink" href="/#projects">View all projects</a>
+      <a href="/#about">About</a>
+    </nav>
+  </details>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // "How it works" diagram: a phase-based animation showing the
+    // WebSocket connection opening once (step 1), the vote round-trip
+    // repeating (steps 2-5, forward then reverse over the same arrows),
+    // and the connection closing (unnumbered — it's not a step you'd
+    // click, it's what happens when you leave). Click any numbered step
+    // to jump straight to it; autoplay resumes after a few seconds idle.
+    (function () {
+      var diagram = document.getElementById('flow-diagram');
+      var stepsList = document.getElementById('flow-steps');
+      var loopGroup = document.getElementById('ws-loop-group');
+      var loopSvg = document.getElementById('ws-loop-svg');
+      var loopPath = document.getElementById('ws-loop-path');
+      var loopClipRect = document.getElementById('ws-loop-clip-rect');
+      var loopLabel = document.getElementById('ws-loop-label');
+      var lineL = document.getElementById('ws-line-l');
+      var lineR = document.getElementById('ws-line-r');
+      var crack = document.getElementById('ws-crack');
+      var dotConnect = document.getElementById('ws-dot-connect');
+      var dotVote = document.getElementById('ws-dot-vote');
+      var dotVoteStubA = document.getElementById('ws-dot-vote-stub-a');
+      var dotVoteStubB = document.getElementById('ws-dot-vote-stub-b');
+      var dotTally = document.getElementById('ws-dot-tally');
+      var apigwNode = diagram.querySelector('[data-node="apigateway"]');
+      var dynamodbNode = diagram.querySelector('[data-node="dynamodb"]');
+      if (!diagram || !stepsList || !loopGroup) return;
+
+      var DOT_TRAVEL_MS = 1600; // matches the wsDotFwd/wsDotRev animation duration in styles.css
+      var IDLE_RESUME_MS = 6000;
+      var stepButtons = Array.prototype.slice.call(diagram.querySelectorAll('.ws-step'));
+      var nodes = Array.prototype.slice.call(diagram.querySelectorAll('.flow-node'));
+      var stepItems = Array.prototype.slice.call(stepsList.querySelectorAll('.flow-step'));
+      var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Phases, in order. Each names which step number is "current" (for
+      // highlighting the written list + step buttons), which node should
+      // light up once the dot arrives, which dot should travel and in
+      // which direction, and whether the loop/crack visuals should
+      // trigger on this phase. API Gateway is handled separately — it
+      // stays lit for the entire time the connection is open, not just
+      // while a dot happens to be passing through it.
+      var phases = [
+        { step: 1, node: 'apigateway', dot: dotConnect, dir: 'fwd', hold: 1900 },
+        { openLoop: true, hold: 900 },
+        { step: 2, node: 'lambda', dot: dotVote, dir: 'fwd', hold: 1900 },
+        { step: 3, node: 'dynamodb', dot: dotTally, dir: 'fwd', hold: 1900 },
+        { step: 4, node: 'lambda', dot: dotTally, dir: 'rev', hold: 1900 },
+        { step: 5, node: null, dot: dotVote, dir: 'rev', hold: 1900 },
+        { closeLoop: true, node: 'browser', dot: dotConnect, dir: 'rev', hold: 1900 },
+        { reset: true, hold: 1000 }
+      ];
+      var i = 0;
+      var timer = null;
+      var resumeTimer = null;
+
+      // Keep this in sync with the scale() value in .flow-diagram.is-stuck
+      // (styles.css). getBoundingClientRect() returns already-scaled
+      // visual pixels once that transform is applied — using those
+      // directly as raw SVG attribute values would scale everything a
+      // second time (since the SVG itself is also inside the scaled
+      // container), so we divide it back out here before assigning them.
+      var STUCK_SCALE = 0.78;
+
+      function positionLoop() {
+        var scale = diagram.classList.contains('is-stuck') ? STUCK_SCALE : 1;
+        var diagramRect = diagram.getBoundingClientRect();
+        loopSvg.setAttribute('width', diagramRect.width / scale);
+        loopSvg.setAttribute('height', diagramRect.height / scale);
+        if (!apigwNode || !dynamodbNode) return null;
+        var apigwRect = apigwNode.getBoundingClientRect();
+        var dynamoRect = dynamodbNode.getBoundingClientRect();
+        var apigwCenterX = (apigwRect.left + apigwRect.width / 2 - diagramRect.left) / scale;
+        var apigwTop = (apigwRect.top - diagramRect.top) / scale;
+        var apigwBottom = (apigwRect.bottom - diagramRect.top) / scale;
+        var topY = apigwTop - 26;
+        var bottomY = apigwBottom + 26;
+        var rightX = (dynamoRect.right - diagramRect.left) / scale + 26;
+        var d = 'M' + apigwCenterX + ' ' + apigwTop +
+          ' L' + apigwCenterX + ' ' + topY +
+          ' L' + rightX + ' ' + topY +
+          ' L' + rightX + ' ' + bottomY +
+          ' L' + apigwCenterX + ' ' + bottomY +
+          ' L' + apigwCenterX + ' ' + apigwBottom;
+        loopPath.setAttribute('d', d);
+        loopLabel.style.left = ((apigwCenterX + rightX) / 2) + 'px';
+        loopLabel.style.top = topY + 'px';
+        return loopPath;
+      }
+
+      // Sets the active (lit) node among lambda/dynamodb/browser —
+      // deliberately leaves API Gateway alone, since it's managed
+      // separately by openLoop()/closeLoop() instead.
+      function setActiveNode(name) {
+        nodes.forEach(function (el) {
+          if (el === apigwNode) return;
+          if (name === null) {
+            el.classList.remove('is-active');
+          } else {
+            el.classList.toggle('is-active', el.getAttribute('data-node') === name);
+          }
+        });
+      }
+
+      function linesForDot(dot) {
+        var arrow = dot.closest('.ws-arrow');
+        if (!arrow) return [];
+        return Array.prototype.slice.call(arrow.querySelectorAll('.ws-line, .ws-line-l, .ws-line-r'));
+      }
+
+      function highlightArrow(dot, dir) {
+        linesForDot(dot).forEach(function (line) {
+          line.classList.remove('highlight-fwd', 'highlight-rev');
+          line.classList.add(dir === 'rev' ? 'highlight-rev' : 'highlight-fwd');
+        });
+      }
+
+      function unhighlightArrow(dot) {
+        linesForDot(dot).forEach(function (line) {
+          line.classList.remove('highlight-fwd', 'highlight-rev');
+        });
+      }
+
+      // Plays the dot's travel animation and calls onArrive once it
+      // actually finishes — using the real animationend event rather
+      // than a guessed setTimeout keeps node highlighting genuinely in
+      // sync with where the dot visually is, instead of drifting early
+      // or late.
+      function runDot(dot, dir, onArrive) {
+        if (!dot) {
+          if (onArrive) onArrive();
+          return;
+        }
+        dot.classList.remove('dot-fwd', 'dot-rev');
+        void dot.offsetWidth;
+        var handled = false;
+        var handler = function () {
+          if (handled) return;
+          handled = true;
+          dot.removeEventListener('animationend', handler);
+          if (onArrive) onArrive();
+        };
+        dot.addEventListener('animationend', handler);
+        dot.classList.add(dir === 'rev' ? 'dot-rev' : 'dot-fwd');
+        if (prefersReducedMotion) {
+          // No animation will actually run, so animationend won't fire —
+          // call onArrive directly instead.
+          setTimeout(handler, 50);
+        }
+      }
+
+      // Reveals the path by growing a clip-mask outward from API
+      // Gateway's position, rather than animating the path's own
+      // stroke-dasharray/dashoffset — that technique requires a single
+      // giant dash spanning the "drawn so far" length, which made the
+      // line render solid during the reveal instead of staying dashed.
+      // The mask doesn't need to precisely match the path's bounding
+      // box either (unlike the earlier rect-edge approach) — it just
+      // needs to be generous enough to fully cover the path by the end,
+      // so there's no exact-shape math to get wrong.
+      function animateLoopReveal(onDone) {
+        var path = positionLoop();
+        if (!path) {
+          if (onDone) onDone();
+          return;
+        }
+        var scale = diagram.classList.contains('is-stuck') ? STUCK_SCALE : 1;
+        var diagramRect = diagram.getBoundingClientRect();
+        var fullW = diagramRect.width / scale;
+        var fullH = diagramRect.height / scale;
+        var apigwRect = apigwNode.getBoundingClientRect();
+        var origin = (apigwRect.left + apigwRect.width / 2 - diagramRect.left) / scale;
+        loopClipRect.setAttribute('y', -fullH);
+        loopClipRect.setAttribute('height', fullH * 3);
+        var duration = prefersReducedMotion ? 0 : 900;
+        var start = null;
+        function frame(ts) {
+          if (start === null) start = ts;
+          var t = duration ? Math.min((ts - start) / duration, 1) : 1;
+          var eased = 1 - Math.pow(1 - t, 3);
+          var half = fullW * eased;
+          loopClipRect.setAttribute('x', origin - half);
+          loopClipRect.setAttribute('width', half * 2);
+          if (t < 1) {
+            window.requestAnimationFrame(frame);
+          } else {
+            loopClipRect.setAttribute('x', -fullW);
+            loopClipRect.setAttribute('width', fullW * 3);
+            if (onDone) onDone();
+          }
+        }
+        loopClipRect.setAttribute('x', origin);
+        loopClipRect.setAttribute('width', 0);
+        window.requestAnimationFrame(frame);
+      }
+
+      function showClosedState() {
+        loopPath.className.baseVal = 'closed';
+        loopLabel.textContent = 'WebSocket Closed';
+        loopLabel.classList.add('on', 'closed');
+        animateLoopReveal();
+      }
+
+      function openLoop() {
+        crack.classList.remove('show');
+        loopPath.className.baseVal = 'active';
+        loopLabel.textContent = 'WebSocket Stays Open';
+        loopLabel.classList.remove('closed');
+        loopLabel.classList.add('on');
+        if (apigwNode) apigwNode.classList.add('is-active');
+        animateLoopReveal();
+      }
+
+      function closeLoop() {
+        loopPath.className.baseVal = 'closed';
+        loopLabel.textContent = 'WebSocket Closed';
+        loopLabel.classList.add('closed');
+        if (apigwNode) apigwNode.classList.remove('is-active');
+        crack.classList.add('show');
+        setTimeout(function () {
+          lineL.classList.add('cracked');
+          lineR.classList.add('cracked');
+        }, 150);
+      }
+
+      function resetConnection() {
+        lineL.classList.remove('cracked');
+        lineR.classList.remove('cracked');
+        setActiveNode('browser');
+      }
+
+      function clearStepHighlights() {
+        stepButtons.forEach(function (el) { el.classList.remove('is-active'); });
+        stepItems.forEach(function (el) { el.classList.remove('is-active'); });
+      }
+
+      function highlightStep(n) {
+        clearStepHighlights();
+        stepButtons.forEach(function (el) {
+          if (Number(el.getAttribute('data-step')) === n) el.classList.add('is-active');
+        });
+        stepItems.forEach(function (el) {
+          if (Number(el.getAttribute('data-step')) === n) el.classList.add('is-active');
+        });
+      }
+
+      function animateStubDot(dot, dir, onDone) {
+        if (!dot) {
+          if (onDone) onDone();
+          return;
+        }
+        var arrow = dot.closest('.ws-arrow-stub');
+        var line = arrow ? arrow.querySelector('.ws-line') : null;
+        if (line) {
+          line.classList.remove('highlight-fwd', 'highlight-rev');
+          line.classList.add(dir === 'rev' ? 'highlight-rev' : 'highlight-fwd');
+        }
+        runDot(dot, dir, function () {
+          if (line) line.classList.remove('highlight-fwd', 'highlight-rev');
+          if (onDone) onDone();
+        });
+      }
+
+      // Runs one dot at a time, never both together. Forward (toward
+      // DynamoDB) starts at the API Gateway-side stub and ends at the
+      // lambda-side stub, matching the actual direction of travel;
+      // reverse runs the same two legs in the opposite order.
+      function runStubDots(dir) {
+        if (dir === 'rev') {
+          animateStubDot(dotVoteStubB, dir, function () {
+            animateStubDot(dotVoteStubA, dir, function () {});
+          });
+        } else {
+          animateStubDot(dotVoteStubA, dir, function () {
+            animateStubDot(dotVoteStubB, dir, function () {});
+          });
+        }
+      }
+
+      function runPhase(index) {
+        var p = phases[index];
+        if (p.openLoop) openLoop();
+        if (p.reset) resetConnection();
+        if (p.step) {
+          highlightStep(p.step);
+        } else if (!p.reset) {
+          clearStepHighlights();
+        }
+        if (p.dot) {
+          highlightArrow(p.dot, p.dir);
+          if (p.dot === dotVote) runStubDots(p.dir);
+          if (p.dot === dotConnect && p.dir === 'fwd' && crack.classList.contains('show')) {
+            setTimeout(function () {
+              crack.classList.remove('show');
+            }, prefersReducedMotion ? 0 : DOT_TRAVEL_MS / 2);
+          }
+          runDot(p.dot, p.dir, function () {
+            unhighlightArrow(p.dot);
+            if (p.closeLoop) closeLoop();
+            if (p.node !== undefined && !p.openLoop && !p.closeLoop) {
+              setActiveNode(p.node);
+            }
+          });
+        } else if (p.closeLoop) {
+          closeLoop();
+        } else if (p.node !== undefined && !p.openLoop && !p.closeLoop) {
+          setActiveNode(p.node);
+        }
+      }
+
+      function stopAutoplay() {
+        if (timer) { clearTimeout(timer); timer = null; }
+      }
+
+      function loopPhases() {
+        stopAutoplay();
+        function tick() {
+          runPhase(i);
+          var hold = prefersReducedMotion ? 1200 : phases[i].hold;
+          i = (i + 1) % phases.length;
+          timer = setTimeout(tick, hold);
+        }
+        tick();
+      }
+
+      function findPhaseForStep(step) {
+        for (var j = 0; j < phases.length; j++) {
+          if (phases[j].step === step) return j;
+        }
+        return 0;
+      }
+
+      function goToStepManually(step) {
+        stopAutoplay();
+        if (resumeTimer) clearTimeout(resumeTimer);
+        // A manual jump can't easily fast-forward the loop-open/close
+        // visuals from an arbitrary state, so make sure the connection
+        // looks "open" for any of steps 2-5, since those only make sense
+        // while it is.
+        if (step >= 2 && step <= 5 && !loopLabel.classList.contains('on')) {
+          openLoop();
+        }
+        runPhase(findPhaseForStep(step));
+        resumeTimer = setTimeout(function () {
+          i = (findPhaseForStep(step) + 1) % phases.length;
+          loopPhases();
+        }, IDLE_RESUME_MS);
+      }
+
+      stepButtons.forEach(function (el) {
+        el.addEventListener('click', function () {
+          goToStepManually(Number(el.getAttribute('data-step')));
+        });
+      });
+
+      stepItems.forEach(function (el) {
+        el.addEventListener('click', function () {
+          goToStepManually(Number(el.getAttribute('data-step')));
+        });
+        el.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            goToStepManually(Number(el.getAttribute('data-step')));
+          }
+        });
+      });
+
+      var resizeRaf = null;
+      window.addEventListener('resize', function () {
+        if (resizeRaf) return;
+        resizeRaf = window.requestAnimationFrame(function () {
+          resizeRaf = null;
+          if (loopLabel.classList.contains('on')) {
+            positionLoop();
+            var diagramRect = diagram.getBoundingClientRect();
+            var scale = diagram.classList.contains('is-stuck') ? STUCK_SCALE : 1;
+            var fullW = diagramRect.width / scale;
+            var fullH = diagramRect.height / scale;
+            loopClipRect.setAttribute('x', -fullW);
+            loopClipRect.setAttribute('width', fullW * 3);
+            loopClipRect.setAttribute('y', -fullH);
+            loopClipRect.setAttribute('height', fullH * 3);
+          }
+        });
+      }, { passive: true });
+
+      // Show the "closed" state right away, before the first connect
+      // animation ever plays, so the diagram doesn't start from a blank
+      // slate.
+      showClosedState();
+
+      if ('IntersectionObserver' in window) {
+        var started = false;
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting && !started) {
+              started = true;
+              loopPhases();
+              io.disconnect();
+            }
+          });
+        }, { threshold: 0.3 });
+        io.observe(diagram);
+      } else {
+        loopPhases();
+      }
+
+      // Shrink the diagram slightly once its own sticky positioning has
+      // actually pinned it to the top of the viewport. A 1px sentinel
+      // sits immediately before the diagram in the HTML — once it
+      // scrolls out of view above the viewport, the diagram right after
+      // it must now be stuck.
+      var sentinel = document.querySelector('.flow-diagram-sentinel');
+      if (sentinel && 'IntersectionObserver' in window) {
+        var stickyIo = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            diagram.classList.toggle('is-stuck', !entry.isIntersecting);
+          });
+        }, { threshold: 0 });
+        stickyIo.observe(sentinel);
+      }
+    })();
+
+    // Scroll-triggered reveal, matching the rest of the site.
+    var revealEls = document.querySelectorAll('[data-reveal]');
+    if ('IntersectionObserver' in window) {
+      var revealIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            revealIo.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+      revealEls.forEach(function (el) { revealIo.observe(el); });
+    } else {
+      revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+    }
+
+    // Close the "Projects" dropdown when clicking anywhere outside of it.
+    document.querySelectorAll('.nav-dropdown').forEach(function (details) {
+      document.addEventListener('click', function (event) {
+        if (details.open && !details.contains(event.target)) {
+          details.open = false;
+        }
+      });
+    });
+
+    // Shrink the sticky header once the page has scrolled past the top.
+    var siteHeader = document.querySelector('.site-header');
+    if (siteHeader) {
+      var wasScrolled = false;
+      var headerRafId = null;
+      var updateHeaderState = function () {
+        headerRafId = null;
+        var threshold = wasScrolled ? 4 : 48;
+        var scrolled = window.scrollY > threshold;
+        if (scrolled !== wasScrolled) {
+          siteHeader.classList.toggle('is-scrolled', scrolled);
+          wasScrolled = scrolled;
+        }
+      };
+      var scheduleHeaderUpdate = function () {
+        if (headerRafId === null) {
+          headerRafId = window.requestAnimationFrame(updateHeaderState);
+        }
+      };
+      updateHeaderState();
+      window.addEventListener('scroll', scheduleHeaderUpdate, { passive: true });
+    }
+
+    // Back-to-top button: fades in once scrolled down a bit, smooth-scrolls
+    // to the top on click.
+    var backToTop = document.getElementById('back-to-top');
+    if (backToTop) {
+      var toggleBackToTop = function () {
+        backToTop.classList.toggle('is-visible', window.scrollY > 500);
+      };
+      toggleBackToTop();
+      window.addEventListener('scroll', toggleBackToTop, { passive: true });
+
+      backToTop.addEventListener('click', function () {
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+      });
+    }
+
+    // Expanding mobile menu button: fades in once scrolled down a bit,
+    // closes itself if you scroll back up while it's open.
+    var mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenu) {
+      var mobileMenuPanel = mobileMenu.querySelector('.mobile-menu-panel');
+      var toggleMobileMenuVisibility = function () {
+        var visible = window.scrollY > 220;
+        mobileMenu.classList.toggle('is-visible', visible);
+        if (!visible && mobileMenu.open) {
+          mobileMenu.open = false;
+        }
+      };
+      toggleMobileMenuVisibility();
+      window.addEventListener('scroll', toggleMobileMenuVisibility, { passive: true });
+
+      if (mobileMenuPanel) {
+        mobileMenu.addEventListener('toggle', function () {
+          if (mobileMenu.open) {
+            mobileMenuPanel.style.animation = 'none';
+            void mobileMenuPanel.offsetWidth;
+            mobileMenuPanel.style.animation = 'mobileMenuIn 0.18s ease forwards';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

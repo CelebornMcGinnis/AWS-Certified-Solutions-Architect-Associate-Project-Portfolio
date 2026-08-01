@@ -1,0 +1,15 @@
+# Contact Form Lambda function (project/contactform/lambda_function.py)
+#
+# Intentionally empty. Every import in lambda_function.py is either
+# Python standard library (html, json, os, re, datetime) or
+# boto3 / botocore.exceptions — and both boto3 and botocore ship
+# built into every AWS Lambda Python runtime already, so there's
+# nothing here that SAM needs to install into the deployment package.
+#
+# This previously pinned boto3>=1.34,<2.0. Switched to match the
+# polling project's approach for consistency across the site: a pinned
+# version gets bundled into the deployment zip and shadows the
+# runtime's own boto3, which is usually newer and gets security
+# patches automatically without you needing to redeploy. Only add a
+# pin here if a specific function starts needing a boto3 feature
+# newer than what the current runtime (python3.14) ships.

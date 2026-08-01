@@ -1,0 +1,259 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Live Poll (Movie Poll) — WebSocket API + Lambda + DynamoDB + SES.
+  Reconstructed from the deployed Lambda source (on_connect.py,
+  on_disconnect.py, vote_handler.py, email_utils.py) — table key
+  schemas and IAM actions below are derived directly from the
+  Key={...} calls and boto3 client calls in that code.
+
+Parameters:
+  SesFromAddress:
+    Type: String
+    Description: Verified SES sender address (email_utils.SES_FROM_ADDRESS).
+  SesToAddress:
+    Type: String
+    Description: Address that receives poll notification emails (email_utils.SES_TO_ADDRESS).
+  SiteBaseUrl:
+    Type: String
+    Default: https://mcginnisarchitecture.com
+    Description: Used by email_utils.site_url() to build links/logo URLs in the emails.
+  StageName:
+    Type: String
+    Default: prod
+    Description: API Gateway WebSocket stage name.
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 10
+    MemorySize: 128
+    Environment:
+      Variables:
+        CONNECTIONS_TABLE: !Ref ConnectionsTable
+        VOTES_TABLE: !Ref VotesTable
+        TALLIES_TABLE: !Ref TalliesTable
+        SES_FROM_ADDRESS: !Ref SesFromAddress
+        SES_TO_ADDRESS: !Ref SesToAddress
+        SITE_BASE_URL: !Ref SiteBaseUrl
+
+Resources:
+
+  # ---------------------------------------------------------------------
+  # WebSocket API — built directly on ApiGatewayV2, since SAM's built-in
+  # shorthand doesn't cover custom WebSocket route actions like "vote"
+  # and "sync".
+  # ---------------------------------------------------------------------
+  WebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: live-poll-websocket
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+
+  WebSocketStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref WebSocketApi
+      StageName: !Ref StageName
+      AutoDeploy: true
+
+  # ---------------------------------------------------------------------
+  # Routes — $connect, $disconnect, vote, sync. "vote" and "sync" both
+  # target the same function: vote_handler.lambda_handler branches on
+  # body.action internally.
+  # ---------------------------------------------------------------------
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $connect
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${ConnectIntegration}"
+
+  ConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PollConnectFunction.Arn}/invocations"
+
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${DisconnectIntegration}"
+
+  DisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PollDisconnectFunction.Arn}/invocations"
+
+  VoteRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: vote
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${VoteIntegration}"
+
+  SyncRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: sync
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${VoteIntegration}"
+
+  VoteIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PollVoteFunction.Arn}/invocations"
+
+  # ---------------------------------------------------------------------
+  # Lambda invoke permissions (API Gateway -> Lambda)
+  # ---------------------------------------------------------------------
+  ConnectPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PollConnectFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*"
+
+  DisconnectPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PollDisconnectFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*"
+
+  VotePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PollVoteFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*"
+
+  # ---------------------------------------------------------------------
+  # Lambda functions
+  # ---------------------------------------------------------------------
+  PollConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: live-poll-on-connect
+      CodeUri: ../backend/
+      Handler: on_connect.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTable
+
+  PollDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: live-poll-on-disconnect
+      CodeUri: ../backend/
+      # Imports email_utils.py — must be deployed alongside it in src/.
+      Handler: on_disconnect.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref TalliesTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                # email_utils.send_notification() calls ses.send_email()
+                # specifically — not send_raw_email — so this is the
+                # only SES action actually needed.
+                - ses:SendEmail
+              Resource: "*"
+
+  PollVoteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: live-poll-vote-handler
+      CodeUri: ../backend/
+      # Handles both the "vote" and "sync" route actions (see
+      # vote_handler.lambda_handler, which branches on body.action).
+      Handler: vote_handler.lambda_handler
+      Environment:
+        Variables:
+          WEBSOCKET_ENDPOINT: !Sub "https://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VotesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TalliesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ConnectionsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                # post_to_connection() in both handle_sync and handle_vote
+                - execute-api:ManageConnections
+              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/${StageName}/POST/@connections/*"
+
+  # ---------------------------------------------------------------------
+  # DynamoDB tables — key schemas match the Key={...} calls in the
+  # uploaded source exactly:
+  #   connections: Key={"connectionId": ...}                (on_connect.py, on_disconnect.py, vote_handler.py)
+  #   votes:       Key={"pollId": ..., "voterId": ...}       (vote_handler.py)
+  #   tallies:     Key={"pollId": ..., "option": ...}        (vote_handler.py)
+  # ---------------------------------------------------------------------
+  ConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: live-poll-connections
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: connectionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: connectionId
+          KeyType: HASH
+
+  VotesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: live-poll-votes
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pollId
+          AttributeType: S
+        - AttributeName: voterId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pollId
+          KeyType: HASH
+        - AttributeName: voterId
+          KeyType: RANGE
+
+  TalliesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: live-poll-tallies
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pollId
+          AttributeType: S
+        - AttributeName: option
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pollId
+          KeyType: HASH
+        - AttributeName: option
+          KeyType: RANGE
+
+Outputs:
+  PollWebSocketUrl:
+    Description: WebSocket URL — paste this into config.js as pollWsUrl.
+    Value: !Sub "wss://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}"

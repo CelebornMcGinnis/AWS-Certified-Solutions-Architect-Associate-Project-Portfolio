@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — McGinnis Architecture</title>
+  <meta name="description" content="Get in touch with McGinnis Architecture about a project." />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand-row">
+        <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
+          <img src="/assets/logo.png" alt="McGinnis Architecture" />
+        </a>
+      </div>
+      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <nav aria-label="Main navigation">
+        <a href="/">Home</a>
+        <details class="nav-dropdown">
+          <summary>Projects</summary>
+          <div class="nav-dropdown-menu">
+            <a href="project1.html">Contact Form</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+          </div>
+        </details>
+        <a href="/#about">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Project</p>
+      <h1>Contact Form</h1>
+      <p>
+        Fill out the form and kick off the request flow end to end —
+        client-side validation, a POST to API Gateway, and a Lambda function
+        doing the work. Submit it and you'll land on a confirmation page;
+        moments later, SES will send a confirmation email to your inbox.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href="#how-it-works">See how it works</a>
+        <a class="button-link" href="#use-cases">Use cases</a>
+        <a class="button-link" href="#pricing">Pricing</a>
+        <a class="button-link" href="#design-decisions">Why I built it this way</a>
+      </div>
+    </section>
+
+    <section class="card" id="contact" aria-labelledby="contact-heading">
+      <div>
+        <p class="eyebrow">Demo</p>
+        <h2 id="contact-heading">Smoke Test</h2>
+        <p class="muted">
+          This form runs entirely in the browser and submits to AWS API Gateway
+          with <code>fetch()</code>. No server code is needed in the static site.
+        </p>
+        <p class="muted small-note">
+          <strong>Privacy notice:</strong> your email address is used only to
+          test and validate this AWS architecture. No addresses are collected,
+          stored, or used for marketing or any other purpose beyond this
+          one-time test.
+        </p>
+      </div>
+
+      <form class="contact-form" id="contact-form">
+        <label>
+          Email
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+
+        <label class="checkbox-row">
+          <input type="checkbox" name="consent" value="yes" required />
+          <span>I verify that I am the registered user of this email address and agree to receive a one-time email as part of this smoke test.</span>
+        </label>
+
+        <!-- Simple honeypot field. Real visitors should never see or fill this. -->
+        <label class="honeypot" aria-hidden="true" tabindex="-1">
+          Website
+          <input type="text" name="website" autocomplete="off" tabindex="-1" />
+        </label>
+
+        <div class="form-status" id="form-status" role="status" aria-live="polite" hidden></div>
+
+        <button type="submit" id="submit-button">Send message</button>
+      </form>
+    </section>
+
+    <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture</p>
+        <h2 id="how-it-works-heading">How it works</h2>
+        <p class="muted section-intro">
+          This form is a real AWS project, not a mockup. Here's what actually
+          happens between loading this page and an email landing in your inbox —
+          click any step to jump to it, or let it play through on its own.
+        </p>
+      </div>
+
+      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
+      <div class="flow-diagram" id="flow-diagram">
+        <div class="flow-track">
+          <div class="flow-node" data-node="users">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="12" cy="10" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M4 26c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="23" cy="12" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M18.5 26c0-3.6 2.5-6.5 6-7.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <span class="flow-node-label">Users</span>
+          </div>
+
+          <div class="flow-connector" data-step="1" aria-hidden="true">
+            <span class="flow-connector-num">1</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="route53" data-step="1" role="button" tabindex="0" aria-label="Step 1: DNS lookup">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/route53.png" alt="" />
+            </span>
+            <span class="flow-node-label">Route 53</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+            <span class="flow-connector-num">2</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="cloudfront" data-step="2" role="button" tabindex="0" aria-label="Step 2: Route 53 resolves the domain">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/cloudfront.png" alt="" />
+            </span>
+            <span class="flow-node-label">CloudFront</span>
+          </div>
+
+          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
+            <span class="flow-connector-num">3</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="s3" data-step="3" role="button" tabindex="0" aria-label="Step 3: CloudFront serves the static assets">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/s3.png" alt="" />
+            </span>
+            <span class="flow-node-label">S3 Bucket</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
+            <span class="flow-connector-num">4</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="apigateway" data-step="4" role="button" tabindex="0" aria-label="Step 4: API Gateway routes the request">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/apigateway.png" alt="" />
+            </span>
+            <span class="flow-node-label">API Gateway</span>
+          </div>
+
+          <div class="flow-connector" data-step="5" aria-hidden="true">
+            <span class="flow-connector-num">5</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="lambda" data-step="5" role="button" tabindex="0" aria-label="Step 5: Lambda validates the submission">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/lambda.png" alt="" />
+            </span>
+            <span class="flow-node-label">Lambda</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="6" aria-hidden="true">
+            <span class="flow-connector-num">6</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="ses" data-step="6" role="button" tabindex="0" aria-label="Step 6: SES sends the emails">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/ses.png" alt="" />
+            </span>
+            <span class="flow-node-label">SES</span>
+          </div>
+        </div>
+      </div>
+
+      <ol class="flow-steps" id="flow-steps">
+        <li class="flow-step" data-step="1" tabindex="0">
+          <span class="flow-step-num">1</span>
+          <div class="flow-step-body">
+            <h3>DNS lookup</h3>
+            <p>A user navigates to the contact form URL, which triggers a DNS lookup.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="2" tabindex="0">
+          <span class="flow-step-num">2</span>
+          <div class="flow-step-body">
+            <h3>Route 53 resolves the domain</h3>
+            <p>Route 53 resolves the domain name, returning the CloudFront distribution via an A record alias.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="3" tabindex="0">
+          <span class="flow-step-num">3</span>
+          <div class="flow-step-body">
+            <h3>CloudFront serves the static assets</h3>
+            <p>S3 returns the static assets (HTML, CSS, JavaScript) to CloudFront, which caches them at the edge and serves them to the browser.</p>
+            <ul>
+              <li>The bucket has all public access blocked — only CloudFront's OAC is permitted to read from it.</li>
+              <li>The browser parses and renders the HTML contact form using the JavaScript and CSS delivered from CloudFront. The JavaScript is responsible for intercepting the form submission and converting it into a JSON payload for the API call.</li>
+              <li>Preflight — before submitting the form, the browser automatically sends an HTTP OPTIONS request to API Gateway to confirm cross-origin requests are permitted. API Gateway responds with the appropriate CORS headers, and the browser proceeds with the actual POST request.</li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="4" tabindex="0">
+          <span class="flow-step-num">4</span>
+          <div class="flow-step-body">
+            <h3>API Gateway routes the request</h3>
+            <p>API Gateway receives the POST request and matches the defined HTTP API route configuration. It then proxies the request to Lambda.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="5" tabindex="0">
+          <span class="flow-step-num">5</span>
+          <div class="flow-step-body">
+            <h3>Lambda validates the submission</h3>
+            <p>Lambda parses the JSON request body and validates that all fields are present, correctly formatted, and within character limits.</p>
+            <ul>
+              <li>Any invalid input returns a 400 response immediately, without engaging SES.</li>
+              <li>Lambda sanitizes inputs by stripping HTML-unsafe characters to prevent injection attacks.</li>
+              <li>AWS verifies that the function's IAM execution role includes the <code>ses:SendEmail</code> permission.</li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="6" tabindex="0">
+          <span class="flow-step-num">6</span>
+          <div class="flow-step-body">
+            <h3>SES sends the emails</h3>
+            <p>SES delivers two emails simultaneously: a notification to the admin, and a confirmation back to the visitor.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
+      <div data-reveal>
+        <p class="eyebrow">Use cases</p>
+        <h2 id="use-cases-heading">Where this pattern fits</h2>
+        <p class="muted section-intro">
+          This serverless contact-form pattern isn't specific to this site —
+          the same S3 + API Gateway + Lambda + SES combination covers a few
+          common needs without standing up a traditional backend.
+        </p>
+      </div>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <circle cx="6.5" cy="6.5" r="0.6" fill="currentColor" stroke="none" />
+              <circle cx="9.5" cy="6.5" r="0.6" fill="currentColor" stroke="none" />
+            </svg>
+          </span>
+          <h3>Static site contact forms</h3>
+          <p class="muted">
+            Any static site — built with a site generator, a plain HTML page,
+            or a single-page app — that needs a working contact form without
+            a backend server to maintain.
+          </p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M3 4h18l-7 9v6l-4 2v-8L3 4z" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <h3>Lightweight lead capture</h3>
+          <p class="muted">
+            Landing pages that need to capture signups or interest before a
+            full CRM integration is worth the setup cost.
+          </p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 5h16a1 1 0 011 1v9a1 1 0 01-1 1H9l-5 4v-4H4a1 1 0 01-1-1V6a1 1 0 011-1z" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <h3>Feedback &amp; support intake</h3>
+          <p class="muted">
+            Early-stage products that need a simple way to collect feedback
+            or support requests before a full helpdesk platform makes sense.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
+      <div data-reveal>
+        <p class="eyebrow">Pricing</p>
+        <h2 id="pricing-heading">What this actually costs</h2>
+        <p class="muted section-intro">
+          Every piece of this architecture is pay-per-use — there's no server
+          sitting idle, so cost scales with traffic. These are estimates based
+          on public AWS list pricing, not a guarantee; actual cost depends on
+          your usage and configuration.
+        </p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-tier">Low volume</p>
+          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Up to around 1,000 submissions a month — comfortably inside the
+            AWS Free Tier for Lambda, API Gateway, and SES.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">Moderate volume</p>
+          <p class="pricing-amount">~$1–3<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Roughly 10,000–50,000 submissions a month — mostly SES sending
+            costs once the free tier is used up.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">High volume</p>
+          <p class="pricing-amount">~$10–20<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            500,000+ submissions a month — Lambda and API Gateway costs
+            start to add up alongside SES.
+          </p>
+        </div>
+      </div>
+      <div class="pricing-breakdown">
+        <h3>What drives the cost</h3>
+        <ul>
+          <li><strong>Lambda</strong> — billed per request and per millisecond of compute time; this function runs in well under 100ms.</li>
+          <li><strong>API Gateway</strong> — billed per million requests, using the cheaper HTTP API type rather than REST API.</li>
+          <li><strong>SES</strong> — billed per 1,000 emails sent; two go out per submission, an admin notice and a visitor confirmation.</li>
+          <li><strong>S3</strong> — a few cents a month at most; static hosting for a small site is close to free.</li>
+        </ul>
+      </div>
+    </section>
+    <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
+      <div data-reveal>
+        <p class="eyebrow">Design decisions</p>
+        <h2 id="decisions-heading">Why I built it this way</h2>
+        <p class="muted section-intro">
+          Every architecture involves tradeoffs. Here's the reasoning behind
+          some of the choices in this project — including a couple I only
+          landed on after real deployment testing proved the original plan
+          wrong.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>A one-field "smoke test" instead of a full contact form</h3>
+          <p class="muted">
+            Early versions collected a name, subject, and message.
+            Stripped down to just an email address on purpose — a demo
+            visitor would just be typing placeholder text into those
+            fields anyway. The point of this project is proving the
+            architecture actually works end to end, not collecting real
+            inquiries.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Two separate emails instead of one</h3>
+          <p class="muted">
+            The first working version sent a single email to me, with
+            the visitor's address set as reply-to. That only proves
+            half the point — a visitor should see their own confirmation
+            too, not just trust that something happened on my end. Now
+            SES sends two: a notification to me, and a separate
+            confirmation back to whoever submitted the form.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Server-side validation, even though the browser already validates</h3>
+          <p class="muted">
+            The form checks required fields and email format before it
+            ever submits. The Lambda checks all of it again anyway,
+            because none of that client-side JavaScript is enforced —
+            anyone can POST directly to the API and skip the browser
+            entirely. The real validation is the one nothing can bypass.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>A honeypot field instead of a CAPTCHA</h3>
+          <p class="muted">
+            One extra input, hidden from real visitors with CSS and
+            never announced to screen readers, sits in the form. Bots
+            that fill in every field trip it; the Lambda silently
+            accepts the submission without sending mail. No third-party
+            CAPTCHA service, no added friction for anyone actually
+            testing the form.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>CORS enforced at two layers, learned the hard way</h3>
+          <p class="muted">
+            Both API Gateway's own CORS configuration and the Lambda's
+            own response headers check the request's origin — belt and
+            suspenders. That redundancy isn't theoretical: getting this
+            project working end to end surfaced a misconfigured
+            function handler, a missing environment variable, and a
+            failing preflight check, each one hidden behind the last.
+            Real deployment testing found all three; none of them would
+            have shown up from reading the code alone.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>HTML-formatted emails instead of plain text</h3>
+          <p class="muted">
+            It would have been faster to leave both emails as plain
+            text. A poorly formatted confirmation email undercuts the
+            whole point of the site, though — if the goal is showing
+            this is real, working infrastructure, the email a visitor
+            actually receives should look like it came from something
+            real.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>A config.js scoped to this project alone</h3>
+          <p class="muted">
+            Rather than one shared config file for the whole site, this
+            project keeps its own, holding only what it needs. As more
+            projects get added here, a single growing config file would
+            start implying a coupling between unrelated backends that
+            doesn't actually exist.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
+      <nav aria-label="Footer navigation">
+        <a href="/">Home</a>
+        <a href="/#projects">Projects</a>
+        <a href="/#about">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <details class="mobile-menu" id="mobile-menu">
+    <summary class="mobile-menu-button" aria-label="Open menu">
+      <svg class="mobile-menu-icon-open" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+      <svg class="mobile-menu-icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+    </summary>
+    <nav class="mobile-menu-panel" aria-label="Mobile navigation">
+      <a href="/">Home</a>
+      <span class="mobile-menu-group-label">Projects</span>
+      <a class="mobile-menu-sublink" href="project1.html">Contact Form</a>
+      <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
+      <a class="mobile-menu-sublink" href="/#projects">View all projects</a>
+      <a href="/#about">About</a>
+    </nav>
+  </details>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // "How it works" diagram: autoplay loop that highlights each step in
+    // turn, with click-to-jump on both the diagram connectors and the
+    // written step list. Clicking anything pauses autoplay so you can
+    // read that step; it resumes on its own after a few seconds of
+    // inactivity (see IDLE_RESUME_MS below).
+    (function () {
+      var diagram = document.getElementById('flow-diagram');
+      var stepsList = document.getElementById('flow-steps');
+      if (!diagram || !stepsList) return;
+
+      var STEP_MS = 2800; // how long each step stays highlighted during autoplay
+      var IDLE_RESUME_MS = 6000; // how long to wait after a manual click before auto-resuming
+      var TOTAL_STEPS = 6;
+      var nodes = Array.prototype.slice.call(diagram.querySelectorAll('.flow-node'));
+      var clickableNodes = nodes.filter(function (el) { return el.hasAttribute('data-step'); });
+      var connectors = Array.prototype.slice.call(diagram.querySelectorAll('.flow-connector'));
+      var stepItems = Array.prototype.slice.call(stepsList.querySelectorAll('.flow-step'));
+      var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var currentStep = 0;
+      var timer = null;
+      var resumeTimer = null;
+
+      function setActiveStep(step) {
+        currentStep = step;
+
+        connectors.forEach(function (el) {
+          var n = Number(el.getAttribute('data-step'));
+          var active = n === step;
+          el.classList.toggle('is-done', n < step);
+          if (active) {
+            // Force the dot-travel animation to (re)start every time this
+            // connector becomes active — even re-clicking the same step
+            // should replay it, not just leave it in whatever state the
+            // last run left behind.
+            el.classList.remove('is-active');
+            void el.offsetWidth; // force a reflow so the next add is treated as a fresh trigger
+            el.classList.add('is-active');
+          } else {
+            el.classList.remove('is-active');
+          }
+        });
+
+        // Node i lights up once the connector feeding it (step i) is
+        // active or already passed; the very first node (Users) is
+        // "done" as soon as anything has started. Icon recoloring for
+        // is-active specifically waits ~1.1s (see styles.css) to match
+        // the traveling dot's arrival instead of lighting up instantly.
+        nodes.forEach(function (el, i) {
+          el.classList.toggle('is-active', i === step);
+          el.classList.toggle('is-done', i < step);
+        });
+
+        stepItems.forEach(function (el) {
+          var n = Number(el.getAttribute('data-step'));
+          el.classList.toggle('is-active', n === step);
+        });
+      }
+
+      function stopAutoplay() {
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      function startAutoplay(fromStep) {
+        stopAutoplay();
+        if (resumeTimer) {
+          clearTimeout(resumeTimer);
+          resumeTimer = null;
+        }
+        if (prefersReducedMotion) {
+          // Reduced motion: show the first step statically, no looping.
+          setActiveStep(1);
+          return;
+        }
+        setActiveStep(fromStep || 1);
+        timer = setInterval(function () {
+          var next = currentStep >= TOTAL_STEPS ? 1 : currentStep + 1;
+          setActiveStep(next);
+        }, STEP_MS);
+      }
+
+      function goToStepManually(step) {
+        stopAutoplay();
+        setActiveStep(step);
+        if (resumeTimer) {
+          clearTimeout(resumeTimer);
+        }
+        if (!prefersReducedMotion) {
+          resumeTimer = setTimeout(function () {
+            startAutoplay(step >= TOTAL_STEPS ? 1 : step + 1);
+          }, IDLE_RESUME_MS);
+        }
+      }
+
+      // The AWS icons themselves are the click targets now — the
+      // connector arrows are purely decorative (see aria-hidden on them
+      // in the HTML).
+      clickableNodes.forEach(function (el) {
+        el.addEventListener('click', function () {
+          goToStepManually(Number(el.getAttribute('data-step')));
+        });
+        el.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            goToStepManually(Number(el.getAttribute('data-step')));
+          }
+        });
+      });
+
+      stepItems.forEach(function (el) {
+        el.addEventListener('click', function () {
+          goToStepManually(Number(el.getAttribute('data-step')));
+        });
+        el.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            goToStepManually(Number(el.getAttribute('data-step')));
+          }
+        });
+      });
+
+      // Start the walkthrough once it actually scrolls into view, rather
+      // than immediately on page load.
+      if ('IntersectionObserver' in window) {
+        var started = false;
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting && !started) {
+              started = true;
+              startAutoplay();
+              io.disconnect();
+            }
+          });
+        }, { threshold: 0.3 });
+        io.observe(diagram);
+      } else {
+        startAutoplay();
+      }
+
+      // Shrink the diagram slightly once its own sticky positioning has
+      // actually pinned it to the top of the viewport. A 1px sentinel
+      // sits immediately before the diagram in the HTML — once it
+      // scrolls out of view above the viewport, the diagram right after
+      // it must now be stuck (position: sticky doesn't have its own
+      // "is currently stuck" event, so this is the standard technique).
+      var sentinel = document.querySelector('.flow-diagram-sentinel');
+      if (sentinel && 'IntersectionObserver' in window) {
+        var stickyIo = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            diagram.classList.toggle('is-stuck', !entry.isIntersecting);
+          });
+        }, { threshold: 0 });
+        stickyIo.observe(sentinel);
+      }
+    })();
+
+    // Scroll-triggered reveal for elements marked data-reveal (currently
+    // just the "How it works" section below the form).
+    var revealEls = document.querySelectorAll('[data-reveal]');
+    if ('IntersectionObserver' in window) {
+      var revealIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            revealIo.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+      revealEls.forEach(function (el) { revealIo.observe(el); });
+    } else {
+      revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+    }
+
+    // Close the "Projects" dropdown when clicking anywhere outside of it.
+    document.querySelectorAll('.nav-dropdown').forEach(function (details) {
+      document.addEventListener('click', function (event) {
+        if (details.open && !details.contains(event.target)) {
+          details.open = false;
+        }
+      });
+    });
+
+    // Shrink the sticky header once the page has scrolled past the top.
+    var siteHeader = document.querySelector('.site-header');
+    if (siteHeader) {
+      var wasScrolled = false;
+      var headerRafId = null;
+      var updateHeaderState = function () {
+        headerRafId = null;
+        // Hysteresis: a different threshold for entering vs. leaving the
+        // "scrolled" state stops it from rapidly flipping back and forth
+        // if scrollY hovers right around a single boundary — which can
+        // happen right after load while images/sections are still
+        // settling into their final layout position.
+        var threshold = wasScrolled ? 4 : 48;
+        var scrolled = window.scrollY > threshold;
+        if (scrolled !== wasScrolled) {
+          siteHeader.classList.toggle('is-scrolled', scrolled);
+          wasScrolled = scrolled;
+        }
+      };
+      var scheduleHeaderUpdate = function () {
+        if (headerRafId === null) {
+          headerRafId = window.requestAnimationFrame(updateHeaderState);
+        }
+      };
+      updateHeaderState();
+      window.addEventListener('scroll', scheduleHeaderUpdate, { passive: true });
+    }
+
+    // Back-to-top button: fades in once scrolled down a bit, smooth-scrolls
+    // to the top on click (respects reduced-motion for the scroll itself).
+    var backToTop = document.getElementById('back-to-top');
+    if (backToTop) {
+      var toggleBackToTop = function () {
+        backToTop.classList.toggle('is-visible', window.scrollY > 500);
+      };
+      toggleBackToTop();
+      window.addEventListener('scroll', toggleBackToTop, { passive: true });
+
+      backToTop.addEventListener('click', function () {
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+      });
+    }
+
+    // Expanding mobile menu button: fades in once scrolled down a bit
+    // (shorter trigger than back-to-top, since nav access is useful
+    // sooner), closes itself if you scroll back up while it's open, and
+    // replays its open animation every time via the same restart trick
+    // the "Projects" dropdown uses (a static CSS animation won't
+    // reliably re-run each time a <details> re-opens).
+    var mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenu) {
+      var mobileMenuPanel = mobileMenu.querySelector('.mobile-menu-panel');
+      var toggleMobileMenuVisibility = function () {
+        var visible = window.scrollY > 220;
+        mobileMenu.classList.toggle('is-visible', visible);
+        if (!visible && mobileMenu.open) {
+          mobileMenu.open = false;
+        }
+      };
+      toggleMobileMenuVisibility();
+      window.addEventListener('scroll', toggleMobileMenuVisibility, { passive: true });
+
+      if (mobileMenuPanel) {
+        mobileMenu.addEventListener('toggle', function () {
+          if (mobileMenu.open) {
+            mobileMenuPanel.style.animation = 'none';
+            void mobileMenuPanel.offsetWidth;
+            mobileMenuPanel.style.animation = 'mobileMenuIn 0.18s ease forwards';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

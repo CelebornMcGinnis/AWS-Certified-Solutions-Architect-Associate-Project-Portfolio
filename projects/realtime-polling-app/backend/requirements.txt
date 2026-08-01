@@ -1,0 +1,15 @@
+# Live Poll (Movie Poll) Lambda functions — on_connect, on_disconnect,
+# vote_handler, email_utils (project/polling/).
+#
+# Intentionally empty. Every import across all four files is either
+# Python standard library (json, logging, os, time, html, datetime) or
+# boto3 / botocore.exceptions — and both boto3 and botocore ship
+# built into every AWS Lambda Python runtime already, so there's
+# nothing here that SAM needs to install into the deployment package.
+#
+# Leaving this empty (rather than pinning boto3==x.y.z) is deliberate:
+# a pinned version gets bundled into the deployment zip and shadows
+# the runtime's own boto3, which is usually newer and gets security
+# patches automatically without you needing to redeploy. Only add a
+# pin here if a specific function starts needing a boto3 feature
+# newer than what the current runtime (python3.12) ships.
