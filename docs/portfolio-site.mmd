@@ -1,0 +1,17 @@
+flowchart LR
+    User[Portfolio Visitor]
+    Route53[Amazon Route 53\nCustom Domain DNS]
+    ACM[AWS Certificate Manager\nTLS Certificate]
+    CloudFront[Amazon CloudFront\nHTTPS + CDN]
+    S3[Amazon S3\nStatic Website Assets]
+    Website[Portfolio Website\nHTML CSS Images]
+    Contact[Contact Form API Project]
+    Poll[Real-Time Polling App Project]
+
+    User --> Route53
+    Route53 --> CloudFront
+    ACM --> CloudFront
+    CloudFront --> S3
+    S3 --> Website
+    Website --> Contact
+    Website --> Poll

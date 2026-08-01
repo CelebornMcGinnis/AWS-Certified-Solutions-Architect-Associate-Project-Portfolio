@@ -1,0 +1,37 @@
+flowchart LR
+    Visitor[Website Visitor]
+    Frontend[Polling Frontend\nfrontend/index.html]
+    Config[Frontend Config\nfrontend/config.js]
+    WS[Amazon API Gateway\nWebSocket API]
+    Connect[AWS Lambda\non_connect.py]
+    Vote[AWS Lambda\nvote_handler.py]
+    Disconnect[AWS Lambda\non_disconnect.py]
+    Connections[(DynamoDB\nConnections Table)]
+    Votes[(DynamoDB\nVotes Table)]
+    Tallies[(DynamoDB\nTallies Table)]
+    SES[Amazon SES]
+    Inbox[Owner Inbox]
+    Logs[Amazon CloudWatch Logs]
+    IAM[AWS IAM\nDynamoDB SES ManageConnections]
+
+    Visitor --> Frontend
+    Frontend --> Config
+    Frontend <-->|WebSocket connection| WS
+    WS -->|$connect| Connect
+    WS -->|vote / sync| Vote
+    WS -->|$disconnect| Disconnect
+    IAM --> Connect
+    IAM --> Vote
+    IAM --> Disconnect
+    Connect --> Connections
+    Vote --> Votes
+    Vote --> Tallies
+    Vote --> Connections
+    Vote -->|post_to_connection| WS
+    Disconnect --> Connections
+    Disconnect --> Tallies
+    Disconnect --> SES
+    SES --> Inbox
+    Connect --> Logs
+    Vote --> Logs
+    Disconnect --> Logs

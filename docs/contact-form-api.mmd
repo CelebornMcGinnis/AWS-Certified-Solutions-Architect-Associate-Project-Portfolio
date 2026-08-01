@@ -1,0 +1,19 @@
+flowchart LR
+    Visitor[Website Visitor]
+    Frontend[Static Contact Form\nfrontend/index.html]
+    Config[Frontend Config\nfrontend/config.js]
+    Api[Amazon API Gateway\nHTTP API POST /contact]
+    Lambda[AWS Lambda\nlambda_function.py]
+    SES[Amazon SES\nVerified Sender]
+    Inbox[Owner Inbox]
+    Logs[Amazon CloudWatch Logs]
+    IAM[AWS IAM\nSES SendEmail Permission]
+
+    Visitor --> Frontend
+    Frontend --> Config
+    Frontend -->|POST request| Api
+    Api --> Lambda
+    IAM --> Lambda
+    Lambda -->|SendEmail| SES
+    SES --> Inbox
+    Lambda --> Logs
