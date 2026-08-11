@@ -1,48 +1,59 @@
 # McGinnis Architecture — AWS Solutions Architect Portfolio
 
-A portfolio of hands-on AWS cloud architecture projects designed, deployed, and documented to demonstrate practical solutions aligned with AWS Certified Solutions Architect – Associate concepts. This repository contains the static portfolio website, serverless application code, AWS SAM infrastructure templates, and architecture documentation for each project.
+A hands-on AWS cloud architecture portfolio containing the static website, serverless application code, AWS SAM infrastructure templates, and technical documentation behind the projects featured on McGinnis Architecture.
 
-## Repository Description
+## Repository description
 
-A full-stack AWS cloud architecture portfolio showcasing deployed serverless solutions built with services such as Amazon API Gateway, AWS Lambda, Amazon SES, Amazon DynamoDB, Amazon S3, Amazon CloudFront, and Amazon Route 53. The repository supports a public portfolio website and individual project implementations that demonstrate architecture design, infrastructure as code, frontend integration, and operational documentation.
+A full-stack AWS cloud solutions portfolio showcasing deployed serverless architectures built with Amazon API Gateway, AWS Lambda, Amazon SNS, Amazon SQS, Amazon SES, Amazon DynamoDB, Amazon S3, Amazon CloudFront, Amazon Route 53, and related services. The projects demonstrate infrastructure as code, event-driven design, real-time communication, frontend-to-cloud integration, reliability controls, and operational documentation aligned with AWS Certified Solutions Architect – Associate concepts.
 
-## Portfolio Contents
+## Portfolio contents
 
 | Area | Description |
 | --- | --- |
-| `website/` | Static portfolio website files and visual assets used for the public McGinnis Architecture site. |
-| `projects/contact-form-api/` | Serverless contact form solution using API Gateway, Lambda, and SES. |
-| `projects/realtime-polling-app/` | Real-time polling application using API Gateway WebSockets, Lambda, DynamoDB, and SES. |
-| `docs/architecture/` | Mermaid architecture diagrams for the overall site and each solution. |
-| `archive/` | Prior development snapshots retained for reference only. |
+| [`website/`](website/) | Public-facing portfolio homepage, custom 404 page, shared stylesheet, branding, AWS service icons, certification badges, and social assets. |
+| [`projects/contact-form-api/`](projects/contact-form-api/) | Serverless contact form using API Gateway, Lambda, and SES. |
+| [`projects/realtime-polling-app/`](projects/realtime-polling-app/) | WebSocket polling application using API Gateway, Lambda, DynamoDB, and SES. |
+| [`projects/sns-notification-fan-out/`](projects/sns-notification-fan-out/) | Event-driven notification demo using SNS fan-out, direct Lambda delivery, an SQS-buffered branch, SES, and DynamoDB. |
+| [`docs/architecture/`](docs/architecture/) | Mermaid source diagrams for the portfolio and each AWS solution. |
+| [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md) | Detailed repository layout and production-path mapping. |
 
-## Featured Projects
+## Featured projects
 
-### Contact Form API
+### 1. Contact Form API
 
-A serverless contact form backend that receives form submissions from the static website, validates input in Lambda, and sends notifications through Amazon SES.
+A low-cost serverless backend for a static contact form. API Gateway receives the browser request, Lambda validates the submission and applies anti-spam controls, and SES delivers the message to the site owner.
 
-**AWS services used:** API Gateway HTTP API, Lambda, SES, IAM, CloudWatch Logs
+**AWS services:** API Gateway HTTP API, Lambda, SES, IAM, CloudWatch Logs
 
-**Project path:** `projects/contact-form-api/`
+**Project:** [`projects/contact-form-api/`](projects/contact-form-api/)
 
-### Real-Time Polling App
+### 2. Real-Time Polling App
 
-A WebSocket-based polling solution that lets users submit live votes, synchronizes vote totals across connected clients, stores state in DynamoDB, and sends owner notifications through SES.
+A WebSocket-based movie poll that stores connections and voting state in DynamoDB, synchronizes results across connected browsers, and sends lifecycle notifications through SES.
 
-**AWS services used:** API Gateway WebSocket API, Lambda, DynamoDB, SES, IAM, CloudWatch Logs
+**AWS services:** API Gateway WebSocket API, Lambda, DynamoDB, SES, IAM, CloudWatch Logs
 
-**Project path:** `projects/realtime-polling-app/`
+**Project:** [`projects/realtime-polling-app/`](projects/realtime-polling-app/)
 
-## Repository Structure
+### 3. SNS Notification Fan-Out
+
+A live event-driven demonstration in which one API request publishes a message to Amazon SNS. SNS delivers the same event to two independent branches: a directly subscribed Lambda that sends an SES email and an SQS-buffered Lambda that records delivery activity in DynamoDB. A separate read Lambda returns recent results to the browser.
+
+**AWS services:** API Gateway HTTP API, Lambda, SNS, SQS, DynamoDB, SES, IAM, CloudWatch Logs
+
+**Project:** [`projects/sns-notification-fan-out/`](projects/sns-notification-fan-out/)
+
+## Repository structure
 
 ```text
 .
 ├── README.md
 ├── PROJECT_STRUCTURE.md
+├── LICENSE
 ├── .gitignore
 ├── website/
 │   ├── index.html
+│   ├── 404.html
 │   ├── styles.css
 │   ├── assets/
 │   └── README.md
@@ -53,30 +64,34 @@ A WebSocket-based polling solution that lets users submit live votes, synchroniz
 │   │   ├── infrastructure/
 │   │   ├── docs/
 │   │   └── README.md
-│   └── realtime-polling-app/
+│   ├── realtime-polling-app/
+│   │   ├── frontend/
+│   │   ├── backend/
+│   │   ├── infrastructure/
+│   │   ├── docs/
+│   │   └── README.md
+│   └── sns-notification-fan-out/
 │       ├── frontend/
 │       ├── backend/
 │       ├── infrastructure/
 │       ├── docs/
 │       └── README.md
-├── docs/
-│   └── architecture/
-└── archive/
+└── docs/
+    └── architecture/
 ```
 
-## Architecture Diagrams
+## Architecture diagrams
 
-- Overall portfolio architecture: `docs/architecture/portfolio-site.mmd`
-- Contact form architecture: `docs/architecture/contact-form-api.mmd`
-- Real-time polling architecture: `docs/architecture/realtime-polling-app.mmd`
+- [Portfolio hosting, custom error routing, and project connections](docs/architecture/portfolio-site.mmd)
+- [Contact Form API](docs/architecture/contact-form-api.mmd)
+- [Real-Time Polling App](docs/architecture/realtime-polling-app.mmd)
+- [SNS Notification Fan-Out](docs/architecture/sns-notification-fan-out.mmd)
 
-The diagrams are written in Mermaid so they render directly in GitHub Markdown.
+The project READMEs embed Mermaid diagrams so GitHub can render them directly. The standalone `.mmd` files contain reusable Mermaid source; see [`docs/architecture/README.md`](docs/architecture/README.md) for preview options.
 
-## Deployment Notes
+## Deployment model
 
-Each project contains its own infrastructure template under `infrastructure/template.yaml`. The templates are written for AWS SAM and can be deployed independently.
-
-General deployment flow:
+Each project has an independent AWS SAM template under its `infrastructure/` folder:
 
 ```bash
 cd projects/<project-name>/infrastructure
@@ -84,8 +99,18 @@ sam build
 sam deploy --guided
 ```
 
-After deployment, copy the relevant API output value into the corresponding frontend `config.js` file, then redeploy or re-upload the static website assets.
+After deployment, copy the relevant stack output into that project's `frontend/config.js`, then publish the static files to the paths documented in [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md). The HTML intentionally retains the production-relative URLs used by the deployed website.
 
-## Purpose
+For the static hosting layer, upload `website/404.html` with the other website files and configure CloudFront custom error responses so missing objects return `/404.html` with an HTTP 404 status. With a private S3 origin, configure both 403 and 404 origin responses because a missing object can surface as either response depending on the origin setup.
 
-This repository is intended to show the work behind the portfolio, not just the final webpage. It demonstrates how individual AWS services can be combined into practical, user-facing cloud solutions with clear architecture, organized source code, infrastructure as code, and project-level documentation.
+## Security and operational notes
+
+- Browser-side `config.js` values are public by nature and must not contain secrets.
+- AWS credentials, local SAM build output, environment files, and deployment configuration are excluded through `.gitignore`.
+- The SNS fan-out API includes API Gateway throttling, DynamoDB TTL, and an SQS dead-letter queue.
+- SES identities and any sandbox recipients must be verified before email-based demonstrations will work.
+- The custom 404 page uses `noindex` so search engines do not index error responses as normal content.
+
+## License
+
+The source code is available under the [MIT License](LICENSE). Personal branding, logos, custom graphics, and portfolio identity assets remain the property of their owner and are not granted for reuse by the MIT license.

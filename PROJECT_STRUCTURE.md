@@ -1,6 +1,6 @@
-# Recommended GitHub Repository Structure
+# Repository Structure and File Mapping
 
-This file explains the cleaned repository layout and where each current file should live.
+This repository separates the public website, project-specific frontend code, Lambda source, infrastructure as code, and architecture documentation. The layout is optimized for GitHub review while preserving the production-relative paths used by the deployed static site.
 
 ## Root
 
@@ -8,60 +8,66 @@ This file explains the cleaned repository layout and where each current file sho
 /
 ├── README.md
 ├── PROJECT_STRUCTURE.md
+├── LICENSE
 ├── .gitignore
 ├── website/
 ├── projects/
-├── docs/
-└── archive/
+└── docs/
 ```
-
-### Root files
 
 | File | Purpose |
 | --- | --- |
-| `README.md` | Main portfolio overview for GitHub visitors. |
-| `PROJECT_STRUCTURE.md` | Explains the repository organization and file mapping. |
-| `.gitignore` | Keeps system files, local config, and build outputs out of Git. |
+| `README.md` | Portfolio overview, featured projects, architecture links, and deployment guidance. |
+| `PROJECT_STRUCTURE.md` | Repository layout and source-to-production mapping. |
+| `LICENSE` | MIT license for source code, subject to the branding notice in the README. |
+| `.gitignore` | Excludes local files, credentials, SAM artifacts, virtual environments, logs, and ZIP savepoints. |
 
 ## Website
 
 ```text
 website/
+├── README.md
 ├── index.html
+├── 404.html
 ├── styles.css
-├── assets/
-│   ├── logo.png
-│   ├── favicon.png
-│   ├── heart-badge.png
-│   ├── aws-icons/
-│   │   ├── apigateway.png
-│   │   ├── cloudfront.png
-│   │   ├── dynamodb.png
-│   │   ├── lambda.png
-│   │   ├── route53.png
-│   │   ├── s3.png
-│   │   └── ses.png
-│   └── badges/
-│       ├── cloud-essentials-training.png
-│       ├── cloud-practitioner.png
-│       ├── solutions-architect-associate.png
-│       └── well-architected-proficient.png
-└── README.md
+└── assets/
+    ├── favicon.png
+    ├── github.png
+    ├── heart-badge.png
+    ├── linkedin.png
+    ├── logo.png
+    ├── logo_darkmode.png
+    ├── aws-icons/
+    │   ├── apigateway.png
+    │   ├── cloudfront.png
+    │   ├── dynamodb.png
+    │   ├── lambda.png
+    │   ├── route53.png
+    │   ├── s3.png
+    │   ├── ses.png
+    │   ├── sns.png
+    │   └── sqs.png
+    └── badges/
+        ├── cloud-essentials-training.png
+        ├── cloud-practitioner.png
+        ├── solutions-architect-associate.png
+        └── well-architected-proficient.png
 ```
 
-### Website file mapping
+### Website source mapping
 
-| Original file/location | New location | Rename? |
+| Website savepoint path | Repository path | Production path |
 | --- | --- | --- |
-| `index.html` | `website/index.html` | No |
-| `styles.css` | `website/styles.css` | No |
-| `assets/logo.png` | `website/assets/logo.png` | No |
-| `assets/favicon.png` | `website/assets/favicon.png` | No |
-| `assets/heart-badge.png` | `website/assets/heart-badge.png` | No |
-| `assets/aws-icons/*` | `website/assets/aws-icons/*` | No |
-| `assets/badges/*` | `website/assets/badges/*` | No |
+| `index.html` | `website/index.html` | `/index.html` |
+| `404.html` | `website/404.html` | `/404.html` |
+| `styles.css` | `website/styles.css` | `/styles.css` |
+| `assets/*` | `website/assets/*` | `/assets/*` |
 
-## Contact Form API Project
+The current site includes dark mode, social links, SNS/SQS service icons, responsive desktop and mobile navigation, project-page section links, and a custom 404 page. The page markup keeps absolute production URLs where needed so the same files can be deployed under the public paths shown above.
+
+For CloudFront, configure custom error responses for origin codes `403` and `404`, serve `/404.html`, and return HTTP status `404`. The 403 mapping is important for private S3 origins because a missing object can be reported as 403 rather than 404.
+
+## Contact Form API
 
 ```text
 projects/contact-form-api/
@@ -80,20 +86,19 @@ projects/contact-form-api/
     └── architecture.mmd
 ```
 
-### Contact Form API file mapping
-
-| Original file/location | New location | Rename? |
+| Website savepoint path | Repository path | Production path |
 | --- | --- | --- |
-| `project/contactform/project1.html` | `projects/contact-form-api/frontend/index.html` | Yes |
-| `project/contactform/success.html` | `projects/contact-form-api/frontend/success.html` | No |
-| `project/contactform/script.js` | `projects/contact-form-api/frontend/script.js` | No |
-| `project/contactform/config.js` | `projects/contact-form-api/frontend/config.js` | No |
-| `project/contactform/lambda_function.py` | `projects/contact-form-api/backend/lambda_function.py` | No |
-| `project/contactform/requirements.txt` | `projects/contact-form-api/backend/requirements.txt` | No |
-| `project/contactform/template.yaml` | `projects/contact-form-api/infrastructure/template.yaml` | No, but `CodeUri` should point to `../backend/` |
-| `project/contactform/README.md` | `projects/contact-form-api/README.md` | Replace with project-focused README |
+| `project/contactform/project1.html` | `projects/contact-form-api/frontend/index.html` | `/project/contactform/project1.html` |
+| `project/contactform/success.html` | `projects/contact-form-api/frontend/success.html` | `/project/contactform/success.html` |
+| `project/contactform/script.js` | `projects/contact-form-api/frontend/script.js` | `/project/contactform/script.js` |
+| `project/contactform/config.js` | `projects/contact-form-api/frontend/config.js` | `/project/contactform/config.js` |
+| `project/contactform/lambda_function.py` | `projects/contact-form-api/backend/lambda_function.py` | Lambda deployment package |
+| `project/contactform/requirements.txt` | `projects/contact-form-api/backend/requirements.txt` | Lambda deployment package |
+| `project/contactform/template.yaml` | `projects/contact-form-api/infrastructure/template.yaml` | AWS SAM template |
 
-## Real-Time Polling App Project
+The infrastructure template intentionally uses `CodeUri: ../backend/` because it lives in a separate `infrastructure/` folder.
+
+## Real-Time Polling App
 
 ```text
 projects/realtime-polling-app/
@@ -114,54 +119,79 @@ projects/realtime-polling-app/
     └── architecture.mmd
 ```
 
-### Real-Time Polling App file mapping
-
-| Original file/location | New location | Rename? |
+| Website savepoint path | Repository path | Production path |
 | --- | --- | --- |
-| `project/polling/project2.html` | `projects/realtime-polling-app/frontend/index.html` | Yes |
-| `project/polling/script.js` | `projects/realtime-polling-app/frontend/script.js` | No |
-| `project/polling/config.js` | `projects/realtime-polling-app/frontend/config.js` | No |
-| `project/polling/vote_handler.py` | `projects/realtime-polling-app/backend/vote_handler.py` | No |
-| `project/polling/on_connect.py` | `projects/realtime-polling-app/backend/on_connect.py` | No |
-| `project/polling/on_disconnect.py` | `projects/realtime-polling-app/backend/on_disconnect.py` | No |
-| `project/polling/email_utils.py` | `projects/realtime-polling-app/backend/email_utils.py` | No |
-| `project/polling/requirements.txt` | `projects/realtime-polling-app/backend/requirements.txt` | No |
-| `project/polling/template.yaml` | `projects/realtime-polling-app/infrastructure/template.yaml` | No, but `CodeUri` should point to `../backend/` |
-| `project/polling/README.md` | `projects/realtime-polling-app/README.md` | Replace with project-focused README |
+| `project/polling/project2.html` | `projects/realtime-polling-app/frontend/index.html` | `/project/polling/project2.html` |
+| `project/polling/script.js` | `projects/realtime-polling-app/frontend/script.js` | `/project/polling/script.js` |
+| `project/polling/config.js` | `projects/realtime-polling-app/frontend/config.js` | `/project/polling/config.js` |
+| `project/polling/*.py` | `projects/realtime-polling-app/backend/*.py` | Lambda deployment package |
+| `project/polling/requirements.txt` | `projects/realtime-polling-app/backend/requirements.txt` | Lambda deployment package |
+| `project/polling/template.yaml` | `projects/realtime-polling-app/infrastructure/template.yaml` | AWS SAM template |
 
-## Archive
+The infrastructure template intentionally uses `CodeUri: ../backend/` for each function.
+
+## SNS Notification Fan-Out
 
 ```text
-archive/
-├── 20260716/
-├── 20260720/
-├── 20260722/
-├── 20260724/
-├── 20260725/
-└── 20260727/
+projects/sns-notification-fan-out/
+├── README.md
+├── frontend/
+│   ├── index.html
+│   ├── script.js
+│   └── config.js
+├── backend/
+│   ├── publish_handler.py
+│   ├── notify_handler.py
+│   ├── log_handler.py
+│   ├── recent_handler.py
+│   └── requirements.txt
+├── infrastructure/
+│   └── template.yaml
+└── docs/
+    └── architecture.mmd
 ```
 
-Use `archive/` only for meaningful checkpoints. Remove `.DS_Store`, `__MACOSX`, duplicate CSS files, and other local system files before committing.
-
-## Recommended renames
-
-| Current name | Recommended name | Reason |
+| Website savepoint path | Repository path | Production path |
 | --- | --- | --- |
-| `project/` | `projects/` | Standard plural directory for multiple projects. |
-| `project/contactform/` | `projects/contact-form-api/` | Clear, readable project name. |
-| `project/polling/` | `projects/realtime-polling-app/` | Explains what the app demonstrates. |
-| `project1.html` | `index.html` | Each project frontend gets its own default page. |
-| `project2.html` | `index.html` | Each project frontend gets its own default page. |
-| `Archive/` | `archive/` | Lowercase folder names are cleaner and common in Git repos. |
+| `project/fanningsns/project3.html` | `projects/sns-notification-fan-out/frontend/index.html` | `/project/fanningsns/project3.html` |
+| `project/fanningsns/script.js` | `projects/sns-notification-fan-out/frontend/script.js` | `/project/fanningsns/script.js` |
+| `project/fanningsns/config.js` | `projects/sns-notification-fan-out/frontend/config.js` | `/project/fanningsns/config.js` |
+| `project/fanningsns/*.py` | `projects/sns-notification-fan-out/backend/*.py` | Lambda deployment package |
+| `project/fanningsns/requirements.txt` | `projects/sns-notification-fan-out/backend/requirements.txt` | Lambda deployment package |
+| `project/fanningsns/template.yaml` | `projects/sns-notification-fan-out/infrastructure/template.yaml` | AWS SAM template |
 
-## Files to avoid committing
+The repository name is more descriptive than the original working folder name. Existing deployed Lambda function names beginning with `fanningsns-` are retained to avoid unnecessary resource replacement. The infrastructure template uses `CodeUri: ../backend/` for the repository layout.
+
+## Architecture documentation
+
+```text
+docs/architecture/
+├── README.md
+├── portfolio-site.mmd
+├── contact-form-api.mmd
+├── realtime-polling-app.mmd
+└── sns-notification-fan-out.mmd
+```
+
+The portfolio diagram includes the static hosting path and CloudFront custom error response flow. Each project also keeps a copy of its project diagram at `projects/<project-name>/docs/architecture.mmd` so the documentation remains self-contained.
+
+No additional project-specific Mermaid file was needed for the August 11 website update because the Lambda, API, storage, and messaging architectures did not change. The existing portfolio diagram was updated for the new 404 path.
+
+## Files intentionally not committed
 
 ```text
 .DS_Store
 __MACOSX/
+*.zip
 .aws-sam/
 samconfig.toml
 .env
-*.log
+.env.*
+.aws/
 __pycache__/
+.venv/
+node_modules/
+*.log
 ```
+
+Savepoint ZIP files should remain outside the repository. Git history already provides versioned checkpoints for committed work.

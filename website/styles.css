@@ -52,6 +52,8 @@
   --info-text: #2946a3;
   --shadow: 0 24px 60px rgba(23, 32, 51, 0.12); /* the soft shadow on cards */
   --grid-line: rgba(52, 84, 209, 0.14); /* faint blueprint-grid line color */
+  --surface-translucent: rgba(255, 255, 255, 0.9); /* used instead of a
+    hardcoded white so .card/.about-grid actually go dark in dark mode */
 }
 
 /* ---------------------------------------------------------------------
@@ -73,6 +75,7 @@ body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.5;
   color: var(--text);
+  transition: background-color 0.25s ease, color 0.25s ease;
   overflow-x: hidden; /* safety net: content should never force horizontal
                           scroll — if something miscalculates its width,
                           this clips it instead of widening the whole page */
@@ -165,6 +168,18 @@ body {
   transition: height 0.25s ease;
 }
 
+.logo-mark img.logo-dark {
+  display: none;
+}
+
+[data-theme="dark"] .logo-mark img.logo-light {
+  display: none;
+}
+
+[data-theme="dark"] .logo-mark img.logo-dark {
+  display: block;
+}
+
 .brand-row {
   display: flex;
   align-items: center;
@@ -176,7 +191,15 @@ body {
   display: block;
   height: 55px;      /* <-- HEARTS BADGE SIZE. Change this one number to resize it. */
   width: auto;
-  transition: height 0.25s ease;
+  transition: height 0.25s ease, filter 0.25s ease;
+}
+
+/* It's black ink on a transparent background, so a plain invert turns
+   it into clean white line art — no hue correction needed like the
+   logo required, since there's no color here to preserve, just black
+   vs. white. Without this it's just invisible against a dark page. */
+[data-theme="dark"] .top-mark {
+  filter: invert(1);
 }
 
 /* ---------------------------------------------------------------------
@@ -197,7 +220,7 @@ code {
   padding: 0.1rem 0.35rem;
   border: 1px solid var(--border);
   border-radius: 0.45rem;
-  background: rgba(255, 255, 255, 0.74);
+  background: var(--surface);
   font-size: 0.92em;
 }
 
@@ -228,6 +251,21 @@ main {
 .hero-arrow {
   color: var(--accent);
   margin-left: 0.8em;
+}
+
+/* For project titles too long to comfortably fit the default hero h1
+   size on one line (e.g. "SNS Notification Fan-Out") — a smaller,
+   less aggressive clamp than the homepage's big display treatment,
+   which is tuned for much shorter 2-word titles. */
+.hero-title-compact {
+  font-size: clamp(1.7rem, 4.6vw, 2.9rem);
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .hero-title-compact {
+    white-space: normal;
+  }
 }
 
 .hero-deployed {
@@ -294,7 +332,7 @@ main {
   gap: 2rem;
   margin-bottom: 4rem;
   padding: clamp(1.25rem, 4vw, 2.25rem);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface-translucent);
   border: 1px solid var(--border);
   border-radius: 28px;
   box-shadow: var(--shadow);
@@ -486,6 +524,34 @@ footer {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.social-links img {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.social-links a:hover img,
+.social-links a:focus-visible img {
+  opacity: 1;
+  transform: translateY(-2px);
 }
 
 .footer-row nav {
@@ -750,6 +816,25 @@ footer {
   color: var(--accent) !important;
 }
 
+.nav-dropdown-group-label {
+  padding: 0.5rem 0.7rem 0.1rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.nav-dropdown-menu a.nav-dropdown-sublink {
+  padding-left: 1.4rem;
+  font-weight: 500;
+  font-size: 0.88rem;
+}
+
+.nav-dropdown-menu a.nav-dropdown-sublink:hover {
+  padding-left: 1.6rem;
+}
+
 /* ---------------------------------------------------------------------
    13. HOME HERO — BLUEPRINT GRID (index.html only)
    .home-hero is layered on top of the base .hero styles (Section 5) on
@@ -829,9 +914,10 @@ footer {
 }
 
 .project-grid {
-  /* responsive grid: as many 260px+ columns as fit, wrapping automatically */
+  /* responsive grid: as many 220px+ columns as fit, wrapping automatically.
+     At this page's 1080px content width, that's 4 columns. */
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
 }
 
@@ -841,6 +927,7 @@ footer {
 #projects,
 #about,
 #contact,
+#demo,
 #how-it-works,
 #use-cases,
 #pricing,
@@ -967,6 +1054,73 @@ footer {
   animation: archNode3 8s ease-in-out infinite;
 }
 
+/* ----- SNS Fan-Out thumbnail: a hub node (SNS) with two lines
+   branching out to separate subscriber icons, reusing the same
+   archNode/archLine pulse timing as the placeholder card above —
+   just retargeted at this hub-and-spoke layout instead of a straight
+   line, since this project's whole point is fanning one thing out. ----- */
+/* ----- SNS Fan-Out thumbnail: SNS starts full-size and centered in
+   the frame, shrinks into its hub position while the two branch icons
+   fade in and hold, then the branches fade back out as SNS grows back
+   to full size and re-centers — a continuous loop rather than a
+   one-shot reveal, since this card sits above the fold and is worth
+   more than a single first-view animation.
+
+   The hub's normal small position is off-center (its rect sits at
+   x=47 in a 320-wide viewBox, center ~72), so "full size" alone would
+   just grow it in place rather than centering it — the translate
+   below shifts it +88px in x exactly when it's at full scale, which
+   lands its center at the frame's true midpoint (160). ----- */
+.fanout-thumb-scene .icon-node-bg {
+  fill: none;
+  stroke: none;
+}
+
+.fanout-thumb-line line {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.fanout-thumb-hub {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fanoutHubMove 6s ease-in-out infinite;
+}
+
+.fanout-thumb-node,
+.fanout-thumb-line {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: fanoutBranchFade 6s ease-in-out infinite;
+}
+
+@keyframes fanoutHubMove {
+  0%, 12%   { transform: translate(88px, 0) scale(3.4); }
+  28%, 68%  { transform: translate(0, 0) scale(1); }
+  84%, 100% { transform: translate(88px, 0) scale(3.4); }
+}
+
+@keyframes fanoutBranchFade {
+  0%, 18%   { opacity: 0; }
+  32%, 62%  { opacity: 1; }
+  74%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fanout-thumb-hub,
+  .fanout-thumb-node,
+  .fanout-thumb-line {
+    animation: none;
+  }
+
+  .fanout-thumb-node,
+  .fanout-thumb-line {
+    opacity: 1;
+  }
+}
+
 /* Real-icon thumbnails (Contact Form, Movie Poll) reuse the exact same
    arch-node-1/2/3 + arch-line-1/2 timing/stagger as the placeholder
    card above, just with a neutral card background instead of a solid
@@ -974,9 +1128,8 @@ footer {
    color), plus a soft glow to read as "lightly animated" rather than
    a full step-by-step walkthrough. */
 .icon-node-bg {
-  fill: var(--surface);
-  stroke: var(--border);
-  stroke-width: 1;
+  fill: none;
+  stroke: none;
 }
 
 .thumb-icons image {
@@ -1428,6 +1581,7 @@ footer {
 
 .project-hover-cta span {
   display: inline-block;
+  white-space: nowrap;
   background: #d97706;
   color: #fff;
   font-weight: 800;
@@ -1469,7 +1623,7 @@ footer {
   align-items: start;
   margin-top: 1.5rem;
   padding: clamp(1.25rem, 4vw, 2.25rem);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface-translucent);
   border: 1px solid var(--border);
   border-radius: 28px;
   box-shadow: var(--shadow);
@@ -1897,6 +2051,363 @@ footer {
   outline: 3px solid rgba(52, 84, 209, 0.35);
   outline-offset: 4px;
   border-radius: 12px;
+}
+
+/* ---------------------------------------------------------------------
+   FAN-OUT DIAGRAM (project/fanningsns/project3.html only)
+   SNS fans out to two independent paths at once (step 5), each
+   finishing its own way (step 6), with one path continuing one step
+   further (step 7). The lead-up chain (Visitor through SNS) sits
+   vertically centered between the two branches, which fork off SNS
+   via genuine diagonal lines rather than a right-angle drop-and-turn.
+
+   Base rules below are the MOBILE layout — full-width rows for the
+   linear lead-up/tail, two columns for the forked middle section, and
+   one diagonal-pair "fork" indicator standing in for the whole split.
+   The min-width block replaces this with a wide grid: one middle row
+   for the lead-up, one row above and one below for the two branches.
+   --------------------------------------------------------------------- */
+.fanout-diagram .flow-track {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  justify-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.fanout-diagram .flow-node {
+  position: relative;
+}
+
+.fanout-diagram .flow-connector {
+  width: 68px;
+  height: 36px;
+  flex: none;
+}
+
+.fanout-diagram .flow-connector-line {
+  left: 50%;
+  right: auto;
+  top: 4px;
+  bottom: 4px;
+  height: auto;
+  width: 2px;
+  transform: translateX(-50%);
+}
+
+.fanout-diagram .flow-connector-line::after {
+  right: auto;
+  left: 50%;
+  bottom: -1px;
+  top: auto;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.fanout-diagram .flow-dot {
+  left: 50%;
+  top: 0;
+}
+
+.fanout-diagram .flow-connector.is-active .flow-dot {
+  animation: flowDotTravelVertical 1.1s ease-in-out;
+}
+
+/* Numbered badges live on the nodes instead of the connectors — many
+   nodes now share a step, so one connector-line badge stops mapping
+   cleanly to "this step" the way it did in a single-branch diagram. */
+.fanout-diagram .flow-connector-num {
+  display: none;
+}
+
+.fanout-diagram .flow-node[data-step]::after {
+  content: attr(data-step);
+  position: absolute;
+  top: -6px;
+  right: -2px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--info-bg);
+  color: var(--accent-dark);
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+.fanout-diagram .flow-node.is-active[data-step]::after,
+.fanout-diagram .flow-node.is-done[data-step]::after {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* The mobile fork indicator — two diagonal lines fanning from a
+   shared point out to each branch column below. Built as two CSS
+   rotations anchored to left: 50% on the same full-width row SNS
+   itself centers in, so the pivot is centered by construction rather
+   than depending on an SVG viewBox stretching predictably. */
+.fanout-diagram .fork-wrap {
+  grid-column: 1 / -1;
+  position: relative;
+  width: 100%;
+  height: 44px;
+}
+
+.fanout-diagram .fork-arrow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2.5px;
+  height: 46px;
+  background: var(--border);
+  transform-origin: top center;
+  transition: background 0.35s ease;
+  border-radius: 2px;
+}
+
+/* A plain downward-pointing triangle with NO rotation of its own —
+   it only inherits whatever rotation .fork-arrow itself has, so it's
+   guaranteed to point the same direction as its line on both sides.
+   The previous version rotated the arrowhead separately from the
+   line (a second, independently-calibrated angle), which was easy to
+   get wrong for one side and not the other, exactly as reported. */
+.fanout-diagram .fork-arrow::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--border);
+  transform: translateX(-50%);
+  transition: border-top-color 0.35s ease;
+}
+
+.fanout-diagram .fork-arrow.fork-left { transform: translateX(-50%) rotate(-32deg); }
+.fanout-diagram .fork-arrow.fork-right { transform: translateX(-50%) rotate(32deg); }
+
+/* The dot lives inside the rotated .fork-arrow, so animating its own
+   top position (0% to 100% of the arrow's height) automatically
+   traces whichever direction that arrow is rotated to — no separate
+   path needed per side, unlike the desktop SVG version. */
+.fanout-diagram .fork-arrow-dot {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+}
+
+.fanout-diagram .fork-wrap.is-active .fork-arrow-dot {
+  animation: forkArrowDotTravel 1.1s ease-in-out;
+}
+
+@keyframes forkArrowDotTravel {
+  0% { top: 0%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.fanout-diagram .fork-wrap.is-active .fork-arrow,
+.fanout-diagram .fork-wrap.is-done .fork-arrow {
+  background: var(--accent);
+}
+
+.fanout-diagram .fork-wrap.is-active .fork-arrow::after,
+.fanout-diagram .fork-wrap.is-done .fork-arrow::after {
+  border-top-color: var(--accent);
+}
+
+.fanout-diagram .fork-diagonal {
+  display: none;
+}
+
+/* Mobile node/connector placement — full-width rows for the linear
+   lead-up and tail, two columns for the forked middle section.
+   DynamoDB sits under the Lambda that actually writes to it (the
+   SQS-branch column) rather than centered under both columns.
+
+   Every row is assigned explicitly rather than left to grid
+   auto-placement. Auto-placement (relying on DOM order + sparse
+   packing) is spec-correct, but explicit rows make the layout
+   deterministic regardless of DOM order, browser quirks, or a stray
+   mismatched CSS/HTML deploy — worth the extra verbosity here. */
+.fanout-diagram .flow-node[data-node="visitor"] { grid-column: 1 / -1; grid-row: 1; }
+.fanout-diagram .flow-connector[data-step="1"] { grid-column: 1 / -1; grid-row: 2; }
+.fanout-diagram .flow-node[data-node="webpage"] { grid-column: 1 / -1; grid-row: 3; }
+.fanout-diagram .flow-connector[data-step="2"] { grid-column: 1 / -1; grid-row: 4; }
+.fanout-diagram .flow-node[data-node="apigateway"] { grid-column: 1 / -1; grid-row: 5; }
+.fanout-diagram .flow-connector[data-step="3"] { grid-column: 1 / -1; grid-row: 6; }
+.fanout-diagram .flow-node[data-node="lambda-publisher"] { grid-column: 1 / -1; grid-row: 7; }
+.fanout-diagram .flow-connector[data-step="4"] { grid-column: 1 / -1; grid-row: 8; }
+.fanout-diagram .flow-node[data-node="sns"] { grid-column: 1 / -1; grid-row: 9; }
+.fanout-diagram .fork-wrap { grid-row: 10; }
+
+.fanout-diagram .flow-node[data-node="lambda-notifier"] { grid-column: 1; grid-row: 11; }
+.fanout-diagram .flow-node[data-node="sqs"] { grid-column: 2; grid-row: 11; }
+.fanout-diagram .flow-connector.step6-main { grid-column: 1; grid-row: 12; }
+.fanout-diagram .flow-connector.step6-branch { grid-column: 2; grid-row: 12; }
+.fanout-diagram .flow-node[data-node="ses"] { grid-column: 1; grid-row: 13; }
+.fanout-diagram .flow-node[data-node="lambda-logger"] { grid-column: 2; grid-row: 13; }
+.fanout-diagram .flow-connector[data-step="7"] { grid-column: 2; grid-row: 14; }
+.fanout-diagram .flow-node[data-node="dynamodb"] { grid-column: 2; grid-row: 15; }
+
+@media (min-width: 761px) {
+  .fanout-diagram .flow-track {
+    display: grid;
+    grid-template-columns: 84px 48px 84px 48px 84px 48px 84px 48px 84px 48px 84px 48px 84px 48px 84px;
+    grid-template-rows: auto 8px auto 8px auto;
+    align-items: center;
+    justify-items: center;
+    width: 100%;
+  }
+
+  /* Row 3 (middle) is the lead-up chain, vertically centered between
+     the two step-5 branch rows (1 and 5) instead of pinned to the top. */
+  .fanout-diagram .flow-node[data-node="visitor"] { grid-column: 1; grid-row: 3; }
+  .fanout-diagram .flow-node[data-node="webpage"] { grid-column: 3; grid-row: 3; }
+  .fanout-diagram .flow-node[data-node="apigateway"] { grid-column: 5; grid-row: 3; }
+  .fanout-diagram .flow-node[data-node="lambda-publisher"] { grid-column: 7; grid-row: 3; }
+  .fanout-diagram .flow-node[data-node="sns"] { grid-column: 9; grid-row: 3; }
+
+  .fanout-diagram .flow-node[data-node="lambda-notifier"] { grid-column: 11; grid-row: 1; }
+  .fanout-diagram .flow-node[data-node="ses"] { grid-column: 13; grid-row: 1; }
+  .fanout-diagram .flow-node[data-node="sqs"] { grid-column: 11; grid-row: 5; }
+  .fanout-diagram .flow-node[data-node="lambda-logger"] { grid-column: 13; grid-row: 5; }
+  .fanout-diagram .flow-node[data-node="dynamodb"] { grid-column: 15; grid-row: 5; justify-self: center; }
+
+  .fanout-diagram .flow-connector[data-step="1"] { grid-column: 2; grid-row: 3; }
+  .fanout-diagram .flow-connector[data-step="2"] { grid-column: 4; grid-row: 3; }
+  .fanout-diagram .flow-connector[data-step="3"] { grid-column: 6; grid-row: 3; }
+  .fanout-diagram .flow-connector[data-step="4"] { grid-column: 8; grid-row: 3; }
+  .fanout-diagram .flow-connector.step6-main { grid-column: 12; grid-row: 1; }
+  .fanout-diagram .flow-connector.step6-branch { grid-column: 12; grid-row: 5; }
+  .fanout-diagram .flow-connector[data-step="7"] { grid-column: 14; grid-row: 5; }
+
+  .fanout-diagram .flow-connector {
+    width: 100%;
+    height: 68px;
+  }
+
+  .fanout-diagram .flow-connector .flow-connector-line {
+    left: 8px;
+    right: 8px;
+    top: 50%;
+    bottom: auto;
+    height: 2px;
+    width: auto;
+    transform: translateY(-50%);
+  }
+
+  .fanout-diagram .flow-connector .flow-connector-line::after {
+    right: -1px;
+    left: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%) rotate(-45deg);
+  }
+
+  .fanout-diagram .flow-connector .flow-dot {
+    left: 0;
+    top: 50%;
+  }
+
+  .fanout-diagram .flow-connector.is-active .flow-dot {
+    animation: flowDotTravel 1.1s ease-in-out;
+  }
+
+  /* Desktop fork — two straight diagonal lines from SNS to each
+     branch node, replacing the mobile fork-wrap entirely at this
+     width. Each spans ONLY the gap column plus the branch node's own
+     column (columns 10-11) — never column 9, which is SNS's own
+     column, so this element can't end up sharing a grid cell with the
+     SNS node itself and rendering its line back through the icon. */
+  .fanout-diagram .fork-wrap {
+    display: none;
+  }
+
+  .fanout-diagram .fork-diagonal {
+    display: block;
+    pointer-events: none;
+  }
+
+  .fanout-diagram .fork-diagonal svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .fanout-diagram .fork-diagonal line {
+    stroke: var(--border);
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: stroke 0.35s ease;
+  }
+
+  .fanout-diagram .fork-diagonal .fork-arrowhead {
+    fill: var(--border);
+    transition: fill 0.35s ease;
+  }
+
+  .fanout-diagram .fork-diagonal.is-active line,
+  .fanout-diagram .fork-diagonal.is-done line {
+    stroke: var(--accent);
+  }
+
+  .fanout-diagram .fork-diagonal.is-active .fork-arrowhead,
+  .fanout-diagram .fork-diagonal.is-done .fork-arrowhead {
+    fill: var(--accent);
+  }
+
+  /* Traveling dot along the diagonal, matching the straight
+     connectors' dot animation. A diagonal can't reuse their left/top
+     keyframes (those only move in one axis) — offset-path lets a dot
+     travel along an arbitrary line, including this one, the same way
+     the straight connectors' dot travels left-to-right. */
+  .fanout-diagram .fork-diagonal .fork-dot {
+    fill: var(--accent);
+    opacity: 0;
+  }
+
+  .fanout-diagram .fork-diagonal.fork-up .fork-dot {
+    offset-path: path("M 16 55 L 37 22");
+  }
+
+  .fanout-diagram .fork-diagonal.fork-down .fork-dot {
+    offset-path: path("M 16 45 L 37 78");
+  }
+
+  .fanout-diagram .fork-diagonal.is-active .fork-dot {
+    animation: forkDotTravel 1.1s ease-in-out;
+  }
+
+  @keyframes forkDotTravel {
+    0% { offset-distance: 0%; opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { offset-distance: 100%; opacity: 0; }
+  }
+
+  .fanout-diagram .fork-diagonal.fork-up { grid-column: 10 / 12; grid-row: 1 / 4; }
+  .fanout-diagram .fork-diagonal.fork-down { grid-column: 10 / 12; grid-row: 3 / 6; }
+
+  /* Shrinks further than the default .is-stuck scale (0.78) once
+     pinned — this diagram is wider than project1's, so it benefits
+     from a bit more reduction to comfortably clear the viewport. */
+  .flow-diagram.fanout-diagram.is-stuck {
+    transform: scale(0.65);
+  }
 }
 
 .flow-steps {
@@ -2328,6 +2839,7 @@ footer {
   #projects,
   #about,
   #contact,
+  #demo,
   #how-it-works,
   #use-cases,
   #pricing,
@@ -2377,6 +2889,19 @@ footer {
     margin-top: 1.5rem;
   }
 
+  /* The back-to-top button is fixed at bottom:1.5rem; right:1.5rem and
+     becomes visible once scrolled past 500px — true by the time anyone
+     reaches the footer. On desktop the footer's content sits well
+     inside its max-width container, clear of the actual viewport edge
+     where that button lives; on mobile the footer stretches close to
+     the full width, so its right-aligned social icons (.footer-right)
+     land almost exactly where the button sits, visually covered by it
+     even though they're still very much present in the page. This
+     just gives the footer enough room to clear it. */
+  footer {
+    padding-bottom: 4.5rem;
+  }
+
   .flow-step {
     padding: 0.9rem 1rem;
   }
@@ -2399,18 +2924,18 @@ footer {
      these rules — being more specific than project2's own
      [data-node="..."] selectors — would win the cascade and hijack its
      icons into this diagram's grid positions instead. */
-  .flow-diagram:not(.ws-diagram) {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) {
     position: static;
     top: auto;
     padding: 1.25rem 1rem 1rem;
   }
 
-  .flow-diagram:not(.ws-diagram).is-stuck {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram).is-stuck {
     transform: none;
     padding: 1.25rem 1rem 1rem;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-track {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-track {
     display: grid;
     grid-template-columns: 1fr 56px 1fr;
     grid-template-rows: auto 32px auto 32px auto 32px auto;
@@ -2424,42 +2949,42 @@ footer {
      left-to-right again, then the last (odd) node alone on the final
      row — same zigzag principle as project2.html's mobile diagram,
      extended to this flow's 7 nodes instead of 4. */
-  .flow-diagram:not(.ws-diagram) .flow-node[data-node="users"] { grid-column: 1; grid-row: 1; }
-  .flow-diagram:not(.ws-diagram) .flow-node[data-node="route53"] { grid-column: 3; grid-row: 1; }
-  .flow-diagram:not(.ws-diagram) .flow-node[data-node="cloudfront"] { grid-column: 3; grid-row: 3; }
-  .flow-diagram:not(.ws-diagram) .flow-node[data-node="s3"] { grid-column: 1; grid-row: 3; }
-  .flow-diagram:not(.ws-diagram) .flow-node[data-node="apigateway"] { grid-column: 1; grid-row: 5; }
-  .flow-diagram:not(.ws-diagram) .flow-node[data-node="lambda"] { grid-column: 3; grid-row: 5; }
-  .flow-diagram:not(.ws-diagram) .flow-node[data-node="ses"] { grid-column: 3; grid-row: 7; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="users"] { grid-column: 1; grid-row: 1; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="route53"] { grid-column: 3; grid-row: 1; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="cloudfront"] { grid-column: 3; grid-row: 3; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="s3"] { grid-column: 1; grid-row: 3; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="apigateway"] { grid-column: 1; grid-row: 5; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="lambda"] { grid-column: 3; grid-row: 5; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="ses"] { grid-column: 3; grid-row: 7; }
 
-  .flow-diagram:not(.ws-diagram) .flow-connector {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector {
     display: block;
     pointer-events: none;
     width: 100%;
     justify-self: stretch;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="1"] { grid-column: 2; grid-row: 1; }
-  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="2"] { grid-column: 3; grid-row: 2; }
-  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="3"] { grid-column: 2; grid-row: 3; }
-  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="4"] { grid-column: 1; grid-row: 4; }
-  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="5"] { grid-column: 2; grid-row: 5; }
-  .flow-diagram:not(.ws-diagram) .flow-connector[data-step="6"] { grid-column: 3; grid-row: 6; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector[data-step="1"] { grid-column: 2; grid-row: 1; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector[data-step="2"] { grid-column: 3; grid-row: 2; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector[data-step="3"] { grid-column: 2; grid-row: 3; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector[data-step="4"] { grid-column: 1; grid-row: 4; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector[data-step="5"] { grid-column: 2; grid-row: 5; }
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector[data-step="6"] { grid-column: 3; grid-row: 6; }
 
   /* The written step number moves to a corner badge on the node itself
      (below) — the connector's own number label is redundant here. */
-  .flow-diagram:not(.ws-diagram) .flow-connector-num {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector-num {
     display: none;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-connector.is-vertical {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector.is-vertical {
     height: 100%;
     width: 68px;
     align-self: stretch;
     justify-self: center;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-connector.is-vertical .flow-connector-line {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector.is-vertical .flow-connector-line {
     left: 50%;
     right: auto;
     top: 8px;
@@ -2469,7 +2994,7 @@ footer {
     transform: translateX(-50%);
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-connector.is-vertical .flow-connector-line::after {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector.is-vertical .flow-connector-line::after {
     right: auto;
     left: 50%;
     bottom: -1px;
@@ -2477,34 +3002,34 @@ footer {
     transform: translateX(-50%) rotate(45deg);
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-connector.is-vertical .flow-dot {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector.is-vertical .flow-dot {
     left: 50%;
     top: 0;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-connector.is-active.is-vertical .flow-dot {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector.is-active.is-vertical .flow-dot {
     animation: flowDotTravelVertical 1.1s ease-in-out;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-connector.is-reversed .flow-connector-line {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector.is-reversed .flow-connector-line {
     transform: translateY(-50%) scaleX(-1);
   }
 
   /* var(--border) is too light to read clearly against this card's
      background at mobile sizes, especially before a step has become
      active/done - darken the resting (not-yet-visited) arrow color. */
-  .flow-diagram:not(.ws-diagram) .flow-connector-line {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector-line {
     background: var(--muted);
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-connector-line::after {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector-line::after {
     border-color: var(--muted);
     background: transparent;
     border-left-width: 0;
     border-top-width: 0;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-node {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node {
     position: relative;
     flex-direction: column;
     width: 68px;
@@ -2513,28 +3038,28 @@ footer {
     text-align: center;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-node-label {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node-label {
     overflow-wrap: break-word;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-node-icon {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node-icon {
     width: 52px;
     height: 52px;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-node-icon svg,
-  .flow-diagram:not(.ws-diagram) .flow-node-icon img {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node-icon svg,
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node-icon img {
     width: 46px;
     height: 46px;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-node.is-active .flow-node-icon img,
-  .flow-diagram:not(.ws-diagram) .flow-node.is-active .flow-node-icon svg,
-  .flow-diagram:not(.ws-diagram) .flow-node.is-active .flow-node-label {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node.is-active .flow-node-icon img,
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node.is-active .flow-node-icon svg,
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node.is-active .flow-node-label {
     transition-delay: 0s;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-node[data-step]::after {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-step]::after {
     content: attr(data-step);
     position: absolute;
     top: -6px;
@@ -2552,8 +3077,8 @@ footer {
     transition: background 0.35s ease, color 0.35s ease;
   }
 
-  .flow-diagram:not(.ws-diagram) .flow-node.is-active[data-step]::after,
-  .flow-diagram:not(.ws-diagram) .flow-node.is-done[data-step]::after {
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node.is-active[data-step]::after,
+  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node.is-done[data-step]::after {
     background: var(--accent);
     color: #fff;
   }
@@ -2609,6 +3134,99 @@ footer {
   --poll-color-3: #2f8fbf;
   --poll-color-4: #17633a;
   --poll-color-5: #263fa0;
+}
+
+/* Dark mode — same token names, different values, so every rule that
+   already reads var(--bg)/var(--text)/etc. adapts automatically with
+   no other changes needed. Applied via a data-theme attribute on <html>
+   rather than only prefers-color-scheme, so the toggle in the nav can
+   override the system setting and the choice can persist (see the
+   small blocking script in <head> that sets this before first paint,
+   and the toggle wiring in each page's script). */
+[data-theme="dark"] {
+  --bg: #0e1320;
+  --surface: #161d2e;
+  --text: #e8ecf6;
+  --muted: #96a2ba;
+  --border: #2b3550;
+  --accent: #7391ff;
+  --accent-dark: #97aeff;
+  --success-bg: #10301f;
+  --success-text: #6fe0a0;
+  --error-bg: #351515;
+  --error-text: #ff8f8f;
+  --info-bg: #16213a;
+  --info-text: #93b0ff;
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --grid-line: rgba(115, 145, 255, 0.16);
+  --surface-translucent: rgba(22, 29, 46, 0.9);
+
+  --poll-color-1: #7391ff;
+  --poll-color-2: #a98bff;
+  --poll-color-3: #5fc2ef;
+  --poll-color-4: #4fd996;
+  --poll-color-5: #97aeff;
+}
+
+/* Toggle switch in the nav — icon-only circular button on desktop,
+   labeled row inside the mobile menu. Both control the same state;
+   whichever is visible at the current width just reflects it. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.theme-toggle .icon-sun {
+  display: none;
+}
+
+.theme-toggle .icon-moon {
+  display: block;
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun {
+  display: block;
+}
+
+[data-theme="dark"] .theme-toggle .icon-moon {
+  display: none;
+}
+
+.theme-toggle-icon-btn {
+  width: 38px;
+  height: 38px;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle-icon-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.mobile-menu-theme-toggle {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
 }
 
 /* The poll section stacks (header text, then the voting panel below it)
@@ -2685,7 +3303,7 @@ footer {
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 0.7rem 0.9rem;
-  background: #fff;
+  background: var(--surface);
   font: inherit;
   color: var(--text);
   cursor: pointer;
@@ -2712,9 +3330,8 @@ footer {
   font-weight: 400;
   font-size: 0.82rem;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .poll-row:hover {
@@ -3158,6 +3775,28 @@ footer {
     padding: 1.25rem 1rem 1rem;
   }
 
+  /* Sticky shrink-on-scroll is a desktop-only affordance — on mobile the
+     diagram just sits in normal flow instead of pinning/scaling as you
+     scroll past it, matching project1.html's mobile behavior. */
+  .flow-diagram.ws-diagram {
+    position: static;
+    top: auto;
+  }
+
+  .flow-diagram.ws-diagram.is-stuck {
+    transform: none;
+  }
+
+  /* Same desktop-only sticky/shrink exemption as ws-diagram above. */
+  .flow-diagram.fanout-diagram {
+    position: static;
+    top: auto;
+  }
+
+  .flow-diagram.fanout-diagram.is-stuck {
+    transform: none;
+  }
+
   /* The loop visualization is desktop-only: .ws-loop-group uses
      display:contents here so its children can become direct grid items
      (for the zigzag layout below), but that means the group itself has
@@ -3294,3 +3933,348 @@ footer {
   }
 }
 
+
+/* ---------------------------------------------------------------------
+   NOTIFY TRIGGER, LIVE LOG TABLE & FAN-OUT BRANCH
+   (project/fanningsns/project3.html only)
+   Styles for the SNS demo page: the "Trigger test notification" button
+   row, the live delivery-log table it fills in, the small delivered/
+   pending status badges inside that table, and the static "meanwhile"
+   branch diagram shown under the main animated flow.
+   --------------------------------------------------------------------- */
+.notify-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: center;
+  gap: 0.85rem;
+  padding-top: 1rem;
+}
+
+.trigger-button-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.cooldown-counter {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--muted);
+  min-width: 1ch;
+  text-align: center;
+}
+
+/* Always occupies its box — visibility/opacity toggle via .is-visible
+   from script.js, rather than the hidden attribute (display:none),
+   so its space is reserved whether a message is showing or not. That
+   reservation is what keeps the button from shifting position when a
+   message appears, and what keeps "Live delivery log" below it from
+   getting overlapped — both problems came from the same root cause:
+   an element whose presence/absence changed the layout around it. */
+.notify-trigger #trigger-status {
+  min-height: 3.4rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.notify-trigger #trigger-status.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.notify-log-wrap {
+  grid-column: 1 / -1;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+
+.notify-log-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.notify-log-head h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Info bubble: a small "i" trigger next to a label that reveals a short
+   explanation on click. Two copies exist for the Message ID column —
+   one inside the real desktop <th>, one inline within each mobile
+   card's row — since the mobile card layout visually hides the real
+   <thead> entirely and generates its other labels from a CSS
+   data-label attribute, which can't contain a real clickable button. */
+.th-with-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  position: relative;
+}
+
+.info-bubble-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--muted);
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.info-bubble-trigger:hover,
+.info-bubble-trigger[aria-expanded="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.info-bubble {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: 230px;
+  max-width: calc(100vw - 2.5rem);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* The mobile-only per-row label, real HTML (not the ::before trick the
+   other columns use) so it can hold the interactive trigger button.
+   Hidden on desktop, where the real <th> already labels the column. */
+.mobile-field-label-inline {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .notify-log .th-with-info {
+    display: none;
+  }
+
+  .mobile-field-label-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    position: relative;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+  }
+
+  /* On mobile the trigger's horizontal position varies row to row, but
+     the bubble should still consistently land near the screen edge
+     rather than centering under wherever the trigger happens to be
+     (which is what caused it to spill off the left edge). Positioned
+     against the viewport instead of the trigger — script.js sets
+     `top` inline once it knows the trigger's actual position, since
+     that part genuinely does depend on which row was clicked. */
+  .info-bubble {
+    position: fixed;
+    left: auto;
+    right: 1rem;
+    transform: none;
+    width: calc(100vw - 3rem);
+    max-width: 280px;
+  }
+}
+
+.notify-log {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.notify-log th,
+.notify-log td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.notify-log th {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.notify-log td code {
+  font-size: 0.85rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge-ok {
+  color: var(--success-text);
+  background: var(--success-bg);
+}
+
+.status-badge-pending {
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.status-badge-error {
+  color: var(--error-text);
+  background: var(--error-bg);
+}
+
+/* The static "meanwhile" branch shown under the main animated diagram —
+   deliberately not part of the click-through stepper, since it happens
+   in parallel with it rather than after it. */
+.fanout-branch {
+  margin-top: 3rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+}
+
+.fanout-branch h3 {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 1.3rem;
+}
+
+.fanout-branch-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+
+.fanout-branch-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fanout-branch-node .flow-node-icon img {
+  width: 34px;
+  height: 34px;
+}
+
+.fanout-branch-arrow {
+  color: var(--accent);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .notify-log,
+  .notify-log thead,
+  .notify-log tbody,
+  .notify-log tr,
+  .notify-log th,
+  .notify-log td {
+    display: block;
+  }
+
+  .notify-log thead {
+    /* Column headers become each row's field labels instead (see
+       td::before below) — a header row doesn't make sense once every
+       row is its own stacked card. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .notify-log tr {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .notify-log td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.4rem 0;
+    border-bottom: none;
+  }
+
+  .notify-log td:not(:last-child) {
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .notify-log td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+  }
+
+  /* This cell has a real inline label instead (see
+     .mobile-field-label-inline) — without this, the generic rule
+     above still generates an empty pseudo-element here, which occupies
+     its own flex slot and pushes the real label off-center. */
+  .notify-log td.msg-id-cell::before {
+    content: none;
+  }
+
+  .fanout-branch-row {
+    justify-content: center;
+  }
+}

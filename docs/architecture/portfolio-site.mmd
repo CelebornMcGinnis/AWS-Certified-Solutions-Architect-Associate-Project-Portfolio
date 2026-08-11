@@ -1,17 +1,24 @@
 flowchart LR
-    User[Portfolio Visitor]
+    Visitor[Portfolio Visitor]
     Route53[Amazon Route 53\nCustom Domain DNS]
     ACM[AWS Certificate Manager\nTLS Certificate]
-    CloudFront[Amazon CloudFront\nHTTPS + CDN]
-    S3[Amazon S3\nStatic Website Assets]
-    Website[Portfolio Website\nHTML CSS Images]
-    Contact[Contact Form API Project]
-    Poll[Real-Time Polling App Project]
+    CloudFront[Amazon CloudFront\nHTTPS, CDN, and Custom Errors]
+    S3[Amazon S3\nPrivate Static Site Origin]
+    Home[Portfolio Homepage\nwebsite/index.html]
+    ErrorPage[Custom 404 Page\nwebsite/404.html]
+    Contact[Contact Form API]
+    Poll[Real-Time Polling App]
+    FanOut[SNS Notification Fan-Out]
 
-    User --> Route53
+    Visitor --> Route53
     Route53 --> CloudFront
     ACM --> CloudFront
-    CloudFront --> S3
-    S3 --> Website
-    Website --> Contact
-    Website --> Poll
+    CloudFront -->|Fetch static objects| S3
+    S3 --> Home
+    S3 --> ErrorPage
+    CloudFront -. Origin 403 or 404 .-> ErrorRule[CloudFront Custom Error Response]
+    ErrorRule -->|Serve /404.html with HTTP 404| ErrorPage
+    Home --> Contact
+    Home --> Poll
+    Home --> FanOut
+    ErrorPage --> Home

@@ -1,0 +1,263 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SNS notification fan-out demo for McGinnisArchitecture.com.
+  API Gateway (HTTP API) -> Lambda -> SNS Topic, which fans out to two
+  independent subscribers: a directly-subscribed Lambda (-> SES) and an
+  SQS-buffered Lambda (-> DynamoDB). A fourth Lambda serves the delivery
+  log back to the page.
+
+Parameters:
+  SiteOrigin:
+    Type: String
+    Description: >
+      Allowed CORS origin for the static site, e.g. https://www.mcginnisarchitecture.com
+
+  AdminEmail:
+    Type: String
+    Description: >
+      Verified SES sender address for the notifier branch's email
+      (e.g. no-reply@mcginnisarchitecture.com). Must be verified in
+      SES — sending FROM an address always requires verification,
+      regardless of sandbox status.
+
+  SnsToEmail:
+    Type: String
+    Description: >
+      Address that actually receives the notifier branch's email
+      (e.g. recipient@example.com). If SES is still in sandbox
+      mode, this address must ALSO be verified in SES, since sandbox
+      mode restricts recipients to verified addresses only.
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Timeout: 10
+    MemorySize: 128
+
+Resources:
+  # ---------------------------------------------------------------------
+  # Storage — one table, PK messageId / SK subscriber, so each of the two
+  # fan-out branches writes its own row without overwriting the other's.
+  # Rows TTL out after a day (see ttl attribute below), which keeps the
+  # table small, but TTL alone doesn't help read ordering — see the GSI
+  # below and recent_handler.py for why a plain Scan isn't used to read
+  # "recent" rows back.
+  # ---------------------------------------------------------------------
+  DeliveryLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: messageId
+          AttributeType: S
+        - AttributeName: subscriber
+          AttributeType: S
+        - AttributeName: gsiPk
+          AttributeType: S
+        - AttributeName: triggeredAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: messageId
+          KeyType: HASH
+        - AttributeName: subscriber
+          KeyType: RANGE
+      # A Scan can't guarantee "most recent N" — it reads whatever order
+      # items happen to sit in on disk, unrelated to recency. This index
+      # gives every row the same constant partition key (gsiPk = "ALL")
+      # so a Query against it, sorted descending on triggeredAt, reliably
+      # returns the actual most recent rows regardless of table size.
+      GlobalSecondaryIndexes:
+        - IndexName: RecentIndex
+          KeySchema:
+            - AttributeName: gsiPk
+              KeyType: HASH
+            - AttributeName: triggeredAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # ---------------------------------------------------------------------
+  # Messaging — the topic, plus its two subscribers.
+  # ---------------------------------------------------------------------
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+
+  LoggerDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 345600 # 4 days
+
+  LoggerQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 86400 # 1 day
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt LoggerDLQ.Arn
+        maxReceiveCount: 3
+
+  LoggerQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref LoggerQueue
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt LoggerQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref NotificationTopic
+
+  LoggerQueueSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref NotificationTopic
+      Protocol: sqs
+      Endpoint: !GetAtt LoggerQueue.Arn
+
+  NotifierSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref NotificationTopic
+      Protocol: lambda
+      Endpoint: !GetAtt NotifierFunction.Arn
+
+  # ---------------------------------------------------------------------
+  # API Gateway (HTTP API — cheaper than REST API for this use case)
+  # ---------------------------------------------------------------------
+  NotifyApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref SiteOrigin
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+      # Cheap safety net for the unauthenticated /notify route (see
+      # PublisherFunction below) — caps how fast a single client can
+      # hammer the public trigger button. 5 requests/sec steady-state
+      # with bursts up to 10 is far above anything a real visitor
+      # clicking a button would produce, but stops a scripted flood
+      # from running up the SES/Lambda bill.
+      DefaultRouteSettings:
+        ThrottlingRateLimit: 5
+        ThrottlingBurstLimit: 10
+
+  # ---------------------------------------------------------------------
+  # Lambdas
+  # ---------------------------------------------------------------------
+  PublisherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fanningsns-publisher
+      CodeUri: ../backend/
+      Handler: publish_handler.lambda_handler
+      Environment:
+        Variables:
+          TOPIC_ARN: !Ref NotificationTopic
+          ALLOWED_ORIGIN: !Ref SiteOrigin
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt NotificationTopic.TopicName
+      Events:
+        NotifyPost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref NotifyApi
+            Path: /notify
+            Method: POST
+
+  NotifierFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fanningsns-notifier
+      CodeUri: ../backend/
+      # Subscribed directly to NotificationTopic above (no queue) — sends
+      # the admin email, then logs its own delivery row.
+      Handler: notify_handler.lambda_handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DeliveryLogTable
+          ADMIN_EMAIL: !Ref AdminEmail
+          SNS_TO_EMAIL: !Ref SnsToEmail
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref DeliveryLogTable
+        - Statement:
+            - Effect: Allow
+              Action: ses:SendEmail
+              Resource: "*"
+
+  NotifierInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref NotifierFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref NotificationTopic
+
+  LoggerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fanningsns-logger
+      CodeUri: ../backend/
+      # Triggered by LoggerQueue below (the buffered half of the fan-out).
+      Handler: log_handler.lambda_handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DeliveryLogTable
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref DeliveryLogTable
+      Events:
+        QueueTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt LoggerQueue.Arn
+            BatchSize: 5
+
+  RecentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fanningsns-recent
+      CodeUri: ../backend/
+      Handler: recent_handler.lambda_handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DeliveryLogTable
+          ALLOWED_ORIGIN: !Ref SiteOrigin
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DeliveryLogTable
+      Events:
+        RecentGet:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref NotifyApi
+            Path: /notify/recent
+            Method: GET
+
+
+Outputs:
+  NotifyApiEndpoint:
+    Description: Value to paste into projects/sns-notification-fan-out/frontend/config.js as apiBase
+    Value: !Sub "https://${NotifyApi}.execute-api.${AWS::Region}.amazonaws.com"
+
+  NotificationTopicArn:
+    Description: SNS topic ARN (useful for manually publishing a test message)
+    Value: !Ref NotificationTopic
+
+  DeliveryLogTableName:
+    Description: DynamoDB table name (useful for a manual scan while debugging)
+    Value: !Ref DeliveryLogTable
