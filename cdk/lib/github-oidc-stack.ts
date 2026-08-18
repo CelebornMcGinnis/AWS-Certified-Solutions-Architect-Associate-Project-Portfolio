@@ -25,9 +25,10 @@ export interface GitHubOidcStackProps extends cdk.StackProps {
  *   Can assume this account's deploy/file-publishing/lookup bootstrap
  *   roles -- the same roles any `cdk deploy` already relies on, not direct
  *   CloudFormation/S3/Lambda admin access.
- * - GitHubActionsPlanRole: assumable by pull_request workflows too, but can
- *   only assume the read-only lookup-role -- enough for `cdk diff`/`cdk
- *   synth` to inspect live stacks, not enough to change anything, so a PR
+ * - GitHubActionsPlanRole: assumable by pull_request workflows too. Can
+ *   assume lookup-role (read live stacks) and file-publishing-role (upload
+ *   the synthesized template to the CDK asset bucket, needed for `cdk diff`
+ *   to build a real changeset) -- deliberately missing deploy-role, so a PR
  *   workflow can never deploy even if its own YAML said to.
  */
 export class GitHubOidcStack extends cdk.Stack {
@@ -87,7 +88,12 @@ export class GitHubOidcStack extends cdk.Stack {
     planRole.addToPolicy(
       new iam.PolicyStatement({
         actions: ['sts:AssumeRole'],
-        resources: [bootstrapRoleArn('lookup-role')],
+        // file-publishing-role is needed too: `cdk diff` uploads the
+        // synthesized template to the bootstrap assets bucket to build a
+        // real CloudFormation changeset (accurate replacement warnings)
+        // instead of falling back to a template-only diff. That role can
+        // only write to the CDK asset bucket -- it can't deploy anything.
+        resources: [bootstrapRoleArn('lookup-role'), bootstrapRoleArn('file-publishing-role')],
       }),
     );
 
