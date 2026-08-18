@@ -1,6 +1,6 @@
 # McGinnis Architecture — AWS Solutions Architect Portfolio
 
-A hands-on AWS cloud architecture portfolio containing the static website, serverless application code, AWS SAM infrastructure templates, and technical documentation behind the projects featured on McGinnis Architecture.
+A hands-on AWS cloud architecture portfolio containing the static website, serverless application code, an AWS CDK app that manages all of it, and technical documentation behind the projects featured on McGinnis Architecture.
 
 ## Repository description
 
@@ -15,6 +15,7 @@ A full-stack AWS cloud solutions portfolio showcasing deployed serverless archit
 | [`projects/realtime-polling-app/`](projects/realtime-polling-app/) | WebSocket polling application using API Gateway, Lambda, DynamoDB, and SES. |
 | [`projects/sns-notification-fan-out/`](projects/sns-notification-fan-out/) | Event-driven notification demo using SNS fan-out, direct Lambda delivery, an SQS-buffered branch, SES, and DynamoDB. |
 | [`docs/architecture/`](docs/architecture/) | Mermaid source diagrams for the portfolio and each AWS solution. |
+| [`cdk/`](cdk/) | AWS CDK (TypeScript) app that owns every AWS resource in this portfolio -- website hosting and all three project backends. |
 | [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md) | Detailed repository layout and production-path mapping. |
 
 ## Featured projects
@@ -51,6 +52,14 @@ A live event-driven demonstration in which one API request publishes a message t
 ├── PROJECT_STRUCTURE.md
 ├── LICENSE
 ├── .gitignore
+├── .github/
+│   ├── workflows/
+│   │   ├── cdk-pr.yml
+│   │   └── cdk-deploy.yml
+│   └── dependabot.yml
+├── cdk/
+│   ├── bin/portfolio.ts
+│   └── lib/
 ├── website/
 │   ├── index.html
 │   ├── 404.html
@@ -91,22 +100,30 @@ The project READMEs embed Mermaid diagrams so GitHub can render them directly. T
 
 ## Deployment model
 
-Each project has an independent AWS SAM template under its `infrastructure/` folder:
+All AWS infrastructure -- website hosting (S3 + CloudFront + Route 53, prod and beta) and all three project backends -- is managed by the CDK app under [`cdk/`](cdk/). Six stacks: `fanning-sns`, `live-poll`, `contact-form-api`, `portfolio-website-prod`, `portfolio-website-beta`, `portfolio-github-oidc`.
+
+**Changes ship on merge.** Pushing to `main` (touching `cdk/`, `website/`, or `projects/**`) triggers [`.github/workflows/cdk-deploy.yml`](.github/workflows/cdk-deploy.yml), which runs `cdk deploy --all` via a GitHub Actions OIDC role -- no AWS keys stored in GitHub. A pull request touching those paths triggers [`.github/workflows/cdk-pr.yml`](.github/workflows/cdk-pr.yml), which posts a `cdk diff` comment so you can see exactly what would change before merging.
+
+The website stacks' `BucketDeployment` construct publishes `website/` and each project's `frontend/` folder to the documented production paths and invalidates CloudFront automatically -- there's no manual `aws s3 sync` or `create-invalidation` step anymore.
+
+To deploy by hand instead (e.g. while iterating locally):
 
 ```bash
-cd projects/<project-name>/infrastructure
-sam build
-sam deploy --guided
+cd cdk
+npm install
+npx cdk diff --all     # preview
+npx cdk deploy --all   # apply
 ```
 
-After deployment, copy the relevant stack output into that project's `frontend/config.js`, then publish the static files to the paths documented in [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md). The HTML intentionally retains the production-relative URLs used by the deployed website.
+Each project's `infrastructure/template.yaml` is kept as a reference to the original SAM-based design; it's not what's actually deployed anymore -- the equivalent (and in a couple of cases, corrected-to-match-reality) resource definitions live in `cdk/lib/*.ts`. See [`cdk/README.md`](cdk/README.md) for the stack-to-resource mapping.
 
-For the static hosting layer, upload `website/404.html` with the other website files and configure CloudFront custom error responses so missing objects return `/404.html` with an HTTP 404 status. With a private S3 origin, configure both 403 and 404 origin responses because a missing object can surface as either response depending on the origin setup.
+The static hosting layer's CloudFront distributions are configured with custom error responses so missing objects fall back to `index.html` (prod) with an HTTP 200, matching the deployed configuration; see the CDK stack for specifics per environment.
 
 ## Security and operational notes
 
 - Browser-side `config.js` values are public by nature and must not contain secrets.
 - AWS credentials, local SAM build output, environment files, and deployment configuration are excluded through `.gitignore`.
+- GitHub Actions authenticates to AWS via OIDC (no long-lived access keys). The PR workflow's role can only read/diff; only the `main`-branch deploy workflow's role can actually change resources.
 - The SNS fan-out API includes API Gateway throttling, DynamoDB TTL, and an SQS dead-letter queue.
 - SES identities and any sandbox recipients must be verified before email-based demonstrations will work.
 - The custom 404 page uses `noindex` so search engines do not index error responses as normal content.
