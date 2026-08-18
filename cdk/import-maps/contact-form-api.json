@@ -1,0 +1,12 @@
+{
+  "ContactFormFunctionRole": { "RoleName": "prj1_call_SES-role-orfqeheg" },
+  "ContactFormFunction": { "FunctionName": "prj1_call_SES" },
+  "ContactApi": { "ApiId": "nkgtp7h93d" },
+  "ContactFormIntegration": { "ApiId": "nkgtp7h93d", "IntegrationId": "sh0347r" },
+  "GetRoute": { "ApiId": "nkgtp7h93d", "RouteId": "svwlx9h" },
+  "PostRoute": { "ApiId": "nkgtp7h93d", "RouteId": "ftaca8h" },
+  "AnyRoute": { "ApiId": "nkgtp7h93d", "RouteId": "x6h388n" },
+  "OptionsRoute": { "ApiId": "nkgtp7h93d", "RouteId": "xcfyqdq" },
+  "DefaultStage": { "ApiId": "nkgtp7h93d", "StageName": "default" },
+  "ApiGatewayInvokePermission": { "FunctionName": "prj1_call_SES", "Id": "lambda-0db00959-1e9d-4c01-910d-3d9f1f02e945" }
+}
