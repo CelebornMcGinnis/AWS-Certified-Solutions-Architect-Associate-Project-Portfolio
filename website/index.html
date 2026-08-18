@@ -2,6 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <script>
+    // Applied before first paint to avoid a flash of the wrong theme.
+    // A toggle in the nav can override the system preference; that
+    // choice is remembered in localStorage from then on.
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>McGinnis Architecture — Cloud Projects</title>
   <meta name="description" content="McGinnis Architecture: an AWS cloud architecture portfolio, built and documented one project at a time." />
@@ -13,7 +23,8 @@
     <div class="site-header-inner">
       <div class="brand-row">
         <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
-          <img src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
         </a>
       </div>
       <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
@@ -23,10 +34,15 @@
           <div class="nav-dropdown-menu">
             <a href="/project/contactform/project1.html">Contact Form</a>
             <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
             <a class="nav-dropdown-all" href="#projects">View all projects</a>
           </div>
         </details>
         <a href="#about">About</a>
+              <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
       </nav>
     </div>
   </header>
@@ -45,9 +61,6 @@
         Each project represents live infrastructure, documented to provide clear
         insight into its architecture, design decisions, and operational functionality.
       </p>
-      <div class="hero-actions">
-        <a class="button-link" href="#projects">Browse projects</a>
-      </div>
     </section>
 
     <section class="projects" id="projects" aria-labelledby="projects-heading">
@@ -61,6 +74,122 @@
       </div>
 
       <div class="project-grid">
+        <article class="project-card" id="project-next" data-reveal>
+          <div class="project-thumb thumb-arch" aria-hidden="true">
+            <svg viewBox="0 0 320 200" class="arch-scene" aria-hidden="true">
+              <g class="arch-line arch-line-1">
+                <line x1="90" y1="110" x2="135" y2="110" />
+              </g>
+              <g class="arch-line arch-line-2">
+                <line x1="185" y1="110" x2="230" y2="110" />
+              </g>
+
+              <g class="arch-node arch-node-1">
+                <rect x="40" y="85" width="50" height="50" rx="12" />
+                <circle cx="65" cy="103" r="6" class="arch-glyph-stroke" />
+                <path d="M55 122c0-7 4.5-11 10-11s10 4 10 11" class="arch-glyph-stroke" />
+              </g>
+
+              <g class="arch-node arch-node-2">
+                <rect x="135" y="85" width="50" height="50" rx="12" />
+                <rect x="149" y="99" width="22" height="22" rx="4" class="arch-glyph-stroke" />
+                <line x1="160" y1="99" x2="160" y2="93" class="arch-glyph-stroke" />
+                <line x1="160" y1="121" x2="160" y2="127" class="arch-glyph-stroke" />
+                <line x1="149" y1="110" x2="143" y2="110" class="arch-glyph-stroke" />
+                <line x1="171" y1="110" x2="177" y2="110" class="arch-glyph-stroke" />
+              </g>
+
+              <g class="arch-node arch-node-3">
+                <rect x="230" y="85" width="50" height="50" rx="12" />
+                <ellipse cx="255" cy="100" rx="11" ry="4.5" class="arch-glyph-stroke" />
+                <path d="M244 100v18c0 2.5 5 4.5 11 4.5s11-2 11-4.5v-18" class="arch-glyph-stroke" />
+                <path d="M244 109c0 2.5 5 4.5 11 4.5s11-2 11-4.5" class="arch-glyph-stroke" />
+              </g>
+            </svg>
+          </div>
+          <div class="project-body">
+            <p class="project-meta">Coming soon</p>
+            <h3>Next project — in progress</h3>
+            <p class="muted">
+              I'm actively building the next AWS project for this portfolio.
+              Check back soon!
+            </p>
+          </div>
+        </article>
+
+        <article class="project-card is-live" id="project-fanningsns" data-reveal>
+          <a class="project-link" href="/project/fanningsns/project3.html" aria-label="View the SNS Notification Fan-Out project">
+            <div class="project-thumb thumb-icons" aria-hidden="true">
+              <svg viewBox="0 0 320 200" class="icon-scene fanout-thumb-scene" aria-hidden="true">
+                <g class="fanout-thumb-line fanout-thumb-line-1">
+                  <line x1="112" y1="93" x2="188" y2="58" />
+                </g>
+                <g class="fanout-thumb-line fanout-thumb-line-2">
+                  <line x1="112" y1="107" x2="188" y2="142" />
+                </g>
+
+                <g class="fanout-thumb-hub">
+                  <rect x="47" y="75" width="50" height="50" rx="12" class="icon-node-bg" />
+                  <image href="/assets/aws-icons/sns.png" x="57" y="85" width="30" height="30" />
+                </g>
+
+                <g class="fanout-thumb-node fanout-thumb-node-1">
+                  <rect x="198" y="33" width="50" height="50" rx="12" class="icon-node-bg" />
+                  <image href="/assets/aws-icons/lambda.png" x="208" y="43" width="30" height="30" />
+                </g>
+
+                <g class="fanout-thumb-node fanout-thumb-node-2">
+                  <rect x="198" y="117" width="50" height="50" rx="12" class="icon-node-bg" />
+                  <image href="/assets/aws-icons/sqs.png" x="208" y="127" width="30" height="30" />
+                </g>
+              </svg>
+            </div>
+            <div class="project-body">
+              <p class="project-meta"><span class="status-dot" aria-hidden="true"></span>Live · August · 2026</p>
+              <h3>SNS Fan-Out</h3>
+              <p class="muted">
+                Click a button and watch one SNS publish fan out to two
+                independent subscribers in real time — a direct Lambda and
+                an SQS-buffered one — with the results streamed back to a
+                live log table.
+              </p>
+            </div>
+            <div class="project-hover-cta" aria-hidden="true"><span>View Project</span></div>
+          </a>
+        </article>
+
+        <article class="project-card is-live" id="project-polling" data-reveal>
+          <a class="project-link" href="/project/polling/project2.html" aria-label="View the Movie Poll project">
+            <div class="project-thumb thumb-reel" aria-hidden="true">
+              <svg viewBox="0 0 320 200" class="icon-scene reel-scene" aria-hidden="true">
+                <g class="film-reel">
+                  <circle cx="160" cy="100" r="64" class="reel-disc" />
+                  <circle cx="160" cy="62" r="18" class="reel-hole" />
+                  <circle cx="198" cy="86" r="18" class="reel-hole" />
+                  <circle cx="184" cy="130" r="18" class="reel-hole" />
+                  <circle cx="136" cy="130" r="18" class="reel-hole" />
+                  <circle cx="122" cy="86" r="18" class="reel-hole" />
+                  <circle cx="160" cy="100" r="4.5" class="reel-hole-tiny" />
+                  <circle cx="171" cy="93" r="3.5" class="reel-hole-tiny" />
+                  <circle cx="171" cy="107" r="3.5" class="reel-hole-tiny" />
+                  <circle cx="149" cy="107" r="3.5" class="reel-hole-tiny" />
+                  <circle cx="149" cy="93" r="3.5" class="reel-hole-tiny" />
+                </g>
+              </svg>
+            </div>
+            <div class="project-body">
+              <p class="project-meta"><span class="status-dot" aria-hidden="true"></span>Live · July · 2026</p>
+              <h3>Movie Poll</h3>
+              <p class="muted">
+                A real-time WebSocket poll on API Gateway, Lambda, and
+                DynamoDB — votes broadcast instantly to every open tab,
+                no page refresh required.
+              </p>
+            </div>
+            <div class="project-hover-cta" aria-hidden="true"><span>View Project</span></div>
+          </a>
+        </article>
+
         <article class="project-card is-live" id="project-contact-form" data-reveal>
           <a class="project-link" href="/project/contactform/project1.html" aria-label="View the Contact Form project">
             <div class="project-thumb thumb-envelope" aria-hidden="true">
@@ -104,81 +233,6 @@
             </div>
             <div class="project-hover-cta" aria-hidden="true"><span>View Project</span></div>
           </a>
-        </article>
-
-        <article class="project-card is-live" id="project-polling" data-reveal>
-          <a class="project-link" href="/project/polling/project2.html" aria-label="View the Movie Poll project">
-            <div class="project-thumb thumb-reel" aria-hidden="true">
-              <svg viewBox="0 0 320 200" class="icon-scene reel-scene" aria-hidden="true">
-                <g class="film-reel">
-                  <circle cx="160" cy="100" r="64" class="reel-disc" />
-                  <circle cx="160" cy="62" r="18" class="reel-hole" />
-                  <circle cx="198" cy="86" r="18" class="reel-hole" />
-                  <circle cx="184" cy="130" r="18" class="reel-hole" />
-                  <circle cx="136" cy="130" r="18" class="reel-hole" />
-                  <circle cx="122" cy="86" r="18" class="reel-hole" />
-                  <circle cx="160" cy="100" r="4.5" class="reel-hole-tiny" />
-                  <circle cx="171" cy="93" r="3.5" class="reel-hole-tiny" />
-                  <circle cx="171" cy="107" r="3.5" class="reel-hole-tiny" />
-                  <circle cx="149" cy="107" r="3.5" class="reel-hole-tiny" />
-                  <circle cx="149" cy="93" r="3.5" class="reel-hole-tiny" />
-                </g>
-              </svg>
-            </div>
-            <div class="project-body">
-              <p class="project-meta"><span class="status-dot" aria-hidden="true"></span>Live · July · 2026</p>
-              <h3>Movie Poll</h3>
-              <p class="muted">
-                A real-time WebSocket poll on API Gateway, Lambda, and
-                DynamoDB — votes broadcast instantly to every open tab,
-                no page refresh required.
-              </p>
-            </div>
-            <div class="project-hover-cta" aria-hidden="true"><span>View Project</span></div>
-          </a>
-        </article>
-
-        <article class="project-card" id="project-next" data-reveal>
-          <div class="project-thumb thumb-arch" aria-hidden="true">
-            <svg viewBox="0 0 320 200" class="arch-scene" aria-hidden="true">
-              <g class="arch-line arch-line-1">
-                <line x1="90" y1="110" x2="135" y2="110" />
-              </g>
-              <g class="arch-line arch-line-2">
-                <line x1="185" y1="110" x2="230" y2="110" />
-              </g>
-
-              <g class="arch-node arch-node-1">
-                <rect x="40" y="85" width="50" height="50" rx="12" />
-                <circle cx="65" cy="103" r="6" class="arch-glyph-stroke" />
-                <path d="M55 122c0-7 4.5-11 10-11s10 4 10 11" class="arch-glyph-stroke" />
-              </g>
-
-              <g class="arch-node arch-node-2">
-                <rect x="135" y="85" width="50" height="50" rx="12" />
-                <rect x="149" y="99" width="22" height="22" rx="4" class="arch-glyph-stroke" />
-                <line x1="160" y1="99" x2="160" y2="93" class="arch-glyph-stroke" />
-                <line x1="160" y1="121" x2="160" y2="127" class="arch-glyph-stroke" />
-                <line x1="149" y1="110" x2="143" y2="110" class="arch-glyph-stroke" />
-                <line x1="171" y1="110" x2="177" y2="110" class="arch-glyph-stroke" />
-              </g>
-
-              <g class="arch-node arch-node-3">
-                <rect x="230" y="85" width="50" height="50" rx="12" />
-                <ellipse cx="255" cy="100" rx="11" ry="4.5" class="arch-glyph-stroke" />
-                <path d="M244 100v18c0 2.5 5 4.5 11 4.5s11-2 11-4.5v-18" class="arch-glyph-stroke" />
-                <path d="M244 109c0 2.5 5 4.5 11 4.5s11-2 11-4.5" class="arch-glyph-stroke" />
-              </g>
-            </svg>
-          </div>
-          <div class="project-body">
-            <p class="project-meta">Coming soon</p>
-            <h3>Next project — in progress</h3>
-            <p class="muted">
-              I'm actively building the next AWS project for this portfolio.
-              Check back soon!
-            </p>
-          </div>
         </article>
       </div>
 
@@ -255,10 +309,20 @@
   <footer>
     <div class="footer-row">
       <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
-      <nav aria-label="Footer navigation">
-        <a href="#projects">Projects</a>
-        <a href="#about">About</a>
-      </nav>
+      <div class="footer-right">
+        <nav aria-label="Footer navigation">
+          <a href="#projects">Projects</a>
+          <a href="#about">About</a>
+        </nav>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+            <img src="/assets/linkedin.png" alt="" />
+          </a>
+          <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <img src="/assets/github.png" alt="" />
+          </a>
+        </div>
+      </div>
     </div>
   </footer>
 
@@ -281,8 +345,14 @@
       <span class="mobile-menu-group-label">Projects</span>
       <a class="mobile-menu-sublink" href="/project/contactform/project1.html">Contact Form</a>
       <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
+      <a class="mobile-menu-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
       <a class="mobile-menu-sublink" href="#projects">View all projects</a>
       <a href="#about">About</a>
+          <button type="button" class="theme-toggle mobile-menu-theme-toggle" id="theme-toggle-mobile" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Dark mode</span>
+      </button>
     </nav>
   </details>
 
@@ -319,16 +389,34 @@
       });
     });
 
-    // Close the "Projects" dropdown when clicking anywhere outside of it.
-    // (Deliberately not closing on mouseleave — there's a gap between the
-    // "Projects" trigger and the menu below it, so moving the mouse there
-    // would exit .nav-dropdown's hit area and close the menu before you
+    // Close the "Projects" dropdown and the mobile menu when clicking
+    // anywhere outside of whichever one is open. (Deliberately not
+    // closing on mouseleave — there's a gap between the "Projects"
+    // trigger and the menu below it, so moving the mouse there would
+    // exit .nav-dropdown's hit area and close the menu before you
     // could click anything in it.)
-    document.querySelectorAll('.nav-dropdown').forEach(function (details) {
+    document.querySelectorAll('.nav-dropdown, .mobile-menu').forEach(function (details) {
       document.addEventListener('click', function (event) {
         if (details.open && !details.contains(event.target)) {
           details.open = false;
         }
+      });
+    });
+
+    // Close either menu the instant scrolling starts, and close
+    // whichever one a link was just clicked inside of — both count as
+    // "the visitor is done with this menu," whether they picked
+    // something or just scrolled past it.
+    function closeOpenNavMenus() {
+      document.querySelectorAll('.nav-dropdown[open], .mobile-menu[open]').forEach(function (details) {
+        details.open = false;
+      });
+    }
+    window.addEventListener('scroll', closeOpenNavMenus, { passive: true });
+    document.querySelectorAll('.nav-dropdown-menu a, .mobile-menu-panel a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        var details = link.closest('details');
+        if (details) details.open = false;
       });
     });
 
@@ -405,6 +493,36 @@
         });
       }
     }
+
+    // Dark mode toggle — wires up whichever .theme-toggle button(s) are
+    // present (desktop nav icon, mobile menu row) to flip data-theme on
+    // <html> and remember the choice.
+    (function () {
+      var toggles = document.querySelectorAll('.theme-toggle');
+      if (!toggles.length) return;
+
+      function currentTheme() {
+        return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      }
+
+      function reflectState() {
+        var isDark = currentTheme() === 'dark';
+        toggles.forEach(function (btn) {
+          btn.setAttribute('aria-pressed', String(isDark));
+        });
+      }
+
+      reflectState();
+
+      toggles.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var next = currentTheme() === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          try { localStorage.setItem('theme', next); } catch (e) {}
+          reflectState();
+        });
+      });
+    })();
   </script>
 </body>
 </html>

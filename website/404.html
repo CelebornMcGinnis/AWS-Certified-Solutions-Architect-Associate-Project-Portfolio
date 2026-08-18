@@ -13,34 +13,39 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Message sent — McGinnis Architecture</title>
-  <meta name="description" content="Your message was submitted successfully through the Site Contact Form demo." />
-  <link rel="icon" type="image/png" href="../../assets/favicon.png" />
-  <link rel="stylesheet" href="../../styles.css" />
+  <title>Page not found — McGinnis Architecture</title>
+  <meta name="description" content="The page you're looking for doesn't exist." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <!-- Absolute path, unlike project pages' relative ../../styles.css —
+       this page can be served for a request at any depth (CloudFront
+       routes any unmatched path here), so a relative path would break
+       depending on where the 404 was triggered from. -->
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="site-header-inner">
       <div class="brand-row">
         <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
-          <img class="logo-light" src="../../assets/logo.png" alt="McGinnis Architecture" />
-          <img class="logo-dark" src="../../assets/logo_darkmode.png" alt="McGinnis Architecture" />
+          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
         </a>
       </div>
-      <img class="top-mark" src="../../assets/heart-badge.png" alt="" aria-hidden="true" />
+      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
       <nav aria-label="Main navigation">
         <a href="/">Home</a>
         <details class="nav-dropdown">
           <summary>Projects</summary>
           <div class="nav-dropdown-menu">
-            <a href="project1.html">Contact Form</a>
+            <a href="/project/contactform/project1.html">Contact Form</a>
             <a href="/project/polling/project2.html">Movie Poll</a>
             <a href="/project/fanningsns/project3.html">SNS Notifications</a>
             <a class="nav-dropdown-all" href="/#projects">View all projects</a>
           </div>
         </details>
         <a href="/#about">About</a>
-              <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+        <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
         </button>
@@ -49,24 +54,17 @@
   </header>
 
   <main>
-    <section class="hero success-hero" data-reveal>
-      <span class="success-icon" aria-hidden="true">
-        <svg viewBox="0 0 48 48" fill="none">
-          <circle cx="24" cy="24" r="21" class="success-icon-ring" />
-          <path d="M15 24.5l6 6 12-13" class="success-icon-check" />
-        </svg>
-      </span>
-      <p class="eyebrow">Sent</p>
-      <h1>Message received</h1>
+    <section class="hero" id="not-found">
+      <p class="eyebrow">404</p>
+      <h1>Page not found</h1>
       <p>
-        Your submission just passed through API Gateway and Lambda to SES,
-        the same way a real inquiry would. You'll also get a confirmation
-        email shortly.
+        Either the link's out of date or the page moved — either way,
+        this isn't it. The homepage and full project list are both one
+        click away.
       </p>
-      <p>Thank you for taking the time to review this project.</p>
       <div class="hero-actions">
         <a class="button-link" href="/">Back to home</a>
-        <a class="button-link ghost" href="project1.html">Back to the form</a>
+        <a class="button-link" href="/#projects">View projects</a>
       </div>
     </section>
   </main>
@@ -110,12 +108,12 @@
     <nav class="mobile-menu-panel" aria-label="Mobile navigation">
       <a href="/">Home</a>
       <span class="mobile-menu-group-label">Projects</span>
-      <a class="mobile-menu-sublink" href="project1.html">Contact Form</a>
+      <a class="mobile-menu-sublink" href="/project/contactform/project1.html">Contact Form</a>
       <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
       <a class="mobile-menu-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
       <a class="mobile-menu-sublink" href="/#projects">View all projects</a>
       <a href="/#about">About</a>
-          <button type="button" class="theme-toggle mobile-menu-theme-toggle" id="theme-toggle-mobile" aria-pressed="false" aria-label="Toggle dark mode">
+      <button type="button" class="theme-toggle mobile-menu-theme-toggle" id="theme-toggle-mobile" aria-pressed="false" aria-label="Toggle dark mode">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
         <span>Dark mode</span>
@@ -125,22 +123,6 @@
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Scroll-triggered reveal for the success message.
-    var revealEls = document.querySelectorAll('[data-reveal]');
-    if ('IntersectionObserver' in window) {
-      var revealIo = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            revealIo.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
-      revealEls.forEach(function (el) { revealIo.observe(el); });
-    } else {
-      revealEls.forEach(function (el) { el.classList.add('is-visible'); });
-    }
 
     // Close the "Projects" dropdown and the mobile menu when clicking
     // anywhere outside of whichever one is open.
@@ -176,12 +158,7 @@
       var headerRafId = null;
       var updateHeaderState = function () {
         headerRafId = null;
-        // Hysteresis: a different threshold for entering vs. leaving the
-        // "scrolled" state stops it from rapidly flipping back and forth
-        // if scrollY hovers right around a single boundary — which can
-        // happen right after load while images/sections are still
-        // settling into their final layout position.
-        var threshold = wasScrolled ? 8 : 24;
+        var threshold = wasScrolled ? 4 : 48;
         var scrolled = window.scrollY > threshold;
         if (scrolled !== wasScrolled) {
           siteHeader.classList.toggle('is-scrolled', scrolled);
@@ -213,12 +190,11 @@
       });
     }
 
-    // Expanding mobile menu button: fades in once scrolled down a bit
-    // (shorter trigger than back-to-top, since nav access is useful
-    // sooner), closes itself if you scroll back up while it's open, and
-    // replays its open animation every time via the same restart trick
-    // the "Projects" dropdown uses (a static CSS animation won't
-    // reliably re-run each time a <details> re-opens).
+    // Expanding mobile menu button: fades in once scrolled down a bit,
+    // closes itself if you scroll back up while it's open, and replays
+    // its open animation every time via the same restart trick the
+    // "Projects" dropdown uses (a static CSS animation won't reliably
+    // re-run each time a <details> re-opens).
     var mobileMenu = document.getElementById('mobile-menu');
     if (mobileMenu) {
       var mobileMenuPanel = mobileMenu.querySelector('.mobile-menu-panel');

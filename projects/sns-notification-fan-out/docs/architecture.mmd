@@ -1,0 +1,42 @@
+flowchart LR
+    Visitor[Website Visitor]
+    Frontend[Static Demo Frontend\nfrontend/index.html]
+    Config[Frontend Config\nfrontend/config.js]
+    Api[Amazon API Gateway\nHTTP API]
+    Publisher[AWS Lambda\npublish_handler.py]
+    Topic[Amazon SNS\nNotification Topic]
+    Notifier[AWS Lambda\nnotify_handler.py]
+    Queue[Amazon SQS\nLogger Queue]
+    DLQ[Amazon SQS\nDead-Letter Queue]
+    Logger[AWS Lambda\nlog_handler.py]
+    Recent[AWS Lambda\nrecent_handler.py]
+    Table[(Amazon DynamoDB\nDelivery Log + RecentIndex + TTL)]
+    SES[Amazon SES]
+    Inbox[Configured Recipient]
+    Logs[Amazon CloudWatch Logs]
+    IAM[AWS IAM\nScoped Service Permissions]
+
+    Visitor --> Frontend
+    Frontend --> Config
+    Frontend -->|POST /notify| Api
+    Api --> Publisher
+    Publisher -->|Publish| Topic
+    Topic -->|Direct Lambda subscription| Notifier
+    Topic -->|SQS subscription| Queue
+    Queue --> Logger
+    Queue -. After repeated failures .-> DLQ
+    Notifier -->|SendEmail| SES
+    SES --> Inbox
+    Notifier -->|Write notifier row| Table
+    Logger -->|Write logger row| Table
+    Frontend -->|GET /notify/recent| Api
+    Api --> Recent
+    Recent -->|Query RecentIndex| Table
+    IAM --> Publisher
+    IAM --> Notifier
+    IAM --> Logger
+    IAM --> Recent
+    Publisher --> Logs
+    Notifier --> Logs
+    Logger --> Logs
+    Recent --> Logs

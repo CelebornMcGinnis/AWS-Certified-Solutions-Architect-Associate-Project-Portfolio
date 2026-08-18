@@ -2,18 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <script>
+    // Applied before first paint to avoid a flash of the wrong theme.
+    // A toggle in the nav can override the system preference; that
+    // choice is remembered in localStorage from then on.
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Movie Poll — McGinnis Architecture</title>
   <meta name="description" content="A real-time voting demo built on API Gateway WebSockets, Lambda, and DynamoDB." />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
-<body>
+<body id="top">
   <header class="site-header">
     <div class="site-header-inner">
       <div class="brand-row">
         <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
-          <img src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
         </a>
       </div>
       <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
@@ -23,11 +34,22 @@
           <summary>Projects</summary>
           <div class="nav-dropdown-menu">
             <a href="/project/contactform/project1.html">Contact Form</a>
-            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="#top">Movie Poll</a>
+            <span class="nav-dropdown-group-label">On this page</span>
+            <a class="nav-dropdown-sublink" href="#poll">Live poll</a>
+            <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
+            <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
+            <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
+            <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
             <a class="nav-dropdown-all" href="/#projects">View all projects</a>
           </div>
         </details>
         <a href="/#about">About</a>
+              <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
       </nav>
     </div>
   </header>
@@ -46,7 +68,7 @@
         <a class="button-link" href="#how-it-works">See how it works</a>
         <a class="button-link" href="#use-cases">Use cases</a>
         <a class="button-link" href="#pricing">Pricing</a>
-        <a class="button-link" href="#design-decisions">Why I built it this way</a>
+        <a class="button-link" href="#design-decisions">Design decisions</a>
       </div>
     </section>
 
@@ -59,6 +81,11 @@
           connection to a Lambda function, updates the tallies in DynamoDB,
           and gets broadcast back to every connected browser — including
           this one — in real time.
+        </p>
+        <p class="muted small-note">
+          Each option pairs a movie with a one-line description of the
+          mood or energy behind it — not a plot summary, more of a vibe
+          check. Pick whichever one matches how you're feeling right now.
         </p>
         <p class="muted small-note">
           <strong>Privacy notice:</strong> your browser stores a random,
@@ -450,11 +477,21 @@
   <footer>
     <div class="footer-row">
       <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
-      <nav aria-label="Footer navigation">
-        <a href="/">Home</a>
-        <a href="/#projects">Projects</a>
-        <a href="/#about">About</a>
-      </nav>
+      <div class="footer-right">
+        <nav aria-label="Footer navigation">
+          <a href="/">Home</a>
+          <a href="/#projects">Projects</a>
+          <a href="/#about">About</a>
+        </nav>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+            <img src="/assets/linkedin.png" alt="" />
+          </a>
+          <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <img src="/assets/github.png" alt="" />
+          </a>
+        </div>
+      </div>
     </div>
   </footer>
 
@@ -475,11 +512,23 @@
     </summary>
     <nav class="mobile-menu-panel" aria-label="Mobile navigation">
       <a href="/">Home</a>
+      <span class="mobile-menu-group-label">On this page</span>
+      <a class="mobile-menu-sublink" href="#poll">Live poll</a>
+      <a class="mobile-menu-sublink" href="#how-it-works">How it works</a>
+      <a class="mobile-menu-sublink" href="#use-cases">Use cases</a>
+      <a class="mobile-menu-sublink" href="#pricing">Pricing</a>
+      <a class="mobile-menu-sublink" href="#design-decisions">Design decisions</a>
       <span class="mobile-menu-group-label">Projects</span>
       <a class="mobile-menu-sublink" href="/project/contactform/project1.html">Contact Form</a>
-      <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
+      <a class="mobile-menu-sublink" href="#top">Movie Poll</a>
+      <a class="mobile-menu-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
       <a class="mobile-menu-sublink" href="/#projects">View all projects</a>
       <a href="/#about">About</a>
+          <button type="button" class="theme-toggle mobile-menu-theme-toggle" id="theme-toggle-mobile" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Dark mode</span>
+      </button>
     </nav>
   </details>
 
@@ -923,12 +972,30 @@
       revealEls.forEach(function (el) { el.classList.add('is-visible'); });
     }
 
-    // Close the "Projects" dropdown when clicking anywhere outside of it.
-    document.querySelectorAll('.nav-dropdown').forEach(function (details) {
+    // Close the "Projects" dropdown and the mobile menu when clicking
+    // anywhere outside of whichever one is open.
+    document.querySelectorAll('.nav-dropdown, .mobile-menu').forEach(function (details) {
       document.addEventListener('click', function (event) {
         if (details.open && !details.contains(event.target)) {
           details.open = false;
         }
+      });
+    });
+
+    // Close either menu the instant scrolling starts, and close
+    // whichever one a link was just clicked inside of — both count as
+    // "the visitor is done with this menu," whether they picked
+    // something or just scrolled past it.
+    function closeOpenNavMenus() {
+      document.querySelectorAll('.nav-dropdown[open], .mobile-menu[open]').forEach(function (details) {
+        details.open = false;
+      });
+    }
+    window.addEventListener('scroll', closeOpenNavMenus, { passive: true });
+    document.querySelectorAll('.nav-dropdown-menu a, .mobile-menu-panel a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        var details = link.closest('details');
+        if (details) details.open = false;
       });
     });
 
@@ -996,6 +1063,36 @@
         });
       }
     }
+
+    // Dark mode toggle — wires up whichever .theme-toggle button(s) are
+    // present (desktop nav icon, mobile menu row) to flip data-theme on
+    // <html> and remember the choice.
+    (function () {
+      var toggles = document.querySelectorAll('.theme-toggle');
+      if (!toggles.length) return;
+
+      function currentTheme() {
+        return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      }
+
+      function reflectState() {
+        var isDark = currentTheme() === 'dark';
+        toggles.forEach(function (btn) {
+          btn.setAttribute('aria-pressed', String(isDark));
+        });
+      }
+
+      reflectState();
+
+      toggles.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var next = currentTheme() === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          try { localStorage.setItem('theme', next); } catch (e) {}
+          reflectState();
+        });
+      });
+    })();
   </script>
 </body>
 </html>

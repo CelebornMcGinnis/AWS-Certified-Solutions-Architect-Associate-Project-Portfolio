@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>
+    // Applied before first paint to avoid a flash of the wrong theme.
+    // A toggle in the nav can override the system preference; that
+    // choice is remembered in localStorage from then on.
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SNS Notification Demo — McGinnis Architecture</title>
+  <meta name="description" content="A real AWS SNS fan-out demo — trigger a message and watch it deliver to two independent subscribers." />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body id="top">
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand-row">
+        <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
+          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+        </a>
+      </div>
+      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <nav aria-label="Main navigation">
+        <a href="/">Home</a>
+        <details class="nav-dropdown">
+          <summary>Projects</summary>
+          <div class="nav-dropdown-menu">
+            <a href="/project/contactform/project1.html">Contact Form</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="#top">SNS Notifications</a>
+            <span class="nav-dropdown-group-label">On this page</span>
+            <a class="nav-dropdown-sublink" href="#demo">Trigger demo</a>
+            <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
+            <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
+            <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
+            <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
+            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+          </div>
+        </details>
+        <a href="/#about">About</a>
+              <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Project</p>
+      <h1 class="hero-title-compact">SNS Notification Fan-Out</h1>
+      <p>
+        Click the button below and one message publishes to an SNS topic —
+        then watch it deliver down two independent paths at once: a direct
+        Lambda subscriber and a buffered SQS-backed subscriber. This is a
+        live AWS architecture, not a mockup, and it collects nothing about
+        you to run.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href="#how-it-works">See how it works</a>
+        <a class="button-link" href="#use-cases">Use cases</a>
+        <a class="button-link" href="#pricing">Pricing</a>
+        <a class="button-link" href="#design-decisions">Design decisions</a>
+      </div>
+    </section>
+
+    <section class="card" id="demo" aria-labelledby="demo-heading">
+      <div>
+        <p class="eyebrow">Demo</p>
+        <h2 id="demo-heading">Trigger a Test Notification</h2>
+        <p class="muted">
+          This button sends a real request to API Gateway, which publishes
+          one message to an SNS topic. The table below polls a second
+          endpoint and fills in as each subscriber finishes its own work.
+        </p>
+        <p class="muted small-note">
+          <strong>Privacy notice:</strong> no personal information is
+          collected here — not even an email address. The email branch of
+          this demo always notifies my own inbox, purely to prove that
+          branch of the fan-out fired.
+        </p>
+      </div>
+
+      <div class="notify-trigger">
+        <div class="trigger-button-row">
+          <button type="button" id="trigger-button">Trigger test notification</button>
+          <span class="cooldown-counter" id="cooldown-counter" aria-hidden="true"></span>
+        </div>
+        <div class="form-status" id="trigger-status" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="notify-log-wrap">
+        <div class="notify-log-head">
+          <h3>Live delivery log</h3>
+          <span class="muted small-note" id="log-empty-note">No notifications triggered yet this session.</span>
+        </div>
+        <table class="notify-log" id="notify-log">
+          <thead>
+            <tr>
+              <th scope="col">Triggered</th>
+              <th scope="col">
+                <span class="th-with-info">
+                  Message ID
+                  <button type="button" class="info-bubble-trigger" id="message-id-info-trigger" aria-expanded="false" aria-describedby="message-id-info-bubble">
+                    <span aria-hidden="true">i</span>
+                    <span class="sr-only">Where does the Message ID come from?</span>
+                  </button>
+                  <div class="info-bubble" id="message-id-info-bubble" role="tooltip" hidden>
+                    The publisher Lambda generates a random id the moment it
+                    publishes to SNS — it's not from AWS itself. Both
+                    subscribers get that same id attached to the message,
+                    which is how the two independent branches get matched
+                    back into a single row instead of showing up as two
+                    unrelated events.
+                  </div>
+                </span>
+              </th>
+              <th scope="col">SQS → Lambda → DynamoDB</th>
+              <th scope="col">Lambda → SES</th>
+            </tr>
+          </thead>
+          <tbody id="notify-log-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture</p>
+        <h2 id="how-it-works-heading">How it works</h2>
+        <p class="muted section-intro">
+          One publish, two independent deliveries — click any step to jump
+          to it, or let it play through on its own. Steps 1-4 are the setup;
+          at step 5, SNS fans out to both branches at once.
+        </p>
+      </div>
+
+      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
+      <div class="flow-diagram fanout-diagram" id="flow-diagram">
+        <div class="flow-track">
+          <div class="flow-node" data-node="visitor">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="12" cy="10" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M4 26c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="23" cy="12" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M18.5 26c0-3.6 2.5-6.5 6-7.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <span class="flow-node-label">Visitor</span>
+          </div>
+
+          <div class="flow-connector" data-step="1" aria-hidden="true">
+            <span class="flow-connector-num">1</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="webpage" data-step="1" role="button" tabindex="0" aria-label="Step 1: Visitor loads the page">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="20" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M3 12h26" stroke="currentColor" stroke-width="2"/><circle cx="7.5" cy="9" r="1" fill="currentColor"/><circle cx="11" cy="9" r="1" fill="currentColor"/></svg>
+            </span>
+            <span class="flow-node-label">Website</span>
+          </div>
+
+          <div class="flow-connector" data-step="2" aria-hidden="true">
+            <span class="flow-connector-num">2</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="apigateway" data-step="2" role="button" tabindex="0" aria-label="Step 2: Browser calls API Gateway">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/apigateway.png" alt="" />
+            </span>
+            <span class="flow-node-label">API Gateway</span>
+          </div>
+
+          <div class="flow-connector" data-step="3" aria-hidden="true">
+            <span class="flow-connector-num">3</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="lambda-publisher" data-step="3" role="button" tabindex="0" aria-label="Step 3: Lambda publishes to SNS">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/lambda.png" alt="" />
+            </span>
+            <span class="flow-node-label">Lambda</span>
+          </div>
+
+          <div class="flow-connector" data-step="4" aria-hidden="true">
+            <span class="flow-connector-num">4</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="sns" data-step="4" role="button" tabindex="0" aria-label="Step 4: SNS fans the message out">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/sns.png" alt="" />
+            </span>
+            <span class="flow-node-label">SNS</span>
+          </div>
+
+          <div class="fork-wrap" data-step="5" aria-hidden="true">
+            <span class="fork-arrow fork-left"><span class="fork-arrow-dot"></span></span>
+            <span class="fork-arrow fork-right"><span class="fork-arrow-dot"></span></span>
+          </div>
+
+          <div class="fork-diagonal fork-up" data-step="5" aria-hidden="true">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+              <line x1="16" y1="55" x2="37" y2="22"></line>
+              <polygon class="fork-arrowhead" points="37,22 36.5,31.2 28.9,26.3"></polygon>
+              <circle class="fork-dot" r="2.5"></circle>
+            </svg>
+          </div>
+
+          <div class="flow-node" data-node="lambda-notifier" data-step="5" role="button" tabindex="0" aria-label="Step 5: Lambda subscriber sends email">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/lambda.png" alt="" />
+            </span>
+            <span class="flow-node-label">Lambda</span>
+          </div>
+
+          <div class="fork-diagonal fork-down" data-step="5" aria-hidden="true">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+              <line x1="16" y1="45" x2="37" y2="78"></line>
+              <polygon class="fork-arrowhead" points="37,78 28.9,73.7 36.5,68.8"></polygon>
+              <circle class="fork-dot" r="2.5"></circle>
+            </svg>
+          </div>
+
+          <div class="flow-node" data-node="sqs" data-step="5" role="button" tabindex="0" aria-label="Step 5: SNS also delivers to an SQS queue">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/sqs.png" alt="" />
+            </span>
+            <span class="flow-node-label">SQS</span>
+          </div>
+
+          <div class="flow-connector step6-main" data-step="6" aria-hidden="true">
+            <span class="flow-connector-num">6</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-connector step6-branch" data-step="6" aria-hidden="true">
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="ses" data-step="6" role="button" tabindex="0" aria-label="Step 6: SES sends the email">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/ses.png" alt="" />
+            </span>
+            <span class="flow-node-label">SES</span>
+          </div>
+
+          <div class="flow-node" data-node="lambda-logger" data-step="6" role="button" tabindex="0" aria-label="Step 6: Lambda subscriber logs the delivery">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/lambda.png" alt="" />
+            </span>
+            <span class="flow-node-label">Lambda</span>
+          </div>
+
+          <div class="flow-connector" data-step="7" aria-hidden="true">
+            <span class="flow-connector-num">7</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="dynamodb" data-step="7" role="button" tabindex="0" aria-label="Step 7: DynamoDB stores the delivery row">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/dynamodb.png" alt="" />
+            </span>
+            <span class="flow-node-label">DynamoDB</span>
+          </div>
+        </div>
+      </div>
+
+      <ol class="flow-steps" id="flow-steps">
+        <li class="flow-step" data-step="1" tabindex="0">
+          <span class="flow-step-num">1</span>
+          <div class="flow-step-body">
+            <h3>Visitor loads the page</h3>
+            <p>This static site — including this page and its button — is served from S3, the same way as the rest of the site.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="2" tabindex="0">
+          <span class="flow-step-num">2</span>
+          <div class="flow-step-body">
+            <h3>Browser calls API Gateway</h3>
+            <p>Clicking the button sends a <code>POST /notify</code> request with no body data beyond an internal note string — nothing personal is sent.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="3" tabindex="0">
+          <span class="flow-step-num">3</span>
+          <div class="flow-step-body">
+            <h3>Lambda publishes to SNS</h3>
+            <p>The publisher function generates a message id, publishes one message to the SNS topic, and immediately returns that id to the browser — it doesn't wait for either subscriber to finish.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="4" tabindex="0">
+          <span class="flow-step-num">4</span>
+          <div class="flow-step-body">
+            <h3>SNS fans the message out</h3>
+            <p>The topic delivers the message to both of its subscribers at once — a direct Lambda subscription and a separate SQS queue, both reached in the same step next.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="5" tabindex="0">
+          <span class="flow-step-num">5</span>
+          <div class="flow-step-body">
+            <h3>Both branches receive it simultaneously</h3>
+            <p>One Lambda is subscribed directly to the topic — no queue in front of it, so it runs the moment SNS delivers the message. At the same time, the message also lands in an SQS queue subscribed to the topic. That branch trades a little latency for durability: if its consumer Lambda is briefly unavailable, the message waits in the queue instead of being lost, retrying up to three times before landing in a dead-letter queue.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="6" tabindex="0">
+          <span class="flow-step-num">6</span>
+          <div class="flow-step-body">
+            <h3>Each branch finishes its own way</h3>
+            <p>The direct-subscription Lambda calls SES to send a one-line email to a fixed admin address. In parallel, a second Lambda — triggered by the queue rather than the topic directly — picks up the message once it's available. Both write their own row to the same DynamoDB table, keyed by message id.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="7" tabindex="0">
+          <span class="flow-step-num">7</span>
+          <div class="flow-step-body">
+            <h3>DynamoDB stores the delivery row</h3>
+            <p>This is the SQS branch's write landing in the table — combined with the SES branch's write from step 6, that's what lets the live log table above show two independent checkmarks per row.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
+      <div data-reveal>
+      <p class="eyebrow">Use cases</p>
+      <h2 id="use-cases-heading">Where this pattern fits</h2>
+      <p class="muted section-intro">
+        SNS fan-out shows up anywhere one event needs to trigger several
+        unrelated pieces of work without those pieces knowing about each
+        other.
+      </p>
+      </div>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="12" cy="5" r="2.4" />
+              <path d="M12 7.4V12M12 12L6 17M12 12l6 5" stroke-linecap="round" />
+            </svg>
+          </span>
+          <h3>Multi-channel alerting</h3>
+          <p class="muted">
+            One event — a deploy, an alarm, an order — needs to reach
+            several destinations at once: email, chat, a queue for
+            downstream processing, a dashboard.
+          </p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="3" y="3" width="8" height="8" rx="1.5" />
+              <rect x="13" y="3" width="8" height="8" rx="1.5" />
+              <rect x="3" y="13" width="8" height="8" rx="1.5" />
+              <rect x="13" y="13" width="8" height="8" rx="1.5" />
+            </svg>
+          </span>
+          <h3>Decoupling microservices</h3>
+          <p class="muted">
+            A publisher doesn't need to know who's listening or how many
+            subscribers there are — new consumers can be added later
+            without changing the publishing service at all.
+          </p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 3v4M12 17v4M3 12h4M17 12h4" stroke-linecap="round" />
+              <circle cx="12" cy="12" r="5" />
+            </svg>
+          </span>
+          <h3>Mixing delivery guarantees</h3>
+          <p class="muted">
+            Some subscribers want low latency and can tolerate an
+            occasional miss; others need durability and retries. SNS lets
+            each subscriber pick its own trade-off, as shown by the two
+            paths on this page.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
+      <div data-reveal>
+      <p class="eyebrow">Pricing</p>
+      <h2 id="pricing-heading">What this actually costs</h2>
+      <p class="muted section-intro">
+        Same pay-per-use model as the rest of this site's projects — no
+        server sits idle, so an unclicked demo costs nothing. These are
+        estimates based on public AWS list pricing, not a guarantee.
+      </p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-tier">Low volume</p>
+          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Up to a few thousand triggers a month — comfortably inside the
+            free tiers for SNS, SQS, Lambda, and DynamoDB on-demand.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">Moderate volume</p>
+          <p class="pricing-amount">~$1<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Tens of thousands of triggers a month — mostly SES sending
+            costs once its free tier is used up; SNS/SQS/Lambda stay near
+            free.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">High volume</p>
+          <p class="pricing-amount">~$5–10<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Hundreds of thousands of triggers a month — Lambda invocations
+            and SES sends start to add up across both fan-out branches.
+          </p>
+        </div>
+      </div>
+      <div class="pricing-breakdown">
+        <h3>What drives the cost</h3>
+        <ul>
+          <li><strong>SNS</strong> — billed per publish and per delivery to each subscriber; the free tier covers 1M publishes and 100K HTTP/S deliveries a month, and Lambda/SQS deliveries are free entirely.</li>
+          <li><strong>SQS</strong> — billed per million requests; the free tier covers the first 1M every month.</li>
+          <li><strong>Lambda</strong> — billed per request and per millisecond; four small functions here, each running in well under 200ms.</li>
+          <li><strong>DynamoDB</strong> — on-demand billing, and rows expire automatically after 24 hours via TTL, so storage never grows.</li>
+          <li><strong>SES</strong> — billed per 1,000 emails sent, after the free tier.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
+      <div data-reveal>
+        <p class="eyebrow">Design decisions</p>
+        <h2 id="decisions-heading">Why I built it this way</h2>
+        <p class="muted section-intro">
+          A few choices here aren't the only way to build this — here's the
+          reasoning behind them.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>No visitor email collected, even though SES is in the loop</h3>
+          <p class="muted">
+            A real SNS topic subscription is static — you can't dynamically
+            subscribe a visitor's address to receive one message and then
+            unsubscribe them, at least not without a confirmation step that
+            would break the instant-feedback point of the demo. Rather than
+            fake that, the SES branch always emails me, and the visitor
+            verifies the fan-out worked by watching the live log table
+            instead.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Two subscriber types, not two of the same kind</h3>
+          <p class="muted">
+            It would have been simpler to subscribe two Lambdas directly to
+            the topic. Using a direct subscription for one branch and an
+            SQS-buffered one for the other is more work, but it's also the
+            actual point of this project — showing that SNS lets each
+            subscriber pick its own latency/durability trade-off, not just
+            that it can fan out at all.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>One shared DynamoDB table, split by sort key</h3>
+          <p class="muted">
+            The notifier and logger Lambdas don't know about each other and
+            never coordinate directly — they just both write to the same
+            table, keyed by message id and their own subscriber name. That's
+            what lets a single Query reconstruct which branches completed for
+            a given click, without either function needing awareness of the
+            other.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>A Scan seemed fine, until it wasn't</h3>
+          <p class="muted">
+            The first version read "recent" rows back with a plain table
+            Scan, reasoning that daily TTL cleanup would keep the table
+            small enough for it not to matter. That held up during early
+            testing, then quietly stopped being true — a Scan reads items
+            in whatever order they happen to sit in on disk, not by
+            recency, and once the table had grown past a couple hundred
+            rows a Scan could genuinely miss the newest ones. Fixed by
+            adding a GSI (a constant partition key + <code>triggeredAt</code>
+            as the sort key) so reads are an actual sorted Query instead of
+            a guess. TTL still handles cleanup — it just never was the
+            thing keeping reads correct.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Polling instead of a WebSocket</h3>
+          <p class="muted">
+            The <a href="/project/polling/project2.html">movie poll project</a>
+            already covers a real-time WebSocket pattern. This project
+            deliberately reaches for a simpler tool — the browser polling a
+            REST endpoint every couple seconds — since a persistent
+            connection isn't warranted just to watch two Lambdas each run
+            once.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
+      <div class="footer-right">
+        <nav aria-label="Footer navigation">
+          <a href="/">Home</a>
+          <a href="/#projects">Projects</a>
+          <a href="/#about">About</a>
+        </nav>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+            <img src="/assets/linkedin.png" alt="" />
+          </a>
+          <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <img src="/assets/github.png" alt="" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <details class="mobile-menu" id="mobile-menu">
+    <summary class="mobile-menu-button" aria-label="Open menu">
+      <svg class="mobile-menu-icon-open" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+      <svg class="mobile-menu-icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+    </summary>
+    <nav class="mobile-menu-panel" aria-label="Mobile navigation">
+      <a href="/">Home</a>
+      <span class="mobile-menu-group-label">On this page</span>
+      <a class="mobile-menu-sublink" href="#demo">Trigger demo</a>
+      <a class="mobile-menu-sublink" href="#how-it-works">How it works</a>
+      <a class="mobile-menu-sublink" href="#use-cases">Use cases</a>
+      <a class="mobile-menu-sublink" href="#pricing">Pricing</a>
+      <a class="mobile-menu-sublink" href="#design-decisions">Design decisions</a>
+      <span class="mobile-menu-group-label">Projects</span>
+      <a class="mobile-menu-sublink" href="/project/contactform/project1.html">Contact Form</a>
+      <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
+      <a class="mobile-menu-sublink" href="#top">SNS Notifications</a>
+      <a class="mobile-menu-sublink" href="/#projects">View all projects</a>
+      <a href="/#about">About</a>
+          <button type="button" class="theme-toggle mobile-menu-theme-toggle" id="theme-toggle-mobile" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Dark mode</span>
+      </button>
+    </nav>
+  </details>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
