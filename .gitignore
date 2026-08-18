@@ -72,12 +72,14 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# Keep lock files if you later add a real build system.
-# For now, these can be ignored if your site is plain HTML/CSS/JS.
+# The website/projects are still plain HTML/CSS/JS with no lock file to
+# keep, but cdk/ is a real npm project -- its lock file is committed for
+# reproducible CI builds.
+package-lock.json
+!cdk/package-lock.json
 
 # ----------------------------
 # IDE / editor files

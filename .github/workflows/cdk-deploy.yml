@@ -1,0 +1,42 @@
+name: CDK deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cdk/**"
+      - "website/**"
+      - "projects/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: cdk-deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: cdk/package-lock.json
+
+      - run: npm ci
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::942960194803:role/github-actions-portfolio-cdk-deploy
+          aws-region: us-east-1
+
+      - name: cdk deploy
+        run: npx cdk deploy --all --require-approval never

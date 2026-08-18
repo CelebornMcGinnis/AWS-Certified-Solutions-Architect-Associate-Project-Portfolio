@@ -1,0 +1,6 @@
+{
+  "WebsiteBucket75C24D94": { "BucketName": "mcginnisarchitecture-prod-website-942960194803-us-east-1-an" },
+  "WebsiteBucketPolicyE10E3262": { "Bucket": "mcginnisarchitecture-prod-website-942960194803-us-east-1-an" },
+  "OriginAccessControl": { "Id": "E1FT9TWFY67FPL" },
+  "Distribution": { "Id": "EMS3G9WAE7YI3" }
+}
