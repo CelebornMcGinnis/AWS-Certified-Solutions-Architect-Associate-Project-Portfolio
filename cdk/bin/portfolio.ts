@@ -52,5 +52,5 @@ new WebsiteStack(app, 'portfolio-website-beta', {
 
 new GitHubOidcStack(app, 'portfolio-github-oidc', {
   env,
-  githubRepo: 'CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio',
+  githubRepoSubject: 'CelebornMcGinnis@25270109/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio@1319607228',
 });

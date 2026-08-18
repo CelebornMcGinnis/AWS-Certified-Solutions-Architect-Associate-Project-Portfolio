@@ -5,8 +5,16 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 const GITHUB_OIDC_THUMBPRINT_URL = 'https://token.actions.githubusercontent.com';
 
 export interface GitHubOidcStackProps extends cdk.StackProps {
-  /** e.g. "CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" */
-  githubRepo: string;
+  /**
+   * GitHub's OIDC `sub` claim now embeds immutable owner/repo IDs (e.g.
+   * `CelebornMcGinnis@25270109/AWS-Certified-...-Portfolio@1319607228`)
+   * rather than plain names, so a repo rename or ownership transfer can't
+   * silently hijack the trust relationship. Confirmed against a live token
+   * via a debug step in cdk-pr.yml -- there's no API to look these up
+   * ahead of time, only `repository_owner_id`/`repository_id` in a token
+   * already minted for this repo.
+   */
+  githubRepoSubject: string;
 }
 
 /**
@@ -48,7 +56,7 @@ export class GitHubOidcStack extends cdk.Stack {
           'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
         },
         StringLike: {
-          'token.actions.githubusercontent.com:sub': `repo:${props.githubRepo}:ref:refs/heads/main`,
+          'token.actions.githubusercontent.com:sub': `repo:${props.githubRepoSubject}:ref:refs/heads/main`,
         },
       }),
     });
@@ -72,7 +80,7 @@ export class GitHubOidcStack extends cdk.Stack {
           'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
         },
         StringLike: {
-          'token.actions.githubusercontent.com:sub': `repo:${props.githubRepo}:pull_request`,
+          'token.actions.githubusercontent.com:sub': `repo:${props.githubRepoSubject}:pull_request`,
         },
       }),
     });
