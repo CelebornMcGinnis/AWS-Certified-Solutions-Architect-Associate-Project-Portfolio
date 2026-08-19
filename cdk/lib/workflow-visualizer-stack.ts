@@ -10,7 +10,10 @@ import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { SITE_ORIGIN, BETA_SITE_ORIGIN } from './config';
 
 const BACKEND_DIR = path.join(__dirname, '../../projects/workflow-visualizer/backend');
-const ALLOWED_ORIGINS = [SITE_ORIGIN, BETA_SITE_ORIGIN];
+
+export interface WorkflowVisualizerStackProps extends cdk.StackProps {
+  stage: 'prod' | 'beta';
+}
 
 /**
  * Workflow visualizer demo: submit a job, watch it advance through
@@ -19,17 +22,28 @@ const ALLOWED_ORIGINS = [SITE_ORIGIN, BETA_SITE_ORIGIN];
  * integration (no Lambda in the state machine at all) -- Lambda only
  * handles the API surface (create/read/list).
  *
- * Greenfield stack, no existing live resource to match, so this uses
- * ordinary L2 constructs throughout (unlike fanning-sns/live-poll, which
- * had to reproduce an already-deployed template's L1 shape exactly).
+ * Greenfield stack, no imported resource to match on either stage -- both
+ * `workflow-visualizer` (prod) and `workflow-visualizer-beta` are entirely
+ * separate, freshly-created stacks with nothing shared between them.
  */
 export class WorkflowVisualizerStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  public readonly apiEndpoint: string;
+
+  constructor(scope: Construct, id: string, props: WorkflowVisualizerStackProps) {
     super(scope, id, props);
+
+    const { stage } = props;
+    const namePrefix = stage === 'prod' ? 'workflow-visualizer' : 'workflow-visualizer-beta';
+    const origin = stage === 'prod' ? SITE_ORIGIN : BETA_SITE_ORIGIN;
+    // Neither stage has ever held real user data (prod is freshly created
+    // by this same change), so both default to a genuinely complete
+    // teardown -- no orphaned tables if you ever destroy either stack.
+    const removalPolicy = cdk.RemovalPolicy.DESTROY;
 
     const jobsTable = new dynamodb.Table(this, 'JobsTable', {
       partitionKey: { name: 'jobId', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy,
     });
     jobsTable.addGlobalSecondaryIndex({
       indexName: 'RecentIndex',
@@ -79,7 +93,7 @@ export class WorkflowVisualizerStack extends cdk.Stack {
       environment: {
         TABLE_NAME: jobsTable.tableName,
         STATE_MACHINE_ARN: stateMachine.stateMachineArn,
-        ALLOWED_ORIGIN: ALLOWED_ORIGINS.join(','),
+        ALLOWED_ORIGIN: origin,
       },
     } as lambda.FunctionProps);
     jobsTable.grantWriteData(createJobFunction);
@@ -88,22 +102,22 @@ export class WorkflowVisualizerStack extends cdk.Stack {
     const getJobFunction = new lambda.Function(this, 'GetJobFunction', {
       ...functionDefaults,
       handler: 'get_job_handler.lambda_handler',
-      environment: { TABLE_NAME: jobsTable.tableName, ALLOWED_ORIGIN: ALLOWED_ORIGINS.join(',') },
+      environment: { TABLE_NAME: jobsTable.tableName, ALLOWED_ORIGIN: origin },
     } as lambda.FunctionProps);
     jobsTable.grantReadData(getJobFunction);
 
     const recentJobsFunction = new lambda.Function(this, 'RecentJobsFunction', {
       ...functionDefaults,
       handler: 'recent_jobs_handler.lambda_handler',
-      environment: { TABLE_NAME: jobsTable.tableName, ALLOWED_ORIGIN: ALLOWED_ORIGINS.join(',') },
+      environment: { TABLE_NAME: jobsTable.tableName, ALLOWED_ORIGIN: origin },
     } as lambda.FunctionProps);
     jobsTable.grantReadData(recentJobsFunction);
 
     // --- API ---
     const jobsApi = new apigwv2.HttpApi(this, 'JobsApi', {
-      apiName: 'workflow-visualizer',
+      apiName: namePrefix,
       corsPreflight: {
-        allowOrigins: ALLOWED_ORIGINS,
+        allowOrigins: [origin],
         allowMethods: [apigwv2.CorsHttpMethod.GET, apigwv2.CorsHttpMethod.POST, apigwv2.CorsHttpMethod.OPTIONS],
         allowHeaders: ['Content-Type'],
       },
@@ -124,9 +138,11 @@ export class WorkflowVisualizerStack extends cdk.Stack {
       integration: new HttpLambdaIntegration('GetJobIntegration', getJobFunction),
     });
 
+    this.apiEndpoint = jobsApi.apiEndpoint;
+
     new cdk.CfnOutput(this, 'JobsApiEndpoint', {
       description: 'Value to paste into projects/workflow-visualizer/frontend/config.js as apiBase',
-      value: jobsApi.apiEndpoint,
+      value: this.apiEndpoint,
     });
   }
 }

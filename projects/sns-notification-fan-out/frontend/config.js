@@ -1,17 +1,15 @@
 /*
   AWS API Gateway setup
   ---------------------
-  1. Deploy template.yaml in this folder with the AWS SAM CLI (see README.md).
-  2. Copy the NotifyApiEndpoint value from the deploy Outputs.
-  3. Replace apiBase below with that URL (no trailing slash).
-
-  Example shape:
-  - HTTP API default stage: https://abc123.execute-api.us-east-1.amazonaws.com
+  The endpoint URL below is filled in automatically at deploy time by
+  cdk/lib/website-stack.ts, from that stage's actual fanning-sns stack
+  output -- no manual editing needed. This file is a template checked
+  into source control, not the literal file that ends up in S3.
 
   Do not put real secrets in this file. Anything in a static website is public.
 */
 window.APP_CONFIG = {
-  apiBase: "https://ymtb4pql1a.execute-api.us-east-1.amazonaws.com",
+  apiBase: "__API_ENDPOINT__",
 
   // Optional. Use only for an API Gateway usage-plan key or similar public client value.
   // This is visible to site visitors and should not be treated as a secret.

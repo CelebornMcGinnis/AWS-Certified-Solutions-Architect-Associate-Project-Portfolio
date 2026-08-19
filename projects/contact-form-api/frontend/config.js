@@ -1,18 +1,15 @@
 /*
   AWS API Gateway setup
   ---------------------
-  1. Deploy a POST route in API Gateway, for example POST /contact.
-  2. Copy the invoke URL from API Gateway.
-  3. Replace apiEndpoint below with the full URL for that POST route.
-
-  Example shapes:
-  - HTTP API default stage: https://abc123.execute-api.us-east-1.amazonaws.com/contact
-  - REST API with stage:    https://abc123.execute-api.us-east-1.amazonaws.com/prod/contact
+  The endpoint URL below is filled in automatically at deploy time by
+  cdk/lib/website-stack.ts, from that stage's actual contact-form-api
+  stack output -- no manual editing needed. This file is a template
+  checked into source control, not the literal file that ends up in S3.
 
   Do not put real secrets in this file. Anything in a static website is public.
 */
 window.APP_CONFIG = {
-  apiEndpoint: "https://nkgtp7h93d.execute-api.us-east-1.amazonaws.com/default/prj1_call_SES",
+  apiEndpoint: "__API_ENDPOINT__",
 
   // Optional. Use only for an API Gateway usage-plan key or similar public client value.
   // This is visible to site visitors and should not be treated as a secret.
