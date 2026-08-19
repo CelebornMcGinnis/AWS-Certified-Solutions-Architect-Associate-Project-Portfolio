@@ -5,7 +5,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import * as s3assets from 'aws-cdk-lib/aws-s3-assets';
-import { SITE_ORIGIN, SES_FROM_ADDRESS, SES_TO_ADDRESS } from './config';
+import { SITE_ORIGIN, BETA_SITE_ORIGIN, SES_FROM_ADDRESS, SES_TO_ADDRESS } from './config';
 
 const BACKEND_DIR = path.join(__dirname, '../../projects/contact-form-api/backend');
 
@@ -67,7 +67,11 @@ export class ContactFormStack extends cdk.Stack {
         allowCredentials: false,
         allowHeaders: ['content-type'],
         allowMethods: ['OPTIONS', 'POST'],
-        allowOrigins: [SITE_ORIGIN],
+        // The Lambda itself doesn't set ALLOWED_ORIGIN (defaults to "*" in
+        // lambda_function.py), so real GET/POST responses already work from
+        // any origin -- only this API-level allowlist (which gates the
+        // OPTIONS preflight) needs widening for beta to work in a browser.
+        allowOrigins: [SITE_ORIGIN, BETA_SITE_ORIGIN],
         maxAge: 0,
       },
     });

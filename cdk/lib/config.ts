@@ -17,6 +17,7 @@ export const WILDCARD_CERTIFICATE_ARN =
   'arn:aws:acm:us-east-1:942960194803:certificate/c223b909-449a-4359-ac8f-3beb6a101446';
 
 export const SITE_ORIGIN = 'https://mcginnisarchitecture.com';
+export const BETA_SITE_ORIGIN = 'https://betaweb.mcginnisarchitecture.com';
 
 export const SES_FROM_ADDRESS = 'no-reply@mcginnisarchitecture.com';
-export const SES_TO_ADDRESS = 'celeborn.mcginnis@gmail.com';
+export const SES_TO_ADDRESS = 'mcginnisarchitecture@gmail.com';
