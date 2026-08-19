@@ -4,6 +4,7 @@ import { AWS_ACCOUNT, AWS_REGION, APEX_CERTIFICATE_ARN, WILDCARD_CERTIFICATE_ARN
 import { FanningSnsStack } from '../lib/fanning-sns-stack';
 import { LivePollStack } from '../lib/live-poll-stack';
 import { ContactFormStack } from '../lib/contact-form-stack';
+import { WorkflowVisualizerStack } from '../lib/workflow-visualizer-stack';
 import { WebsiteStack } from '../lib/website-stack';
 import { GitHubOidcStack } from '../lib/github-oidc-stack';
 
@@ -21,6 +22,8 @@ new FanningSnsStack(app, 'fanning-sns', { env });
 new LivePollStack(app, 'live-poll', { env });
 
 new ContactFormStack(app, 'contact-form-api', { env });
+
+new WorkflowVisualizerStack(app, 'workflow-visualizer', { env });
 
 new WebsiteStack(app, 'portfolio-website-prod', {
   env,
