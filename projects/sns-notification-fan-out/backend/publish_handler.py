@@ -19,25 +19,45 @@ from botocore.exceptions import ClientError
 
 sns = boto3.client("sns")
 
-ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
+# Comma-separated list, e.g. "https://mcginnisarchitecture.com,https://betaweb.mcginnisarchitecture.com" --
+# API Gateway's own CORS config (set on the API, not here) handles the
+# OPTIONS preflight, but this Lambda's actual GET/POST response still has
+# to set its own Access-Control-Allow-Origin header, and a browser rejects
+# a wildcard *and* a mismatched single value alike. So reflect back
+# whichever of the configured origins the request actually came from.
+ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGIN", "*").split(",") if o.strip()]
 TOPIC_ARN = os.environ.get("TOPIC_ARN")
 
 NOTE_MAX_LENGTH = 140
 
 
-def _cors_headers():
+def _resolve_origin(event):
+    if "*" in ALLOWED_ORIGINS:
+        return "*"
+    headers = event.get("headers") or {}
+    origin = headers.get("origin") or headers.get("Origin")
+    if origin in ALLOWED_ORIGINS:
+        return origin
+    # Non-browser caller (curl, server-to-server) or an origin outside the
+    # allowlist -- fall back to the first configured origin so the header
+    # is always present and deterministic rather than "null".
+    return ALLOWED_ORIGINS[0] if ALLOWED_ORIGINS else "*"
+
+
+def _cors_headers(event):
     return {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+        "Access-Control-Allow-Origin": _resolve_origin(event),
+        "Vary": "Origin",
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "POST,OPTIONS",
     }
 
 
-def _respond(status_code, body):
+def _respond(event, status_code, body):
     return {
         "statusCode": status_code,
-        "headers": _cors_headers(),
+        "headers": _cors_headers(event),
         "body": json.dumps(body),
     }
 
@@ -46,7 +66,7 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event.get("body") or "{}")
     except json.JSONDecodeError:
-        return _respond(400, {"error": "Invalid JSON body."})
+        return _respond(event, 400, {"error": "Invalid JSON body."})
 
     note = str(body.get("note", ""))[:NOTE_MAX_LENGTH] or "Test notification triggered from the website demo."
 
@@ -64,6 +84,6 @@ def lambda_handler(event, context):
         )
     except ClientError as err:
         print(f"SNS publish failed: {err}")
-        return _respond(502, {"error": "Publish failed."})
+        return _respond(event, 502, {"error": "Publish failed."})
 
-    return _respond(202, {"messageId": message_id, "triggeredAt": triggered_at})
+    return _respond(event, 202, {"messageId": message_id, "triggeredAt": triggered_at})

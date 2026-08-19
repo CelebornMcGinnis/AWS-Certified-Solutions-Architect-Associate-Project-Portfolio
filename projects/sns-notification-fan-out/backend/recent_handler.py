@@ -21,16 +21,30 @@ from boto3.dynamodb.conditions import Key
 dynamodb = boto3.resource("dynamodb")
 
 TABLE_NAME = os.environ.get("TABLE_NAME")
-ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
+# Comma-separated list -- see the matching comment in publish_handler.py for
+# why this Lambda has to reflect the request's own Origin rather than
+# returning a single fixed value.
+ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGIN", "*").split(",") if o.strip()]
 
 MAX_ROWS = 10
 GSI_PK_VALUE = "ALL"
 
 
-def _cors_headers():
+def _resolve_origin(event):
+    if "*" in ALLOWED_ORIGINS:
+        return "*"
+    headers = event.get("headers") or {}
+    origin = headers.get("origin") or headers.get("Origin")
+    if origin in ALLOWED_ORIGINS:
+        return origin
+    return ALLOWED_ORIGINS[0] if ALLOWED_ORIGINS else "*"
+
+
+def _cors_headers(event):
     return {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+        "Access-Control-Allow-Origin": _resolve_origin(event),
+        "Vary": "Origin",
         # This endpoint is polled repeatedly by the same client while
         # watching a fan-out complete — without this, nothing stops an
         # intermediate cache (or the browser itself) from just replaying
@@ -69,6 +83,6 @@ def lambda_handler(event, context):
 
     return {
         "statusCode": 200,
-        "headers": _cors_headers(),
+        "headers": _cors_headers(event),
         "body": json.dumps({"rows": rows}),
     }
