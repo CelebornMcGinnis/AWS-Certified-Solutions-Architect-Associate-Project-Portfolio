@@ -8,4 +8,4 @@ node_modules
 cdk.out
 
 # Website content staged for BucketDeployment (rebuilt from website/ + projects/*/frontend/ at synth time)
-.website-dist
+.website-dist-*

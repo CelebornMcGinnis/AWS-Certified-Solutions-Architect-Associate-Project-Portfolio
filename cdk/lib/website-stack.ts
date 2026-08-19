@@ -6,11 +6,10 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { HOSTED_ZONE_ID, HOSTED_ZONE_NAME } from './config';
-import { buildWebsiteContentDir } from './website-content';
+import { buildWebsiteContentDir, buildConfigJsSources, Stage, ProjectKey } from './website-content';
 
 export interface WebsiteStackProps extends cdk.StackProps {
-  /** Human label only ("prod" | "beta") -- not used to derive any resource name. */
-  stage: string;
+  stage: Stage;
   domainName: string;
   bucketName: string;
   certificateArn: string;
@@ -23,6 +22,14 @@ export interface WebsiteStackProps extends cdk.StackProps {
   manageContent: boolean;
   /** ARN of an existing WAFv2 WebACL already attached to this distribution, if any. */
   webAclId?: string;
+  /**
+   * This stage's actual backend API endpoints, one per project -- each a
+   * CDK-token-bearing string from that stage's own backend stack (e.g.
+   * `fanningSnsStack.apiEndpoint`), never a literal URL. Used to generate
+   * each project's config.js at deploy time; see buildConfigJsSources() in
+   * website-content.ts for why this can't be a plain static file copy.
+   */
+  apiEndpoints: Record<ProjectKey, string>;
 }
 
 /**
@@ -148,8 +155,12 @@ export class WebsiteStack extends cdk.Stack {
     // new resources and can't be mixed into a `cdk import` changeset
     // alongside the adopted ones.
     if (props.manageContent) {
+      const configJsSources = buildConfigJsSources(props.stage, props.apiEndpoints).map(({ destinationKey, content }) =>
+        s3deploy.Source.data(destinationKey, content),
+      );
+
       new s3deploy.BucketDeployment(this, 'DeployWebsiteContent', {
-        sources: [s3deploy.Source.asset(buildWebsiteContentDir())],
+        sources: [s3deploy.Source.asset(buildWebsiteContentDir(props.stage)), ...configJsSources],
         destinationBucket: bucket,
         distribution: cloudfront.Distribution.fromDistributionAttributes(this, 'ImportedDistribution', {
           distributionId: distribution.attrId,
