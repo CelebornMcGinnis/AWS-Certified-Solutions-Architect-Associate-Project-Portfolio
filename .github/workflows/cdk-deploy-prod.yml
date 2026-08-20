@@ -2,23 +2,41 @@ name: CDK deploy (prod)
 
 # Prod is NEVER deployed automatically -- this workflow only runs when
 # someone explicitly triggers it from the Actions tab (or `gh workflow
-# run cdk-deploy-prod.yml`), and only after typing the literal word
-# "deploy" into the confirmation input below. The `production`
-# environment below adds a second gate on top of that: GitHub will
-# pause the run for manual approval before the deploy step executes,
-# even if this workflow is somehow triggered unintentionally.
+# run cdk-deploy-prod.yml`), and only after typing the same word as the
+# chosen action ("deploy" or "destroy") into the confirmation input --
+# a cheap guard against a fat-fingered dropdown selection going straight
+# through. There's no separate human-approval environment gate on top
+# of that anymore: the team's working agreement going forward is to
+# only ever act on beta or prod in a given change, never both, which
+# keeps this workflow's blast radius already bounded to "prod, and
+# only whatever stacks were explicitly named."
 #
-# Same explicit allow-list reasoning as cdk-deploy-beta.yml: a new
-# project's prod stack has to be added here on purpose, one line at a
-# time, never picked up automatically. portfolio-github-oidc is
-# excluded here too -- deploy it manually with `cdk deploy
-# portfolio-github-oidc` on the rare occasion it needs to change.
+# `stacks` defaults to the full approved list below (deploy) or must be
+# named explicitly (destroy -- there's no "destroy everything" default,
+# on purpose). Same explicit allow-list reasoning as
+# cdk-deploy-beta.yml: a new project's prod stack has to be added here
+# on purpose, one line at a time, never picked up automatically.
+# workflow-visualizer is deliberately held back for now (its prod
+# backend stack already exists but isn't auto re-deployed until that's
+# revisited), and moderated-image-gallery, habit-tracker,
+# nova-summarizer, order-processing, and website-chatbot are still
+# under beta review. portfolio-github-oidc is excluded here too --
+# deploy it manually with `cdk deploy portfolio-github-oidc` on the
+# rare occasion it needs to change.
 
 on:
   workflow_dispatch:
     inputs:
+      action:
+        description: "deploy or destroy"
+        type: choice
+        options: [deploy, destroy]
+        default: deploy
+      stacks:
+        description: 'Space-separated stack names, or "all" for the full prod list (deploy only -- destroy requires explicit names)'
+        default: all
       confirm:
-        description: 'Type "deploy" to confirm you want to deploy to PROD'
+        description: 'Type "deploy" or "destroy" (matching the action above) to confirm'
         required: true
 
 permissions:
@@ -31,9 +49,8 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event.inputs.confirm == 'deploy'
+    if: github.event.inputs.confirm == github.event.inputs.action
     runs-on: ubuntu-latest
-    environment: production
     defaults:
       run:
         working-directory: cdk
@@ -53,19 +70,24 @@ jobs:
           role-to-assume: arn:aws:iam::942960194803:role/github-actions-portfolio-cdk-deploy
           aws-region: us-east-1
 
-      - name: cdk deploy (prod stacks only)
-        # Only projects actually approved for prod belong here --
-        # workflow-visualizer is deliberately held back for now (its
-        # prod backend stack already exists but isn't being auto
-        # re-deployed until that's revisited), and
-        # moderated-image-gallery, habit-tracker, nova-summarizer,
-        # order-processing, and website-chatbot are still under beta
-        # review and must NOT be added until each one is deliberately
-        # promoted (flip its stages: [...] in website-content.ts, then
-        # add its stack name to this list in the same PR).
+      - name: Resolve stack list
+        id: stacks
         run: |
-          npx cdk deploy --require-approval never \
-            fanning-sns \
-            live-poll \
-            contact-form-api \
-            portfolio-website-prod
+          REQUESTED="${{ github.event.inputs.stacks }}"
+          if [ -z "$REQUESTED" ] || [ "$REQUESTED" = "all" ]; then
+            if [ "${{ github.event.inputs.action }}" = "destroy" ]; then
+              echo "No default stack list for destroy -- name the stack(s) explicitly." >&2
+              exit 1
+            fi
+            echo "list=fanning-sns live-poll contact-form-api portfolio-website-prod" >> "$GITHUB_OUTPUT"
+          else
+            echo "list=$REQUESTED" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: cdk deploy
+        if: github.event.inputs.action != 'destroy'
+        run: npx cdk deploy --require-approval never ${{ steps.stacks.outputs.list }}
+
+      - name: cdk destroy
+        if: github.event.inputs.action == 'destroy'
+        run: npx cdk destroy --force ${{ steps.stacks.outputs.list }}
