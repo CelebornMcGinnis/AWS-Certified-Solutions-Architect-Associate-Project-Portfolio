@@ -8,6 +8,7 @@ import { WorkflowVisualizerStack } from '../lib/workflow-visualizer-stack';
 import { ModeratedImageGalleryStack } from '../lib/moderated-image-gallery-stack';
 import { HabitTrackerStack } from '../lib/habit-tracker-stack';
 import { NovaSummarizerStack } from '../lib/nova-summarizer-stack';
+import { OrderProcessingStack } from '../lib/order-processing-stack';
 import { WebsiteStack } from '../lib/website-stack';
 import { GitHubOidcStack } from '../lib/github-oidc-stack';
 import { ProjectKey } from '../lib/website-content';
@@ -65,10 +66,15 @@ const habitTrackerBeta = new HabitTrackerStack(app, 'habit-tracker-beta', { env,
 const novaSummarizerProd = new NovaSummarizerStack(app, 'nova-summarizer', { env, stage: 'prod' });
 const novaSummarizerBeta = new NovaSummarizerStack(app, 'nova-summarizer-beta', { env, stage: 'beta' });
 
-for (const stack of [fanningSnsProd, livePollProd, contactFormProd, workflowVisualizerProd, moderatedImageGalleryProd, habitTrackerProd, novaSummarizerProd]) {
+// Same backend-first rollout again -- frontend gated to stages: ['beta']
+// in website-content.ts until reviewed.
+const orderProcessingProd = new OrderProcessingStack(app, 'order-processing', { env, stage: 'prod' });
+const orderProcessingBeta = new OrderProcessingStack(app, 'order-processing-beta', { env, stage: 'beta' });
+
+for (const stack of [fanningSnsProd, livePollProd, contactFormProd, workflowVisualizerProd, moderatedImageGalleryProd, habitTrackerProd, novaSummarizerProd, orderProcessingProd]) {
   cdk.Tags.of(stack).add('Stage', 'prod');
 }
-for (const stack of [fanningSnsBeta, livePollBeta, contactFormBeta, workflowVisualizerBeta, moderatedImageGalleryBeta, habitTrackerBeta, novaSummarizerBeta]) {
+for (const stack of [fanningSnsBeta, livePollBeta, contactFormBeta, workflowVisualizerBeta, moderatedImageGalleryBeta, habitTrackerBeta, novaSummarizerBeta, orderProcessingBeta]) {
   cdk.Tags.of(stack).add('Stage', 'beta');
 }
 
@@ -80,6 +86,7 @@ const prodApiEndpoints: Record<ProjectKey, string> = {
   moderatedImageGallery: moderatedImageGalleryProd.apiEndpoint,
   habitTracker: habitTrackerProd.apiEndpoint,
   novaSummarizer: novaSummarizerProd.apiEndpoint,
+  orderProcessing: orderProcessingProd.apiEndpoint,
 };
 const betaApiEndpoints: Record<ProjectKey, string> = {
   contactForm: contactFormBeta.apiEndpoint,
@@ -89,6 +96,7 @@ const betaApiEndpoints: Record<ProjectKey, string> = {
   moderatedImageGallery: moderatedImageGalleryBeta.apiEndpoint,
   habitTracker: habitTrackerBeta.apiEndpoint,
   novaSummarizer: novaSummarizerBeta.apiEndpoint,
+  orderProcessing: orderProcessingBeta.apiEndpoint,
 };
 
 // moderated-image-gallery's config.js needs its stage's Cognito ids too,

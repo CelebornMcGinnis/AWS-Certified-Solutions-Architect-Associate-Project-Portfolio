@@ -1,0 +1,432 @@
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// -----------------------------------------------------------------------
+// Device id: same anonymous, no-account pattern as the habit tracker --
+// a random id kept in localStorage, sent as plain request data, trusted
+// as-is. There's a device notice banner in the page explaining this.
+// -----------------------------------------------------------------------
+var DeviceId = (function () {
+  var STORAGE_KEY = 'orderProcessingDeviceId';
+  var id = null;
+  try {
+    id = window.localStorage.getItem(STORAGE_KEY);
+  } catch (e) {}
+
+  if (!id) {
+    id = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : 'device-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, id);
+    } catch (e) {}
+  }
+
+  return id;
+})();
+
+(function () {
+  var cfg = window.APP_CONFIG || {};
+  var form = document.getElementById('order-form');
+  if (!form) return;
+
+  var deviceIdNote = document.getElementById('device-id-note');
+  var productGrid = document.getElementById('product-grid');
+  var quantityInput = document.getElementById('order-quantity');
+  var simulateFailureInput = document.getElementById('simulate-failure');
+  var submitButton = document.getElementById('order-submit');
+  var statusEl = document.getElementById('order-status');
+  var timelineWrap = document.getElementById('order-timeline-wrap');
+  var timelineSteps = Array.prototype.slice.call(document.querySelectorAll('#order-timeline .job-timeline-step'));
+  var failureNote = document.getElementById('order-failure-note');
+  var orderIdNote = document.getElementById('order-id-note');
+  var logBody = document.getElementById('my-orders-body');
+  var logEmptyNote = document.getElementById('my-orders-empty-note');
+
+  deviceIdNote.textContent = DeviceId.slice(0, 8);
+
+  function fetchWithTimeout(url, options) {
+    var controller = new AbortController();
+    var timeoutId = window.setTimeout(function () {
+      controller.abort();
+    }, cfg.requestTimeoutMs || 10000);
+    return fetch(url, Object.assign({ cache: 'no-store' }, options, { signal: controller.signal })).finally(function () {
+      window.clearTimeout(timeoutId);
+    });
+  }
+
+  function setStatus(message, kind) {
+    statusEl.textContent = message;
+    statusEl.className = 'form-status is-visible' + (kind ? ' ' + kind : '');
+  }
+
+  function clearStatusSoon() {
+    window.setTimeout(function () {
+      statusEl.classList.remove('is-visible');
+    }, 4000);
+  }
+
+  // --- Product catalog ---
+  function renderProducts(products) {
+    productGrid.innerHTML = '';
+    products.forEach(function (product, index) {
+      var label = document.createElement('label');
+      label.className = 'product-card';
+      var outOfStock = product.stock <= 0;
+      label.innerHTML =
+        '<input type="radio" name="productId" value="' + product.productId + '"' + (index === 0 && !outOfStock ? ' checked' : '') + (outOfStock ? ' disabled' : '') + ' />' +
+        '<span class="product-card-body">' +
+        '<h4>' + product.name + '</h4>' +
+        '<p>$' + product.unitPrice.toFixed(2) + ' each</p>' +
+        '<p' + (outOfStock ? ' class="out-of-stock"' : '') + '>' + (outOfStock ? 'Out of stock' : product.stock + ' in stock') + '</p>' +
+        '</span>';
+      productGrid.appendChild(label);
+    });
+  }
+
+  function loadProducts() {
+    fetchWithTimeout(cfg.apiBase + '/products')
+      .then(function (res) {
+        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        renderProducts(data.products || []);
+      })
+      .catch(function () {
+        productGrid.innerHTML = '<p class="muted small-note">Could not load the product catalog -- try refreshing the page.</p>';
+      });
+  }
+  loadProducts();
+
+  // --- My orders log ---
+  var rowData = Object.create(null);
+  var rowElements = Object.create(null);
+  var mobileQuery = window.matchMedia('(max-width: 760px)');
+  function maxVisibleRows() {
+    return mobileQuery.matches ? 3 : 10;
+  }
+
+  function statusBadge(status) {
+    if (status === 'SHIPPED') return '<span class="status-badge status-badge-ok">✓ shipped</span>';
+    if (status === 'FAILED') return '<span class="status-badge status-badge-error">failed</span>';
+    return '<span class="status-badge status-badge-pending">' + (status || 'pending').toLowerCase().replace('_', ' ') + '…</span>';
+  }
+
+  function fillRow(tr, data) {
+    tr.innerHTML =
+      '<td data-label="Product">' + (data.productName || '—') + '</td>' +
+      '<td data-label="Qty">' + (data.quantity != null ? data.quantity : '—') + '</td>' +
+      '<td data-label="Total">' + (data.totalPrice != null ? '$' + parseFloat(data.totalPrice).toFixed(2) : '—') + '</td>' +
+      '<td data-label="Status">' + statusBadge(data.status) + '</td>';
+  }
+
+  function renderLog() {
+    var keys = Object.keys(rowData).sort(function (a, b) {
+      return new Date(rowData[b].createdAt).getTime() - new Date(rowData[a].createdAt).getTime();
+    });
+    var visible = keys.slice(0, maxVisibleRows());
+    var overflow = keys.slice(maxVisibleRows());
+
+    overflow.forEach(function (key) {
+      var tr = rowElements[key];
+      if (tr && tr.parentNode) tr.parentNode.removeChild(tr);
+      delete rowElements[key];
+      delete rowData[key];
+    });
+
+    visible.forEach(function (key) {
+      var tr = rowElements[key];
+      if (!tr) {
+        tr = document.createElement('tr');
+        rowElements[key] = tr;
+      }
+      fillRow(tr, rowData[key]);
+      logBody.appendChild(tr);
+    });
+
+    logEmptyNote.hidden = visible.length > 0;
+  }
+  mobileQuery.addEventListener('change', renderLog);
+
+  function upsertOrder(order) {
+    rowData[order.orderId] = Object.assign({}, rowData[order.orderId], order);
+    renderLog();
+  }
+
+  function loadMyOrders() {
+    fetchWithTimeout(cfg.apiBase + '/orders/mine?ownerId=' + encodeURIComponent(DeviceId))
+      .then(function (res) {
+        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        (data.orders || []).forEach(upsertOrder);
+      })
+      .catch(function () {
+        // Silent -- placing a new order still works even if this
+        // background history fetch fails.
+      });
+  }
+  loadMyOrders();
+
+  // --- Timeline ---
+  var STAGE_ORDER = ['PENDING', 'INVENTORY_RESERVED', 'PAYMENT_CHARGED', 'SHIPPED'];
+
+  function applyTimelineStatus(order) {
+    timelineSteps.forEach(function (el) {
+      el.classList.remove('is-done', 'is-active', 'is-failed');
+    });
+    failureNote.hidden = true;
+
+    if (order.status === 'FAILED') {
+      var failedAtIndex = (order.failureReason || '').toLowerCase().indexOf('payment') !== -1 ? 2 : 1;
+      timelineSteps.forEach(function (el, index) {
+        var dot = el.querySelector('.job-timeline-dot');
+        if (index < failedAtIndex) {
+          el.classList.add('is-done');
+          dot.textContent = '✓';
+        } else if (index === failedAtIndex) {
+          el.classList.add('is-failed');
+          dot.textContent = '✕';
+        } else {
+          dot.textContent = String(index + 1);
+        }
+      });
+      failureNote.hidden = false;
+      failureNote.textContent = order.failureReason || 'This order failed.';
+      return;
+    }
+
+    var currentIndex = STAGE_ORDER.indexOf(order.status);
+    if (currentIndex === -1) currentIndex = 0;
+
+    timelineSteps.forEach(function (el, index) {
+      var dot = el.querySelector('.job-timeline-dot');
+      if (index < currentIndex || (index === currentIndex && order.status === 'SHIPPED')) {
+        el.classList.add('is-done');
+        dot.textContent = '✓';
+      } else {
+        if (index === currentIndex) el.classList.add('is-active');
+        dot.textContent = String(index + 1);
+      }
+    });
+  }
+
+  var pollsLeft = 0;
+  var pollTimer = null;
+
+  function pollOrder(orderId) {
+    fetchWithTimeout(cfg.apiBase + '/orders/' + orderId + '?ownerId=' + encodeURIComponent(DeviceId))
+      .then(function (res) {
+        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        applyTimelineStatus(data);
+        upsertOrder(data);
+
+        if (data.status === 'SHIPPED' || data.status === 'FAILED') {
+          setStatus(data.status === 'SHIPPED' ? 'Order shipped.' : 'Order failed.', data.status === 'SHIPPED' ? 'success' : 'error');
+          clearStatusSoon();
+          loadProducts(); // stock may have changed
+          return;
+        }
+
+        pollsLeft -= 1;
+        if (pollsLeft <= 0) {
+          setStatus('Still processing — refresh in a moment to see it finish.', 'info');
+          clearStatusSoon();
+          return;
+        }
+        pollTimer = window.setTimeout(function () {
+          pollOrder(orderId);
+        }, cfg.pollIntervalMs || 1500);
+      })
+      .catch(function () {
+        setStatus('Lost track of that order — it may still be processing.', 'error');
+        clearStatusSoon();
+      });
+  }
+
+  function watch(orderId) {
+    pollsLeft = cfg.maxPolls || 20;
+    if (pollTimer) window.clearTimeout(pollTimer);
+    pollTimer = window.setTimeout(function () {
+      pollOrder(orderId);
+    }, cfg.firstPollDelayMs || 1000);
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var productId = form.querySelector('input[name="productId"]:checked');
+    if (!productId) {
+      setStatus('Please choose a product.', 'error');
+      return;
+    }
+    var quantity = parseInt(quantityInput.value, 10) || 1;
+
+    submitButton.disabled = true;
+    setStatus('Placing your order…', 'info');
+    timelineWrap.hidden = false;
+    applyTimelineStatus({ status: 'PENDING' });
+    orderIdNote.textContent = '';
+
+    fetchWithTimeout(cfg.apiBase + '/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ownerId: DeviceId,
+        productId: productId.value,
+        quantity: quantity,
+        simulateFailure: simulateFailureInput.checked,
+      }),
+    })
+      .then(function (res) {
+        if (!res.ok) {
+          return res.json().then(function (data) {
+            throw new Error(data.error || 'Request failed: ' + res.status);
+          });
+        }
+        return res.json();
+      })
+      .then(function (data) {
+        setStatus('Order submitted — watching it process…', 'info');
+        orderIdNote.textContent = 'Order id: ' + data.orderId;
+        upsertOrder(Object.assign({ createdAt: new Date().toISOString() }, data));
+        watch(data.orderId);
+      })
+      .catch(function (err) {
+        setStatus(err.message || 'Something went wrong placing that order. Please try again.', 'error');
+        clearStatusSoon();
+      })
+      .finally(function () {
+        submitButton.disabled = false;
+      });
+  });
+})();
+
+// -----------------------------------------------------------------------
+// Shared chrome behaviors, copied from the other project pages:
+// scroll-reveal, nav dropdown, sticky header shrink, back-to-top, mobile
+// menu, dark mode toggle.
+// -----------------------------------------------------------------------
+var revealEls = document.querySelectorAll('[data-reveal]');
+if ('IntersectionObserver' in window) {
+  var revealIo = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealIo.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+  revealEls.forEach(function (el) { revealIo.observe(el); });
+} else {
+  revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+document.querySelectorAll('.nav-dropdown, .mobile-menu').forEach(function (details) {
+  document.addEventListener('click', function (event) {
+    if (details.open && !details.contains(event.target)) {
+      details.open = false;
+    }
+  });
+});
+
+function closeOpenNavMenus() {
+  document.querySelectorAll('.nav-dropdown[open], .mobile-menu[open]').forEach(function (details) {
+    details.open = false;
+  });
+}
+window.addEventListener('scroll', closeOpenNavMenus, { passive: true });
+document.querySelectorAll('.nav-dropdown-menu a, .mobile-menu-panel a').forEach(function (link) {
+  link.addEventListener('click', function () {
+    var details = link.closest('details');
+    if (details) details.open = false;
+  });
+});
+
+var siteHeader = document.querySelector('.site-header');
+if (siteHeader) {
+  var wasScrolled = false;
+  var headerRafId = null;
+  var updateHeaderState = function () {
+    headerRafId = null;
+    var threshold = wasScrolled ? 8 : 24;
+    var scrolled = window.scrollY > threshold;
+    if (scrolled !== wasScrolled) {
+      siteHeader.classList.toggle('is-scrolled', scrolled);
+      wasScrolled = scrolled;
+    }
+  };
+  var scheduleHeaderUpdate = function () {
+    if (headerRafId === null) {
+      headerRafId = window.requestAnimationFrame(updateHeaderState);
+    }
+  };
+  updateHeaderState();
+  window.addEventListener('scroll', scheduleHeaderUpdate, { passive: true });
+}
+
+var backToTop = document.getElementById('back-to-top');
+if (backToTop) {
+  var toggleBackToTop = function () {
+    backToTop.classList.toggle('is-visible', window.scrollY > 500);
+  };
+  toggleBackToTop();
+  window.addEventListener('scroll', toggleBackToTop, { passive: true });
+
+  backToTop.addEventListener('click', function () {
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+  });
+}
+
+var mobileMenu = document.getElementById('mobile-menu');
+if (mobileMenu) {
+  var mobileMenuPanel = mobileMenu.querySelector('.mobile-menu-panel');
+  var toggleMobileMenuVisibility = function () {
+    var visible = window.scrollY > 220;
+    mobileMenu.classList.toggle('is-visible', visible);
+    if (!visible && mobileMenu.open) {
+      mobileMenu.open = false;
+    }
+  };
+  toggleMobileMenuVisibility();
+  window.addEventListener('scroll', toggleMobileMenuVisibility, { passive: true });
+
+  if (mobileMenuPanel) {
+    mobileMenu.addEventListener('toggle', function () {
+      if (mobileMenu.open) {
+        mobileMenuPanel.style.animation = 'none';
+        void mobileMenuPanel.offsetWidth;
+        mobileMenuPanel.style.animation = 'mobileMenuIn 0.18s ease forwards';
+      }
+    });
+  }
+}
+
+(function () {
+  var toggles = document.querySelectorAll('.theme-toggle');
+  if (!toggles.length) return;
+
+  function currentTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  }
+
+  function reflectState() {
+    var isDark = currentTheme() === 'dark';
+    toggles.forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(isDark));
+    });
+  }
+
+  reflectState();
+
+  toggles.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var next = currentTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      reflectState();
+    });
+  });
+})();
