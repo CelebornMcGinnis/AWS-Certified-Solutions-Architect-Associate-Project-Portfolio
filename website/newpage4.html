@@ -10,8 +10,8 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Landing Concept 4 — Diagram Hero (Draft)</title>
-  <meta name="description" content="Draft landing page concept — a photo woven into a small architecture diagram. Not linked from site navigation." />
+  <title>Landing Concept 4 — Violet Dashboard Card (Draft)</title>
+  <meta name="description" content="Draft landing page concept — a floating dashboard-style profile card with a violet palette. Not linked from site navigation." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -20,76 +20,126 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    /* ---- Concept 4 only: hero with the photo as the hub of a mini diagram ---- */
+    /* ---- Concept 4 only: violet palette + dashboard-card hero ---- */
+    :root {
+      --accent: #7c3aed;
+      --accent-dark: #6d28d9;
+      --info-bg: #f3ecfe;
+      --info-text: #6d28d9;
+    }
+    :root[data-theme="dark"] {
+      --accent: #a78bfa;
+      --accent-dark: #c4b5fd;
+      --info-bg: #241a3d;
+      --info-text: #c4b5fd;
+    }
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 32rem),
+        radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.1), transparent 28rem),
+        var(--bg);
+    }
+    :root[data-theme="dark"] body {
+      background:
+        radial-gradient(circle at top left, rgba(167, 139, 250, 0.16), transparent 32rem),
+        radial-gradient(circle at bottom right, rgba(167, 139, 250, 0.08), transparent 28rem),
+        var(--bg);
+    }
+
     .concept-hero {
-      max-width: 1080px;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 5rem 1.5rem 4rem;
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 2.5rem;
-      align-items: center;
+      padding: 4.5rem 1.5rem 4rem;
+      text-align: center;
     }
-    .concept-hero-copy h1 {
-      font-size: clamp(2.2rem, 4vw, 3.1rem);
-      line-height: 1.14;
-      margin: 0.6rem 0 1.1rem;
+    .concept-hero h1 {
+      font-size: clamp(1.9rem, 3.6vw, 2.7rem);
+      margin: 0.6rem 0 2.2rem;
     }
-    .concept-hero-copy p {
-      color: var(--muted);
-      font-size: 1.08rem;
-      max-width: 44ch;
-    }
-    .concept-hero-actions {
-      display: flex;
-      gap: 0.9rem;
-      margin-top: 1.6rem;
-      flex-wrap: wrap;
-    }
-    .concept-diagram-wrap {
+    .concept-dashboard-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 1.2rem 1.2rem 0.9rem;
+      border-radius: 26px;
       box-shadow: var(--shadow);
+      padding: 2rem;
+      text-align: left;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.5rem 1.6rem;
+      align-items: center;
     }
-    .concept-diagram-scene { width: 100%; height: auto; display: block; }
-    .concept4-line line {
-      stroke: var(--accent);
-      stroke-width: 2;
-      stroke-dasharray: 5 5;
-      opacity: 0.5;
-    }
-    .concept4-hub circle {
-      fill: var(--accent);
-    }
-    .concept4-hub text {
-      fill: #fff;
-      font-size: 22px;
+    .concept-photo-placeholder {
+      width: 92px;
+      height: 92px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      font-size: 1.7rem;
       font-weight: 800;
-      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-      text-anchor: middle;
+      grid-row: 1 / 3;
     }
-    .concept4-node rect {
-      fill: var(--surface);
-      stroke: var(--border);
-      stroke-width: 1.5;
+    .concept-dashboard-name {
+      margin: 0;
+      font-size: 1.3rem;
     }
-    .concept-diagram-caption {
-      text-align: center;
-      font-size: 0.8rem;
+    .concept-dashboard-role {
+      margin: 0.2rem 0 0;
       color: var(--muted);
-      margin: 0.6rem 0 0.2rem;
+      font-size: 0.92rem;
+    }
+    .concept-photo-caption {
+      grid-column: 2;
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin: -0.6rem 0 0;
+    }
+    .concept-dashboard-stats {
+      grid-column: 1 / 3;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.9rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.4rem;
+    }
+    .concept-dashboard-stat {
+      background: var(--info-bg);
+      border-radius: 14px;
+      padding: 0.85rem 0.9rem;
+      text-align: center;
+    }
+    .concept-dashboard-stat strong {
+      display: block;
+      font-size: 1.15rem;
+      color: var(--info-text);
+    }
+    .concept-dashboard-stat span {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .concept-dashboard-actions {
+      grid-column: 1 / 3;
+      display: flex;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding-top: 0.4rem;
     }
     @media (max-width: 760px) {
-      .concept-hero {
+      .concept-hero { padding: 3rem 1.25rem 2.5rem; }
+      .concept-dashboard-card {
         grid-template-columns: 1fr;
         text-align: center;
-        padding: 3rem 1.25rem 2.5rem;
+        padding: 1.6rem;
       }
-      .concept-hero-copy p { margin-left: auto; margin-right: auto; }
-      .concept-hero-actions { justify-content: center; }
-      .concept-diagram-wrap { max-width: 340px; margin: 0 auto; }
+      .concept-photo-placeholder {
+        grid-row: auto;
+        margin: 0 auto;
+      }
+      .concept-photo-caption { grid-column: 1; }
+      .concept-dashboard-stats { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -124,38 +174,27 @@
 
   <main>
     <section class="concept-hero" data-reveal>
-      <div class="concept-hero-copy">
-        <p class="eyebrow">Landing concept 4 · Draft — diagram hero</p>
-        <h1>
-          The architect behind<br />
-          these architectures.
-        </h1>
-        <p>
-          Hello, I'm <strong>Celeborn McGinnis</strong>, an AWS Certified Solutions
-          Architect – Associate. Every project in this portfolio is real, deployed
-          infrastructure — this is a look at who built it.
-        </p>
-        <div class="concept-hero-actions">
+      <p class="eyebrow">Landing concept 4 · Draft — violet dashboard card</p>
+      <h1>Live systems. Real infrastructure.</h1>
+
+      <div class="concept-dashboard-card">
+        <div class="concept-photo-placeholder" aria-hidden="true">CM</div>
+        <div>
+          <p class="concept-dashboard-name"><strong>Celeborn McGinnis</strong></p>
+          <p class="concept-dashboard-role">AWS Certified Solutions Architect – Associate</p>
+        </div>
+        <p class="concept-photo-caption">Photo placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
+
+        <div class="concept-dashboard-stats">
+          <div class="concept-dashboard-stat"><strong>4</strong><span>Live AWS projects</span></div>
+          <div class="concept-dashboard-stat"><strong>3</strong><span>AWS certifications</span></div>
+          <div class="concept-dashboard-stat"><strong>100%</strong><span>Deployed, not just diagrammed</span></div>
+        </div>
+
+        <div class="concept-dashboard-actions">
           <a class="button-link" href="#projects">View projects</a>
           <a class="button-link ghost" href="/index.html#about">About me</a>
         </div>
-      </div>
-      <div class="concept-diagram-wrap">
-        <svg viewBox="0 0 340 240" class="concept-diagram-scene" role="img" aria-label="Diagram showing a central profile photo node connected to Lambda, S3, and DynamoDB icon nodes">
-          <g class="concept4-line"><line x1="170" y1="130" x2="170" y2="40" /></g>
-          <g class="concept4-line"><line x1="170" y1="130" x2="42" y2="186" /></g>
-          <g class="concept4-line"><line x1="170" y1="130" x2="294" y2="186" /></g>
-
-          <g class="concept4-node"><rect x="144" y="14" width="52" height="52" rx="12" /><image href="/assets/aws-icons/lambda.png" x="154" y="24" width="32" height="32" /></g>
-          <g class="concept4-node"><rect x="16" y="160" width="52" height="52" rx="12" /><image href="/assets/aws-icons/s3.png" x="26" y="170" width="32" height="32" /></g>
-          <g class="concept4-node"><rect x="268" y="160" width="52" height="52" rx="12" /><image href="/assets/aws-icons/dynamodb.png" x="278" y="170" width="32" height="32" /></g>
-
-          <g class="concept4-hub">
-            <circle cx="170" cy="130" r="44" />
-            <text x="170" y="138">CM</text>
-          </g>
-        </svg>
-        <p class="concept-diagram-caption">Photo placeholder — swap the hub for a real photo at <code>/assets/celeborn.jpg</code></p>
       </div>
     </section>
 

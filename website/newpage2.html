@@ -10,8 +10,8 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Landing Concept 2 — Centered Portrait (Draft)</title>
-  <meta name="description" content="Draft landing page concept — centered portrait hero with stat chips. Not linked from site navigation." />
+  <title>Landing Concept 2 — Terracotta Bento (Draft)</title>
+  <meta name="description" content="Draft landing page concept — bento-grid hero with a warm terracotta palette. Not linked from site navigation." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -20,18 +20,57 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    /* ---- Concept 2 only: centered portrait hero ---- */
+    /* ---- Concept 2 only: terracotta palette + bento-grid hero ---- */
+    :root {
+      --accent: #c2542e;
+      --accent-dark: #9c3f1f;
+      --info-bg: #fdece2;
+      --info-text: #a3401d;
+    }
+    :root[data-theme="dark"] {
+      --accent: #ff8f5e;
+      --accent-dark: #ffb08a;
+      --info-bg: #3a2013;
+      --info-text: #ffb08a;
+    }
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(194, 84, 46, 0.18), transparent 32rem),
+        var(--bg);
+    }
+    :root[data-theme="dark"] body {
+      background:
+        radial-gradient(circle at top left, rgba(255, 143, 94, 0.14), transparent 32rem),
+        var(--bg);
+    }
+
     .concept-hero {
-      max-width: 720px;
+      max-width: 1080px;
       margin: 0 auto;
-      padding: 4.5rem 1.5rem 3.5rem;
-      text-align: center;
+      padding: 4.5rem 1.5rem 4rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: auto;
+      gap: 1.1rem;
+    }
+    .concept-eyebrow-wrap { grid-column: 1 / 5; }
+    .concept-photo-card {
+      grid-column: 1 / 3;
+      grid-row: 2 / 4;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
     }
     .concept-photo-placeholder {
-      width: 152px;
-      height: 152px;
-      margin: 0 auto 1.4rem;
-      border-radius: 50%;
+      width: 150px;
+      height: 150px;
+      border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -39,48 +78,75 @@
       color: #fff;
       font-size: 2.6rem;
       font-weight: 800;
-      box-shadow: var(--shadow);
-      border: 4px solid var(--surface);
     }
     .concept-photo-caption {
-      font-size: 0.8rem;
+      text-align: center;
+      font-size: 0.78rem;
       color: var(--muted);
-      margin: -0.6rem 0 1.6rem;
+      margin-top: 0.9rem;
     }
-    .concept-hero h1 {
-      font-size: clamp(2rem, 4.5vw, 2.9rem);
-      margin: 0.3rem 0 0.5rem;
+    .concept-headline-card {
+      grid-column: 3 / 5;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .concept-hero-role {
+    .concept-headline-card h1 {
+      font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+      line-height: 1.14;
+      margin: 0;
+    }
+    .concept-copy-card {
+      grid-column: 3 / 5;
+      grid-row: 3;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .concept-copy-card p {
+      margin: 0;
       color: var(--muted);
-      font-size: 1.1rem;
-      max-width: 46ch;
-      margin: 0 auto 2rem;
+    }
+    .concept-hero-actions {
+      display: flex;
+      gap: 0.85rem;
+      flex-wrap: wrap;
     }
     .concept-stat-row {
+      grid-column: 1 / 5;
       display: flex;
-      justify-content: center;
       gap: 0.9rem;
       flex-wrap: wrap;
-      margin-bottom: 2.2rem;
     }
     .concept-stat-chip {
       background: var(--info-bg);
       color: var(--info-text);
       border-radius: 999px;
-      padding: 0.5rem 1.1rem;
+      padding: 0.55rem 1.15rem;
       font-size: 0.88rem;
       font-weight: 700;
     }
-    .concept-hero-actions {
-      display: flex;
-      justify-content: center;
-      gap: 0.9rem;
-      flex-wrap: wrap;
-    }
     @media (max-width: 760px) {
-      .concept-hero { padding: 3rem 1.25rem 2.5rem; }
-      .concept-photo-placeholder { width: 120px; height: 120px; font-size: 2rem; }
+      .concept-hero {
+        grid-template-columns: 1fr;
+        padding: 3rem 1.25rem 2.5rem;
+      }
+      .concept-photo-card,
+      .concept-headline-card,
+      .concept-copy-card,
+      .concept-stat-row {
+        grid-column: 1;
+        grid-row: auto;
+      }
+      .concept-headline-card { text-align: center; }
+      .concept-hero-actions { justify-content: center; }
+      .concept-stat-row { justify-content: center; }
     }
   </style>
 </head>
@@ -115,22 +181,31 @@
 
   <main>
     <section class="concept-hero" data-reveal>
-      <p class="eyebrow">Landing concept 2 · Draft — centered portrait</p>
-      <div class="concept-photo-placeholder" aria-hidden="true">CM</div>
-      <p class="concept-photo-caption">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
-      <h1>Celeborn McGinnis</h1>
-      <p class="concept-hero-role">
-        AWS Certified Solutions Architect – Associate, building and documenting
-        real cloud infrastructure — not just diagrams.
-      </p>
+      <div class="concept-eyebrow-wrap">
+        <p class="eyebrow">Landing concept 2 · Draft — terracotta bento</p>
+      </div>
+      <div class="concept-photo-card">
+        <div class="concept-photo-placeholder" aria-hidden="true">CM</div>
+        <p class="concept-photo-caption">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
+      </div>
+      <div class="concept-headline-card">
+        <h1>Cloud infrastructure, built by hand.</h1>
+      </div>
+      <div class="concept-copy-card">
+        <p>
+          Hello, I'm <strong>Celeborn McGinnis</strong>, an AWS Certified Solutions
+          Architect – Associate. Every project here is real, deployed
+          infrastructure — documented from design through deployment.
+        </p>
+        <div class="concept-hero-actions">
+          <a class="button-link" href="#projects">View projects</a>
+          <a class="button-link ghost" href="/index.html#about">About me</a>
+        </div>
+      </div>
       <div class="concept-stat-row">
         <span class="concept-stat-chip">4 live AWS projects</span>
         <span class="concept-stat-chip">3 AWS certifications</span>
         <span class="concept-stat-chip">100% deployed</span>
-      </div>
-      <div class="concept-hero-actions">
-        <a class="button-link" href="#projects">See the work</a>
-        <a class="button-link ghost" href="/index.html#about">About me</a>
       </div>
     </section>
 

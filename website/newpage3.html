@@ -10,8 +10,8 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Landing Concept 3 — Editorial Byline (Draft)</title>
-  <meta name="description" content="Draft landing page concept — oversized typography with a small byline photo. Not linked from site navigation." />
+  <title>Landing Concept 3 — Teal Band (Draft)</title>
+  <meta name="description" content="Draft landing page concept — full-bleed teal hero band with a tools strip. Not linked from site navigation." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -20,63 +20,111 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    /* ---- Concept 3 only: editorial, oversized type, small byline photo ---- */
+    /* ---- Concept 3 only: teal palette + full-bleed band hero ---- */
+    :root {
+      --accent: #0d9488;
+      --accent-dark: #0f766e;
+      --info-bg: #e6fbf8;
+      --info-text: #0f766e;
+    }
+    :root[data-theme="dark"] {
+      --accent: #2dd4bf;
+      --accent-dark: #5eead4;
+      --info-bg: #0b2b28;
+      --info-text: #5eead4;
+    }
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(13, 148, 136, 0.16), transparent 32rem),
+        var(--bg);
+    }
+    :root[data-theme="dark"] body {
+      background:
+        radial-gradient(circle at top left, rgba(45, 212, 191, 0.14), transparent 32rem),
+        var(--bg);
+    }
+
+    .concept-band {
+      background: linear-gradient(135deg, var(--info-bg), var(--bg) 70%);
+      border-bottom: 1px solid var(--border);
+    }
     .concept-hero {
-      max-width: 900px;
+      max-width: 1080px;
       margin: 0 auto;
-      padding: 5.5rem 1.5rem 3.5rem;
-    }
-    .concept-hero h1 {
-      font-size: clamp(2.6rem, 7vw, 4.6rem);
-      line-height: 1.05;
-      font-weight: 800;
-      margin: 0.5rem 0 0;
-      letter-spacing: -0.01em;
-    }
-    .concept-hero h1 .accent-word {
-      color: var(--accent);
-    }
-    .concept-byline {
-      display: flex;
+      padding: 4.5rem 1.5rem 3.5rem;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 2.5rem;
       align-items: center;
-      gap: 0.85rem;
-      margin: 2.2rem 0 2.4rem;
-      padding-top: 1.6rem;
-      border-top: 1px solid var(--border);
     }
+    .concept-hero-copy h1 {
+      font-size: clamp(2.1rem, 4vw, 3rem);
+      line-height: 1.14;
+      margin: 0.6rem 0 1.1rem;
+    }
+    .concept-hero-copy p {
+      color: var(--muted);
+      font-size: 1.06rem;
+      max-width: 42ch;
+    }
+    .concept-hero-actions {
+      display: flex;
+      gap: 0.9rem;
+      margin-top: 1.6rem;
+      flex-wrap: wrap;
+    }
+    .concept-photo-wrap { justify-self: center; }
     .concept-photo-placeholder {
-      width: 48px;
-      height: 48px;
-      flex: none;
-      border-radius: 50%;
+      width: 220px;
+      height: 220px;
+      border-radius: 26px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, var(--accent), var(--accent-dark));
       color: #fff;
-      font-size: 1rem;
+      font-size: 3.4rem;
       font-weight: 800;
+      border: 4px solid var(--surface);
+      box-shadow: var(--shadow);
     }
-    .concept-byline-text {
-      font-size: 0.95rem;
+    .concept-photo-caption {
+      text-align: center;
+      margin-top: 0.9rem;
+      font-size: 0.82rem;
       color: var(--muted);
-      line-height: 1.35;
     }
-    .concept-byline-text strong {
+    .concept-tools-strip {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 1.6rem 1.5rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+    .concept-tool-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.4rem 0.9rem 0.4rem 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
       color: var(--text);
     }
-    .concept-byline-text .concept-photo-caption {
-      display: block;
-      font-size: 0.75rem;
-      margin-top: 0.1rem;
-    }
-    .concept-hero-actions {
-      display: flex;
-      gap: 0.9rem;
-      flex-wrap: wrap;
-    }
+    .concept-tool-pill img { width: 20px; height: 20px; }
     @media (max-width: 760px) {
-      .concept-hero { padding: 3rem 1.25rem 2.5rem; }
+      .concept-hero {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 3rem 1.25rem 2.5rem;
+      }
+      .concept-hero-copy p { margin-left: auto; margin-right: auto; }
+      .concept-hero-actions { justify-content: center; }
+      .concept-tools-strip { justify-content: center; }
+      .concept-photo-placeholder { width: 170px; height: 170px; font-size: 2.6rem; }
     }
   </style>
 </head>
@@ -110,24 +158,39 @@
   </header>
 
   <main>
-    <section class="concept-hero" data-reveal>
-      <p class="eyebrow">Landing concept 3 · Draft — editorial byline</p>
-      <h1>
-        I design AWS systems,<br />
-        then I <span class="accent-word">build</span> them.
-      </h1>
-      <div class="concept-byline">
-        <div class="concept-photo-placeholder" aria-hidden="true">CM</div>
-        <p class="concept-byline-text">
-          <strong>Celeborn McGinnis</strong> — AWS Certified Solutions Architect – Associate
-          <span class="concept-photo-caption">Photo placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></span>
-        </p>
+    <div class="concept-band">
+      <section class="concept-hero" data-reveal>
+        <div class="concept-hero-copy">
+          <p class="eyebrow">Landing concept 3 · Draft — teal band</p>
+          <h1>
+            Real AWS systems,<br />
+            built end to end.
+          </h1>
+          <p>
+            Hello, I'm <strong>Celeborn McGinnis</strong>, an AWS Certified Solutions
+            Architect – Associate. I design, deploy, and document cloud
+            infrastructure that actually runs in production.
+          </p>
+          <div class="concept-hero-actions">
+            <a class="button-link" href="#projects">View projects</a>
+            <a class="button-link ghost" href="/index.html#about">About me</a>
+          </div>
+        </div>
+        <div class="concept-photo-wrap">
+          <div class="concept-photo-placeholder" aria-hidden="true">CM</div>
+          <p class="concept-photo-caption">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
+        </div>
+      </section>
+      <div class="concept-tools-strip" data-reveal>
+        <span class="concept-tool-pill"><img src="/assets/aws-icons/lambda.png" alt="" />Lambda</span>
+        <span class="concept-tool-pill"><img src="/assets/aws-icons/s3.png" alt="" />S3</span>
+        <span class="concept-tool-pill"><img src="/assets/aws-icons/dynamodb.png" alt="" />DynamoDB</span>
+        <span class="concept-tool-pill"><img src="/assets/aws-icons/sns.png" alt="" />SNS</span>
+        <span class="concept-tool-pill"><img src="/assets/aws-icons/sqs.png" alt="" />SQS</span>
+        <span class="concept-tool-pill"><img src="/assets/aws-icons/apigateway.png" alt="" />API Gateway</span>
+        <span class="concept-tool-pill"><img src="/assets/aws-icons/cloudfront.png" alt="" />CloudFront</span>
       </div>
-      <div class="concept-hero-actions">
-        <a class="button-link" href="#projects">See the work</a>
-        <a class="button-link ghost" href="/index.html#about">Read my approach</a>
-      </div>
-    </section>
+    </div>
 
     <section class="projects" id="projects" aria-labelledby="projects-heading">
       <div data-reveal>
