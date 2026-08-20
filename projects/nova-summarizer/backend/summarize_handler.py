@@ -1,14 +1,16 @@
 """Lambda handler for POST /summarize (public, no authentication).
 
 Sends pasted text to Amazon Bedrock's Nova Lite model via the Converse
-API and returns a short or detailed summary. Public and unauthenticated,
-so two independent limits guard against running up a real Bedrock bill:
-API Gateway's stage-level throttle (see nova-summarizer-stack.ts) caps
-request rate before this Lambda ever runs, and the daily counter below
-caps total requests per UTC day regardless of how slowly they arrive.
+API and returns a structured title/bullets/takeaways summary. Public
+and unauthenticated, so two independent limits guard against running
+up a real Bedrock bill: API Gateway's stage-level throttle (see
+nova-summarizer-stack.ts) caps request rate before this Lambda ever
+runs, and the daily counter below caps total requests per UTC day
+regardless of how slowly they arrive.
 """
 import json
 import os
+import re
 from datetime import date
 
 import boto3
@@ -23,10 +25,29 @@ BEDROCK_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID")
 MAX_INPUT_CHARS = int(os.environ.get("MAX_INPUT_CHARS", "6000"))
 DAILY_REQUEST_LIMIT = int(os.environ.get("DAILY_REQUEST_LIMIT", "50"))
 
+SYSTEM_PROMPT = (
+    "You are a precise, neutral summarizer. Respond with ONLY a single JSON object "
+    'matching this exact schema, and nothing else -- no markdown, no code fences, no '
+    'commentary: {"title": string, "bullets": array of strings, "takeaways": array of '
+    'strings}. "title" is a short descriptive title for the text, under 10 words. '
+    '"bullets" are the main points, one clause each. "takeaways" are practical '
+    "implications or conclusions, not just a restatement of the bullets."
+)
+
 LENGTH_INSTRUCTIONS = {
-    "short": "Summarize the following text in 2-3 concise sentences.",
-    "detailed": "Summarize the following text in a detailed paragraph of 5-8 sentences, covering the main points.",
+    "short": "Summarize the following text as JSON with up to 3 bullets and exactly 1 takeaway.",
+    "detailed": "Summarize the following text as JSON with up to 6 bullets and up to 3 takeaways, covering the main points in more depth.",
 }
+
+
+def _extract_json_object(raw_text):
+    """Nova Lite reliably follows a JSON-only instruction, but strips a
+    stray code fence defensively in case one slips through anyway."""
+    text = raw_text.strip()
+    fenced = re.match(r"^```(?:json)?\s*(.*?)\s*```$", text, re.DOTALL)
+    if fenced:
+        text = fenced.group(1)
+    return json.loads(text)
 
 
 def _cors_headers():
@@ -85,13 +106,32 @@ def lambda_handler(event, context):
     try:
         response = bedrock.converse(
             modelId=BEDROCK_MODEL_ID,
-            system=[{"text": "You are a precise, neutral summarizer. Respond with only the summary itself -- no preamble, no headings."}],
+            system=[{"text": SYSTEM_PROMPT}],
             messages=[{"role": "user", "content": [{"text": f"{LENGTH_INSTRUCTIONS[length]}\n\n{text}"}]}],
-            inferenceConfig={"maxTokens": 600 if length == "detailed" else 200, "temperature": 0.3},
+            inferenceConfig={"maxTokens": 700 if length == "detailed" else 350, "temperature": 0.3},
         )
-        summary = response["output"]["message"]["content"][0]["text"].strip()
+        raw_text = response["output"]["message"]["content"][0]["text"]
     except ClientError as e:
         print(f"Bedrock error: {e}")
         return _respond(502, {"error": "The summarizer is temporarily unavailable. Please try again shortly."})
 
-    return _respond(200, {"summary": summary, "length": length, "inputCharacterCount": len(text)})
+    try:
+        parsed = _extract_json_object(raw_text)
+        title = str(parsed.get("title", "")).strip()
+        bullets = [str(b).strip() for b in parsed.get("bullets", []) if str(b).strip()]
+        takeaways = [str(t).strip() for t in parsed.get("takeaways", []) if str(t).strip()]
+        if not title or not bullets:
+            raise ValueError("Missing required fields")
+    except (json.JSONDecodeError, ValueError, AttributeError) as e:
+        # Nova Lite occasionally drifts from the requested JSON shape --
+        # fall back to the raw text as a single bullet rather than
+        # failing the whole request over a formatting slip.
+        print(f"Could not parse structured summary, falling back to raw text: {e}")
+        title = "Summary"
+        bullets = [raw_text.strip()]
+        takeaways = []
+
+    return _respond(
+        200,
+        {"title": title, "bullets": bullets, "takeaways": takeaways, "length": length, "inputCharacterCount": len(text)},
+    )

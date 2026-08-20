@@ -11,8 +11,20 @@ document.getElementById('year').textContent = new Date().getFullYear();
   var submitButton = document.getElementById('summarize-submit');
   var statusEl = document.getElementById('summarize-status');
   var resultWrap = document.getElementById('summarize-result');
-  var resultText = document.getElementById('summarize-result-text');
+  var resultTitle = document.getElementById('summarize-result-title');
+  var resultBullets = document.getElementById('summarize-result-bullets');
+  var resultTakeawaysWrap = document.getElementById('summarize-result-takeaways-wrap');
+  var resultTakeaways = document.getElementById('summarize-result-takeaways');
   var resultMeta = document.getElementById('summarize-result-meta');
+
+  function renderList(el, items) {
+    el.innerHTML = '';
+    items.forEach(function (item) {
+      var li = document.createElement('li');
+      li.textContent = item;
+      el.appendChild(li);
+    });
+  }
 
   function updateCharCount() {
     var len = textInput.value.length;
@@ -77,7 +89,14 @@ document.getElementById('year').textContent = new Date().getFullYear();
       })
       .then(function (data) {
         setStatus('', null);
-        resultText.textContent = data.summary;
+        resultTitle.textContent = data.title;
+        renderList(resultBullets, data.bullets || []);
+        if (data.takeaways && data.takeaways.length) {
+          renderList(resultTakeaways, data.takeaways);
+          resultTakeawaysWrap.hidden = false;
+        } else {
+          resultTakeawaysWrap.hidden = true;
+        }
         resultMeta.textContent = (data.length === 'detailed' ? 'Detailed summary' : 'Short summary') + ' · from ' + data.inputCharacterCount + ' characters of input';
         resultWrap.hidden = false;
       })
