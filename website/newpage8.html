@@ -67,13 +67,14 @@
       width: 100%;
       aspect-ratio: 1 / 1;
       border-radius: 2px;
+      overflow: hidden;
       background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 3.6rem;
-      font-weight: 800;
+    }
+    .concept-polaroid-photo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     .concept-polaroid-caption {
       margin: 0.9rem 0 0;
@@ -155,8 +156,10 @@
     <section class="concept-hero" data-reveal>
       <div class="concept-polaroid">
         <div class="concept-tape" aria-hidden="true"></div>
-        <div class="concept-polaroid-photo" aria-hidden="true">CM</div>
-        <p class="concept-polaroid-caption">celeborn.jpg — swap me in!</p>
+        <div class="concept-polaroid-photo">
+          <img src="/assets/celeborn.jpeg" alt="Celeborn McGinnis" />
+        </div>
+        <p class="concept-polaroid-caption">celeborn.jpeg</p>
       </div>
       <div class="concept-hero-copy">
         <p class="eyebrow">Landing concept 8 · Draft — forest polaroid</p>

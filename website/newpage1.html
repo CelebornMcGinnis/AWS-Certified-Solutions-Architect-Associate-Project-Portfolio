@@ -63,24 +63,19 @@
       width: 260px;
       height: 260px;
       border-radius: 50%;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-      color: #fff;
-      font-size: 4rem;
-      font-weight: 800;
       box-shadow: var(--shadow);
       border: 4px solid var(--surface);
     }
-    .concept-photo-caption {
-      text-align: center;
-      margin-top: 0.9rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    .concept-photo-caption code {
-      font-size: 0.8rem;
+    .concept-photo-placeholder img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     @media (max-width: 760px) {
       .concept-hero {
@@ -98,7 +93,6 @@
       .concept-photo-placeholder {
         width: 200px;
         height: 200px;
-        font-size: 3rem;
       }
     }
   </style>
@@ -152,8 +146,9 @@
       </div>
       <div class="concept-photo-wrap">
         <div class="concept-photo-ring" aria-hidden="true"></div>
-        <div class="concept-photo-placeholder" aria-hidden="true">CM</div>
-        <p class="concept-photo-caption">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
+        <div class="concept-photo-placeholder">
+          <img src="/assets/celeborn.jpeg" alt="Celeborn McGinnis" />
+        </div>
       </div>
     </section>
 

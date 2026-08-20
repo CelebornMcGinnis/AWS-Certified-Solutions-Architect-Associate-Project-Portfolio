@@ -49,42 +49,16 @@
       min-height: 74vh;
       display: flex;
       align-items: flex-end;
-      background: linear-gradient(160deg, var(--accent), var(--accent-dark) 75%);
+      background-image: url('/assets/celeborn.jpeg');
+      background-size: cover;
+      background-position: center 25%;
       overflow: hidden;
     }
     .concept-hero::before {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(0deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 58%);
-    }
-    .concept-hero::after {
-      content: "CM";
-      position: absolute;
-      right: -1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 26rem;
-      font-weight: 800;
-      color: rgba(255, 255, 255, 0.08);
-      line-height: 1;
-      pointer-events: none;
-      user-select: none;
-    }
-    .concept-photo-tag {
-      position: absolute;
-      top: 1.6rem;
-      right: 1.6rem;
-      z-index: 2;
-      background: rgba(0, 0, 0, 0.35);
-      color: #fff;
-      padding: 0.5rem 0.9rem;
-      border-radius: 999px;
-      font-size: 0.78rem;
-    }
-    .concept-photo-tag code {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.18);
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.05) 58%);
     }
     .concept-hero-inner {
       position: relative;
@@ -129,7 +103,6 @@
       .concept-hero { min-height: 62vh; text-align: center; }
       .concept-hero-inner p { margin-left: auto; margin-right: auto; }
       .concept-hero-actions { justify-content: center; }
-      .concept-hero::after { font-size: 14rem; }
     }
   </style>
 </head>
@@ -164,7 +137,6 @@
 
   <main>
     <section class="concept-hero" data-reveal>
-      <p class="concept-photo-tag">Photo background placeholder — swap in <code>/assets/celeborn.jpg</code></p>
       <div class="concept-hero-inner">
         <p class="eyebrow">Landing concept 3 · Draft — teal full-bleed photo hero</p>
         <h1>Real AWS systems, built end to end.</h1>
