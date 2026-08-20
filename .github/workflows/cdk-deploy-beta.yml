@@ -1,0 +1,63 @@
+name: CDK deploy (beta)
+
+# Auto-deploys ONLY the beta stacks on every push to main -- prod is
+# deliberately never touched by this workflow. See cdk-deploy-prod.yml
+# for prod, which only runs when manually triggered.
+#
+# The stack list below is an explicit allow-list, not "--all" filtered
+# down: a newly added project's prod stack must never be auto-deployed
+# just because its beta stack was added here, so each new project has
+# to be added to this list on purpose, stack by stack, not swept in by
+# a wildcard. portfolio-github-oidc is intentionally excluded from both
+# this and the prod workflow -- it changes rarely and any change to its
+# trust policy is high-stakes enough to always be a deliberate, manual
+# `cdk deploy portfolio-github-oidc`.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cdk/**"
+      - "website/**"
+      - "projects/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: cdk-deploy-beta
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: cdk/package-lock.json
+
+      - run: npm ci
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::942960194803:role/github-actions-portfolio-cdk-deploy
+          aws-region: us-east-1
+
+      - name: cdk deploy (beta stacks only)
+        run: |
+          npx cdk deploy --require-approval never \
+            fanning-sns-beta \
+            live-poll-beta \
+            contact-form-api-beta \
+            workflow-visualizer-beta \
+            moderated-image-gallery-beta \
+            habit-tracker-beta \
+            portfolio-website-beta

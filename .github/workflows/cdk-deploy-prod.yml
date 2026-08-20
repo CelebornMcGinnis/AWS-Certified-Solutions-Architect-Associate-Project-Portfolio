@@ -1,0 +1,65 @@
+name: CDK deploy (prod)
+
+# Prod is NEVER deployed automatically -- this workflow only runs when
+# someone explicitly triggers it from the Actions tab (or `gh workflow
+# run cdk-deploy-prod.yml`), and only after typing the literal word
+# "deploy" into the confirmation input below. The `production`
+# environment below adds a second gate on top of that: GitHub will
+# pause the run for manual approval before the deploy step executes,
+# even if this workflow is somehow triggered unintentionally.
+#
+# Same explicit allow-list reasoning as cdk-deploy-beta.yml: a new
+# project's prod stack has to be added here on purpose, one line at a
+# time, never picked up automatically. portfolio-github-oidc is
+# excluded here too -- deploy it manually with `cdk deploy
+# portfolio-github-oidc` on the rare occasion it needs to change.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy" to confirm you want to deploy to PROD'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: cdk-deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.inputs.confirm == 'deploy'
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: cdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: cdk/package-lock.json
+
+      - run: npm ci
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::942960194803:role/github-actions-portfolio-cdk-deploy
+          aws-region: us-east-1
+
+      - name: cdk deploy (prod stacks only)
+        run: |
+          npx cdk deploy --require-approval never \
+            fanning-sns \
+            live-poll \
+            contact-form-api \
+            workflow-visualizer \
+            moderated-image-gallery \
+            habit-tracker \
+            portfolio-website-prod
