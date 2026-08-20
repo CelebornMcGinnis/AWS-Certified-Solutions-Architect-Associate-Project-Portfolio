@@ -14,7 +14,7 @@ function stagingDirFor(stage: Stage): string {
 }
 
 export type Stage = 'prod' | 'beta';
-export type ProjectKey = 'contactForm' | 'livePoll' | 'fanningSns' | 'workflowVisualizer' | 'moderatedImageGallery';
+export type ProjectKey = 'contactForm' | 'livePoll' | 'fanningSns' | 'workflowVisualizer' | 'moderatedImageGallery' | 'habitTracker';
 
 interface ProjectMapping {
   key: ProjectKey;
@@ -82,6 +82,17 @@ const PROJECTS: ProjectMapping[] = [
     homepageCardFile: 'projects/moderated-image-gallery/homepage-card.html',
     navLinkHtml: '<a href="/project/gallery/project5.html">Moderated Image Gallery</a>',
     mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>',
+  },
+  {
+    key: 'habitTracker',
+    frontendDir: 'projects/habit-tracker/frontend',
+    destPrefix: 'project/habits',
+    rename: { 'index.html': 'project6.html' },
+    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
+    stages: ['beta'],
+    homepageCardFile: 'projects/habit-tracker/homepage-card.html',
+    navLinkHtml: '<a href="/project/habits/project6.html">Habit Tracker</a>',
+    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/habits/project6.html">Habit Tracker</a>',
   },
 ];
 

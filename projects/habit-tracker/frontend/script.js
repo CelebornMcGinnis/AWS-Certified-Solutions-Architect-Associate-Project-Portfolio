@@ -1,0 +1,382 @@
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// -----------------------------------------------------------------------
+// Device id: this project has no accounts. A random id is generated once
+// and kept in localStorage, then sent as plain request data on every
+// call -- the API trusts it as-is, with no way to verify it actually
+// belongs to this browser. That's disclosed directly in the device
+// notice banner in the page itself, not just here.
+// -----------------------------------------------------------------------
+var DeviceId = (function () {
+  var STORAGE_KEY = 'habitTrackerDeviceId';
+  var id = null;
+  try {
+    id = window.localStorage.getItem(STORAGE_KEY);
+  } catch (e) {}
+
+  if (!id) {
+    id = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : 'device-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, id);
+    } catch (e) {}
+  }
+
+  return id;
+})();
+
+(function () {
+  var cfg = window.APP_CONFIG || {};
+  var form = document.getElementById('habit-form');
+  var nameInput = document.getElementById('habit-name');
+  var formStatus = document.getElementById('habit-form-status');
+  var listEl = document.getElementById('habit-list');
+  var emptyNote = document.getElementById('habit-list-empty-note');
+  var deviceIdNote = document.getElementById('device-id-note');
+  if (!form) return;
+
+  deviceIdNote.textContent = DeviceId.slice(0, 8);
+
+  function fetchWithTimeout(url, options) {
+    var controller = new AbortController();
+    var timeoutId = window.setTimeout(function () {
+      controller.abort();
+    }, cfg.requestTimeoutMs || 10000);
+    return fetch(url, Object.assign({ cache: 'no-store' }, options, { signal: controller.signal })).finally(function () {
+      window.clearTimeout(timeoutId);
+    });
+  }
+
+  function setFormStatus(message, kind) {
+    formStatus.textContent = message;
+    formStatus.hidden = !message;
+    formStatus.className = 'form-status' + (message ? ' is-visible' : '') + (kind ? ' ' + kind : '');
+  }
+
+  // Keyed by habitId, so re-renders can reuse each card's DOM node
+  // instead of losing scroll position / the delete-confirm state on
+  // every refresh.
+  var habitCards = Object.create(null);
+
+  function dayLabel(dateStr) {
+    var d = new Date(dateStr + 'T00:00:00Z');
+    return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  function buildCalendar(container, checkedDates) {
+    var checkedSet = Object.create(null);
+    checkedDates.forEach(function (d) {
+      checkedSet[d] = true;
+    });
+
+    container.innerHTML = '';
+    var days = cfg.calendarDays || 28;
+    var today = new Date();
+    for (var i = days - 1; i >= 0; i--) {
+      var d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - i));
+      var dateStr = d.toISOString().slice(0, 10);
+      var cell = document.createElement('span');
+      cell.className = 'habit-calendar-cell' + (checkedSet[dateStr] ? ' is-checked' : '');
+      cell.title = dayLabel(dateStr) + (checkedSet[dateStr] ? ' — checked in' : ' — not checked in');
+      container.appendChild(cell);
+    }
+  }
+
+  function loadCalendar(habitId, container) {
+    fetchWithTimeout(cfg.apiBase + '/habits/' + habitId + '/checkins?ownerId=' + encodeURIComponent(DeviceId) + '&days=' + (cfg.calendarDays || 28))
+      .then(function (res) {
+        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        buildCalendar(container, data.dates || []);
+      })
+      .catch(function () {
+        // Leave the calendar blank rather than block the rest of the card.
+      });
+  }
+
+  function checkInStatusText(habit) {
+    var today = new Date().toISOString().slice(0, 10);
+    return habit.lastCheckInDate === today;
+  }
+
+  function renderCard(habit) {
+    var existing = habitCards[habit.habitId];
+    var card = existing ? existing.card : document.createElement('article');
+    card.className = 'habit-card';
+
+    var checkedInToday = checkInStatusText(habit);
+
+    card.innerHTML =
+      '<div class="habit-card-head">' +
+      '<h3>' + habit.name.replace(/</g, '&lt;') + '</h3>' +
+      '<button type="button" class="ghost button-link habit-delete-button" data-habit-id="' + habit.habitId + '">Delete</button>' +
+      '</div>' +
+      '<div class="habit-stats">' +
+      '<span><strong>' + habit.currentStreak + '</strong> day' + (habit.currentStreak === 1 ? '' : 's') + ' current streak</span>' +
+      '<span><strong>' + habit.longestStreak + '</strong> day' + (habit.longestStreak === 1 ? '' : 's') + ' best streak</span>' +
+      '</div>' +
+      '<div class="habit-calendar" data-calendar></div>' +
+      '<button type="button" class="habit-checkin-button' + (checkedInToday ? ' is-done' : '') + '" data-habit-id="' + habit.habitId + '"' + (checkedInToday ? ' disabled' : '') + '>' +
+      (checkedInToday ? '✓ Checked in today' : 'Check in today') +
+      '</button>';
+
+    if (!existing) {
+      listEl.appendChild(card);
+      habitCards[habit.habitId] = { card: card, habit: habit };
+    } else {
+      habitCards[habit.habitId].habit = habit;
+    }
+
+    loadCalendar(habit.habitId, card.querySelector('[data-calendar]'));
+  }
+
+  function removeCard(habitId) {
+    var entry = habitCards[habitId];
+    if (entry && entry.card.parentNode) {
+      entry.card.parentNode.removeChild(entry.card);
+    }
+    delete habitCards[habitId];
+  }
+
+  function renderEmptyState() {
+    emptyNote.hidden = Object.keys(habitCards).length > 0;
+  }
+
+  function loadHabits() {
+    fetchWithTimeout(cfg.apiBase + '/habits?ownerId=' + encodeURIComponent(DeviceId))
+      .then(function (res) {
+        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        var habits = data.habits || [];
+        var seenIds = Object.create(null);
+        habits.forEach(function (habit) {
+          seenIds[habit.habitId] = true;
+          renderCard(habit);
+        });
+        Object.keys(habitCards).forEach(function (id) {
+          if (!seenIds[id]) removeCard(id);
+        });
+        renderEmptyState();
+      })
+      .catch(function () {
+        emptyNote.hidden = false;
+        emptyNote.textContent = 'Could not load your habits right now -- try refreshing the page.';
+      });
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var name = nameInput.value.trim();
+    if (!name) return;
+
+    setFormStatus('Adding…', 'info');
+    fetchWithTimeout(cfg.apiBase + '/habits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ownerId: DeviceId, name: name }),
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Request failed: ' + res.status);
+        return res.json();
+      })
+      .then(function (habit) {
+        setFormStatus('', null);
+        nameInput.value = '';
+        renderCard(habit);
+        renderEmptyState();
+      })
+      .catch(function () {
+        setFormStatus('Could not add that habit. Please try again.', 'error');
+      });
+  });
+
+  // Event delegation for check-in and delete buttons -- cards are
+  // re-created/reused across renders, so binding once on the list
+  // container avoids re-attaching a listener to every card every time.
+  var deleteConfirmTimers = Object.create(null);
+
+  listEl.addEventListener('click', function (event) {
+    var checkinButton = event.target.closest('.habit-checkin-button');
+    if (checkinButton && !checkinButton.disabled) {
+      var habitId = checkinButton.getAttribute('data-habit-id');
+      checkinButton.disabled = true;
+      fetchWithTimeout(cfg.apiBase + '/habits/' + habitId + '/checkins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ownerId: DeviceId }),
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error('Request failed: ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          var entry = habitCards[habitId];
+          if (entry) renderCard(Object.assign({}, entry.habit, data));
+        })
+        .catch(function () {
+          checkinButton.disabled = false;
+        });
+      return;
+    }
+
+    var deleteButton = event.target.closest('.habit-delete-button');
+    if (deleteButton) {
+      var deleteHabitId = deleteButton.getAttribute('data-habit-id');
+      if (!deleteConfirmTimers[deleteHabitId]) {
+        deleteButton.textContent = 'Confirm delete?';
+        deleteConfirmTimers[deleteHabitId] = window.setTimeout(function () {
+          deleteButton.textContent = 'Delete';
+          delete deleteConfirmTimers[deleteHabitId];
+        }, 3000);
+        return;
+      }
+
+      window.clearTimeout(deleteConfirmTimers[deleteHabitId]);
+      delete deleteConfirmTimers[deleteHabitId];
+      deleteButton.disabled = true;
+      fetchWithTimeout(cfg.apiBase + '/habits/' + deleteHabitId + '?ownerId=' + encodeURIComponent(DeviceId), { method: 'DELETE' })
+        .then(function (res) {
+          if (!res.ok) throw new Error('Request failed: ' + res.status);
+          removeCard(deleteHabitId);
+          renderEmptyState();
+        })
+        .catch(function () {
+          deleteButton.disabled = false;
+          deleteButton.textContent = 'Delete';
+        });
+    }
+  });
+
+  loadHabits();
+})();
+
+// -----------------------------------------------------------------------
+// Shared chrome behaviors, copied from the other project pages:
+// scroll-reveal, nav dropdown, sticky header shrink, back-to-top, mobile
+// menu, dark mode toggle.
+// -----------------------------------------------------------------------
+var revealEls = document.querySelectorAll('[data-reveal]');
+if ('IntersectionObserver' in window) {
+  var revealIo = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealIo.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+  revealEls.forEach(function (el) { revealIo.observe(el); });
+} else {
+  revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+document.querySelectorAll('.nav-dropdown, .mobile-menu').forEach(function (details) {
+  document.addEventListener('click', function (event) {
+    if (details.open && !details.contains(event.target)) {
+      details.open = false;
+    }
+  });
+});
+
+function closeOpenNavMenus() {
+  document.querySelectorAll('.nav-dropdown[open], .mobile-menu[open]').forEach(function (details) {
+    details.open = false;
+  });
+}
+window.addEventListener('scroll', closeOpenNavMenus, { passive: true });
+document.querySelectorAll('.nav-dropdown-menu a, .mobile-menu-panel a').forEach(function (link) {
+  link.addEventListener('click', function () {
+    var details = link.closest('details');
+    if (details) details.open = false;
+  });
+});
+
+var siteHeader = document.querySelector('.site-header');
+if (siteHeader) {
+  var wasScrolled = false;
+  var headerRafId = null;
+  var updateHeaderState = function () {
+    headerRafId = null;
+    var threshold = wasScrolled ? 8 : 24;
+    var scrolled = window.scrollY > threshold;
+    if (scrolled !== wasScrolled) {
+      siteHeader.classList.toggle('is-scrolled', scrolled);
+      wasScrolled = scrolled;
+    }
+  };
+  var scheduleHeaderUpdate = function () {
+    if (headerRafId === null) {
+      headerRafId = window.requestAnimationFrame(updateHeaderState);
+    }
+  };
+  updateHeaderState();
+  window.addEventListener('scroll', scheduleHeaderUpdate, { passive: true });
+}
+
+var backToTop = document.getElementById('back-to-top');
+if (backToTop) {
+  var toggleBackToTop = function () {
+    backToTop.classList.toggle('is-visible', window.scrollY > 500);
+  };
+  toggleBackToTop();
+  window.addEventListener('scroll', toggleBackToTop, { passive: true });
+
+  backToTop.addEventListener('click', function () {
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+  });
+}
+
+var mobileMenu = document.getElementById('mobile-menu');
+if (mobileMenu) {
+  var mobileMenuPanel = mobileMenu.querySelector('.mobile-menu-panel');
+  var toggleMobileMenuVisibility = function () {
+    var visible = window.scrollY > 220;
+    mobileMenu.classList.toggle('is-visible', visible);
+    if (!visible && mobileMenu.open) {
+      mobileMenu.open = false;
+    }
+  };
+  toggleMobileMenuVisibility();
+  window.addEventListener('scroll', toggleMobileMenuVisibility, { passive: true });
+
+  if (mobileMenuPanel) {
+    mobileMenu.addEventListener('toggle', function () {
+      if (mobileMenu.open) {
+        mobileMenuPanel.style.animation = 'none';
+        void mobileMenuPanel.offsetWidth;
+        mobileMenuPanel.style.animation = 'mobileMenuIn 0.18s ease forwards';
+      }
+    });
+  }
+}
+
+(function () {
+  var toggles = document.querySelectorAll('.theme-toggle');
+  if (!toggles.length) return;
+
+  function currentTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  }
+
+  function reflectState() {
+    var isDark = currentTheme() === 'dark';
+    toggles.forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(isDark));
+    });
+  }
+
+  reflectState();
+
+  toggles.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var next = currentTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      reflectState();
+    });
+  });
+})();
