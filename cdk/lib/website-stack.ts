@@ -30,6 +30,8 @@ export interface WebsiteStackProps extends cdk.StackProps {
    * website-content.ts for why this can't be a plain static file copy.
    */
   apiEndpoints: Record<ProjectKey, string>;
+  /** Non-endpoint per-project config.js tokens (e.g. Cognito ids) for this stage. See buildConfigJsSources(). */
+  extraConfigReplacements?: Partial<Record<ProjectKey, Record<string, string>>>;
 }
 
 /**
@@ -155,8 +157,8 @@ export class WebsiteStack extends cdk.Stack {
     // new resources and can't be mixed into a `cdk import` changeset
     // alongside the adopted ones.
     if (props.manageContent) {
-      const configJsSources = buildConfigJsSources(props.stage, props.apiEndpoints).map(({ destinationKey, content }) =>
-        s3deploy.Source.data(destinationKey, content),
+      const configJsSources = buildConfigJsSources(props.stage, props.apiEndpoints, props.extraConfigReplacements).map(
+        ({ destinationKey, content }) => s3deploy.Source.data(destinationKey, content),
       );
 
       new s3deploy.BucketDeployment(this, 'DeployWebsiteContent', {

@@ -5,6 +5,7 @@ import { FanningSnsStack } from '../lib/fanning-sns-stack';
 import { LivePollStack } from '../lib/live-poll-stack';
 import { ContactFormStack } from '../lib/contact-form-stack';
 import { WorkflowVisualizerStack } from '../lib/workflow-visualizer-stack';
+import { ModeratedImageGalleryStack } from '../lib/moderated-image-gallery-stack';
 import { WebsiteStack } from '../lib/website-stack';
 import { GitHubOidcStack } from '../lib/github-oidc-stack';
 import { ProjectKey } from '../lib/website-content';
@@ -46,10 +47,16 @@ const contactFormBeta = new ContactFormStack(app, 'contact-form-api-beta', { env
 const workflowVisualizerProd = new WorkflowVisualizerStack(app, 'workflow-visualizer', { env, stage: 'prod' });
 const workflowVisualizerBeta = new WorkflowVisualizerStack(app, 'workflow-visualizer-beta', { env, stage: 'beta' });
 
-for (const stack of [fanningSnsProd, livePollProd, contactFormProd, workflowVisualizerProd]) {
+// Backend-first, like workflow-visualizer's initial rollout. The frontend
+// now exists too (see website-content.ts's PROJECTS entry), gated to
+// stages: ['beta'] there until it's reviewed and promoted to prod.
+const moderatedImageGalleryProd = new ModeratedImageGalleryStack(app, 'moderated-image-gallery', { env, stage: 'prod' });
+const moderatedImageGalleryBeta = new ModeratedImageGalleryStack(app, 'moderated-image-gallery-beta', { env, stage: 'beta' });
+
+for (const stack of [fanningSnsProd, livePollProd, contactFormProd, workflowVisualizerProd, moderatedImageGalleryProd]) {
   cdk.Tags.of(stack).add('Stage', 'prod');
 }
-for (const stack of [fanningSnsBeta, livePollBeta, contactFormBeta, workflowVisualizerBeta]) {
+for (const stack of [fanningSnsBeta, livePollBeta, contactFormBeta, workflowVisualizerBeta, moderatedImageGalleryBeta]) {
   cdk.Tags.of(stack).add('Stage', 'beta');
 }
 
@@ -58,12 +65,30 @@ const prodApiEndpoints: Record<ProjectKey, string> = {
   livePoll: livePollProd.webSocketUrl,
   fanningSns: fanningSnsProd.apiEndpoint,
   workflowVisualizer: workflowVisualizerProd.apiEndpoint,
+  moderatedImageGallery: moderatedImageGalleryProd.apiEndpoint,
 };
 const betaApiEndpoints: Record<ProjectKey, string> = {
   contactForm: contactFormBeta.apiEndpoint,
   livePoll: livePollBeta.webSocketUrl,
   fanningSns: fanningSnsBeta.apiEndpoint,
   workflowVisualizer: workflowVisualizerBeta.apiEndpoint,
+  moderatedImageGallery: moderatedImageGalleryBeta.apiEndpoint,
+};
+
+// moderated-image-gallery's config.js needs its stage's Cognito ids too,
+// not just the API endpoint -- see buildConfigJsSources() in
+// website-content.ts for how these extra tokens get resolved at deploy time.
+const prodExtraConfigReplacements = {
+  moderatedImageGallery: {
+    __COGNITO_USER_POOL_ID__: moderatedImageGalleryProd.userPoolId,
+    __COGNITO_USER_POOL_CLIENT_ID__: moderatedImageGalleryProd.userPoolClientId,
+  },
+};
+const betaExtraConfigReplacements = {
+  moderatedImageGallery: {
+    __COGNITO_USER_POOL_ID__: moderatedImageGalleryBeta.userPoolId,
+    __COGNITO_USER_POOL_CLIENT_ID__: moderatedImageGalleryBeta.userPoolClientId,
+  },
 };
 
 const websiteProd = new WebsiteStack(app, 'portfolio-website-prod', {
@@ -81,6 +106,7 @@ const websiteProd = new WebsiteStack(app, 'portfolio-website-prod', {
   manageContent,
   webAclId: 'arn:aws:wafv2:us-east-1:942960194803:global/webacl/CreatedByCloudFront-7737fc15/748f67d8-c668-4be9-9d0f-e93e6037a39a',
   apiEndpoints: prodApiEndpoints,
+  extraConfigReplacements: prodExtraConfigReplacements,
 });
 
 const websiteBeta = new WebsiteStack(app, 'portfolio-website-beta', {
@@ -94,6 +120,7 @@ const websiteBeta = new WebsiteStack(app, 'portfolio-website-beta', {
   manageContent,
   webAclId: 'arn:aws:wafv2:us-east-1:942960194803:global/webacl/CreatedByCloudFront-17dac3ad/83d6d067-3c62-45f4-9b93-d097179721cd',
   apiEndpoints: betaApiEndpoints,
+  extraConfigReplacements: betaExtraConfigReplacements,
 });
 
 cdk.Tags.of(websiteProd).add('Stage', 'prod');
