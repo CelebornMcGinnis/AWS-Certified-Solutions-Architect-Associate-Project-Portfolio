@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>
+    // Applied before first paint to avoid a flash of the wrong theme.
+    // A toggle in the nav can override the system preference; that
+    // choice is remembered in localStorage from then on.
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Moderated Image Gallery — McGinnis Architecture</title>
+  <meta name="description" content="Sign in, upload an image, and watch it get automatically screened by Amazon Rekognition before it ever reaches the public gallery." />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f7fb" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body id="top">
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand-row">
+        <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
+          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+        </a>
+      </div>
+      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <nav aria-label="Main navigation">
+        <a href="/">Home</a>
+        <details class="nav-dropdown">
+          <summary>Projects</summary>
+          <div class="nav-dropdown-menu">
+            <a href="/project/contactform/project1.html">Contact Form</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
+            <a href="#top">Moderated Image Gallery</a>
+            <span class="nav-dropdown-group-label">On this page</span>
+            <a class="nav-dropdown-sublink" href="#guidelines">Guidelines</a>
+            <a class="nav-dropdown-sublink" href="#demo">Try it</a>
+            <a class="nav-dropdown-sublink" href="#gallery">Gallery</a>
+            <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
+            <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
+            <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
+            <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
+            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+          </div>
+        </details>
+        <a href="/#about">About</a>
+              <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Project</p>
+      <h1 class="hero-title-compact">Moderated Image Gallery</h1>
+      <p>
+        Create an account, upload an image, and watch it move through
+        <strong>Amazon Rekognition</strong>'s automated content moderation
+        before it either lands in the public gallery below or gets
+        rejected and permanently deleted — no human reviewer, no queue.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href="#guidelines">Read the guidelines</a>
+        <a class="button-link" href="#demo">Try it</a>
+        <a class="button-link" href="#how-it-works">How it works</a>
+        <a class="button-link" href="#pricing">Pricing</a>
+      </div>
+    </section>
+
+    <section class="card" id="guidelines" aria-labelledby="guidelines-heading">
+      <div>
+        <p class="eyebrow">Before you upload</p>
+        <h2 id="guidelines-heading">Community guidelines</h2>
+        <p class="muted">
+          Every image is scanned automatically by
+          <a href="https://aws.amazon.com/rekognition/content-moderation/" target="_blank" rel="noopener noreferrer">Amazon Rekognition's content moderation API</a>
+          the moment it's uploaded. There is no manual review and no
+          appeal — if Rekognition detects <em>any</em> of the categories
+          below, the image is deleted immediately and marked rejected. No
+          image is ever shown to a moderator, and no specific reason
+          beyond "rejected" is stored or shown back to you.
+        </p>
+      </div>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 4v5c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V7l8-4z" stroke-linejoin="round"/></svg>
+          </span>
+          <h3>Nudity &amp; sexual content</h3>
+          <p class="muted">Explicit nudity, sexual activity, and non-explicit content like swimwear/underwear or intimate kissing are all flagged.</p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 9v4M12 17h.01" stroke-linecap="round" /><path d="M10.3 3.9L2.5 18a1.8 1.8 0 0 0 1.6 2.7h15.8a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0z" stroke-linejoin="round" /></svg>
+          </span>
+          <h3>Violence &amp; disturbing imagery</h3>
+          <p class="muted">Graphic violence, weapons in a threatening context, self-harm, and visually disturbing content (blood, corpses, etc.) are all flagged.</p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 3h6l-1 5h3l-8 12 1.5-8H7l2-9z" stroke-linejoin="round" /></svg>
+          </span>
+          <h3>Drugs, alcohol &amp; tobacco</h3>
+          <p class="muted">Illegal drug use and paraphernalia, plus any depiction of alcoholic beverages or tobacco products, are flagged — even in a casual context.</p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="M8.5 15s1.2 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9h.01M15 9h.01" stroke-linecap="round" /></svg>
+          </span>
+          <h3>Hate symbols &amp; rude gestures</h3>
+          <p class="muted">Hate group symbols and offensive gestures are flagged, along with gambling imagery (cards, chips, slot machines).</p>
+        </div>
+      </div>
+      <p class="muted small-note">
+        This is Rekognition's full default moderation taxonomy applied at
+        its default confidence threshold — a deliberately strict,
+        zero-tolerance policy for a public demo, not a production
+        moderation tuning recommendation. Only JPEG, PNG, or WebP images
+        up to 5MB are accepted regardless of content.
+      </p>
+    </section>
+
+    <section class="card" id="demo" aria-labelledby="demo-heading">
+      <div>
+        <p class="eyebrow">Demo</p>
+        <h2 id="demo-heading">Try it yourself</h2>
+        <p class="muted">
+          Create an account (or sign in) to upload an image. Everything
+          below runs against real AWS infrastructure — no mock data.
+        </p>
+        <p class="muted small-note">
+          <strong>Privacy notice:</strong> only an email address and
+          password are collected, used solely for Cognito authentication.
+        </p>
+      </div>
+
+      <div id="auth-section">
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab is-active" data-panel="signup">Sign up</button>
+          <button type="button" class="auth-tab" data-panel="login">Log in</button>
+          <button type="button" class="auth-tab" data-panel="forgot">Forgot password</button>
+        </div>
+
+        <form class="contact-form auth-panel" id="signup-form">
+          <label>
+            Email
+            <input type="email" name="email" autocomplete="email" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+          </label>
+          <p class="hint">At least 8 characters, with an uppercase letter, a lowercase letter, and a digit.</p>
+          <div class="form-status" id="signup-status" role="status" aria-live="polite" hidden></div>
+          <button type="submit">Create account</button>
+        </form>
+
+        <form class="contact-form auth-panel" id="login-form" hidden>
+          <label>
+            Email
+            <input type="email" name="email" autocomplete="email" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" autocomplete="current-password" required />
+          </label>
+          <div class="form-status" id="login-status" role="status" aria-live="polite" hidden></div>
+          <button type="submit">Log in</button>
+        </form>
+
+        <div class="auth-panel" id="forgot-panel" hidden>
+          <form class="contact-form" id="forgot-request-form">
+            <label>
+              Email
+              <input type="email" name="email" autocomplete="email" required />
+            </label>
+            <button type="submit">Send reset code</button>
+          </form>
+          <form class="contact-form" id="forgot-reset-form" hidden>
+            <label>
+              Reset code
+              <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" required />
+            </label>
+            <label>
+              New password
+              <input type="password" name="newPassword" autocomplete="new-password" minlength="8" required />
+            </label>
+            <button type="submit">Reset password</button>
+          </form>
+          <div class="form-status" id="forgot-status" role="status" aria-live="polite" hidden></div>
+        </div>
+
+        <div class="auth-panel" id="confirm-panel" hidden>
+          <p class="muted">
+            We emailed a confirmation code to <strong id="confirm-email-note"></strong>.
+            Enter it below to finish creating your account.
+          </p>
+          <form class="contact-form" id="confirm-form">
+            <label>
+              Confirmation code
+              <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" required />
+            </label>
+            <div class="form-status" id="confirm-status" role="status" aria-live="polite" hidden></div>
+            <button type="submit">Confirm account</button>
+          </form>
+          <p class="auth-switch">
+            Didn't get a code? <button type="button" id="resend-code-button">Resend it</button>
+          </p>
+        </div>
+      </div>
+
+      <div class="session-row" id="session-row" hidden>
+        <p class="muted">Signed in as <strong id="session-email"></strong></p>
+        <button type="button" id="logout-button" class="ghost button-link">Log out</button>
+      </div>
+
+      <div id="upload-section" hidden>
+        <form class="contact-form" id="upload-form">
+          <label>
+            Image (JPEG, PNG, or WebP — up to 5MB)
+            <input type="file" id="upload-file" accept="image/jpeg,image/png,image/webp" required />
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="upload-agree" required />
+            <span>I've read the <a href="#guidelines">community guidelines</a> above and confirm this image follows them.</span>
+          </label>
+          <div class="form-status" id="upload-status" role="status" aria-live="polite" hidden></div>
+          <div id="upload-result" hidden>
+            <p>Result: <span id="upload-result-badge"></span></p>
+            <p class="rejection-note" id="upload-rejection-note" hidden>
+              This image didn't meet the community guidelines above and has been permanently deleted.
+            </p>
+          </div>
+          <button type="submit" id="upload-submit">Upload</button>
+        </form>
+
+        <div class="notify-log-wrap">
+          <div class="notify-log-head">
+            <h3>My uploads</h3>
+            <span class="muted small-note" id="my-uploads-empty-note">No uploads yet.</span>
+          </div>
+          <table class="notify-log" id="my-uploads-table">
+            <thead>
+              <tr>
+                <th scope="col">File</th>
+                <th scope="col">Status</th>
+                <th scope="col">Download</th>
+              </tr>
+            </thead>
+            <tbody id="my-uploads-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="gallery" aria-labelledby="gallery-heading">
+      <div class="notify-log-head">
+        <div>
+          <p class="eyebrow">Public gallery</p>
+          <h2 id="gallery-heading">Approved uploads</h2>
+        </div>
+        <button type="button" class="button-link ghost" id="gallery-refresh-button">Refresh</button>
+      </div>
+      <p class="muted">
+        Anyone can view this gallery — it only shows images that already
+        passed moderation. Hover (or tap) an image to download it.
+      </p>
+      <div class="gallery-grid" id="gallery-grid"></div>
+      <p class="muted small-note gallery-empty-note" id="gallery-empty-note">No approved images yet — be the first to upload one above.</p>
+    </section>
+
+    <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture</p>
+        <h2 id="how-it-works-heading">How it works</h2>
+        <p class="muted section-intro">
+          This is a real AWS project, not a mockup. Here's what actually
+          happens between clicking Upload above and an image landing in
+          the gallery — click any step to jump to it, or let it play
+          through on its own.
+        </p>
+      </div>
+
+      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
+      <div class="flow-diagram" id="flow-diagram">
+        <div class="flow-track">
+          <div class="flow-node" data-node="visitor">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="12" cy="10" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M4 26c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="23" cy="12" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M18.5 26c0-3.6 2.5-6.5 6-7.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <span class="flow-node-label">Visitor</span>
+          </div>
+
+          <div class="flow-connector" data-step="1" aria-hidden="true">
+            <span class="flow-connector-num">1</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="cognito" data-step="1" role="button" tabindex="0" aria-label="Step 1: Visitor signs in via Cognito">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><rect x="4" y="8" width="24" height="17" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M4 12h24" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="18.5" r="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 22.5c.5-1.6 1.7-2.5 3-2.5s2.5.9 3 2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <span class="flow-node-label">Cognito</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+            <span class="flow-connector-num">2</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="apigateway" data-step="2" role="button" tabindex="0" aria-label="Step 2: Browser requests an upload slot from API Gateway">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/apigateway.png" alt="" />
+            </span>
+            <span class="flow-node-label">API Gateway</span>
+          </div>
+
+          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
+            <span class="flow-connector-num">3</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="lambda" data-step="3" role="button" tabindex="0" aria-label="Step 3: Lambda creates a pending record and a presigned upload URL">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/lambda.png" alt="" />
+            </span>
+            <span class="flow-node-label">Lambda</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
+            <span class="flow-connector-num">4</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="s3quarantine" data-step="4" role="button" tabindex="0" aria-label="Step 4: Browser uploads the image directly to a private S3 quarantine bucket">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/s3.png" alt="" />
+            </span>
+            <span class="flow-node-label">S3 (quarantine)</span>
+          </div>
+
+          <div class="flow-connector" data-step="5" aria-hidden="true">
+            <span class="flow-connector-num">5</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="rekognition" data-step="5" role="button" tabindex="0" aria-label="Step 5: A Lambda function runs Rekognition content moderation">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><rect x="5" y="5" width="22" height="22" rx="3" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="16" r="5" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="16" r="1.6" fill="currentColor"/></svg>
+            </span>
+            <span class="flow-node-label">Rekognition</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="6" aria-hidden="true">
+            <span class="flow-connector-num">6</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="outcome" data-step="6" role="button" tabindex="0" aria-label="Step 6: Approved images move to the public gallery bucket, rejected ones are deleted">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/dynamodb.png" alt="" />
+            </span>
+            <span class="flow-node-label">DynamoDB + S3 (gallery)</span>
+          </div>
+        </div>
+      </div>
+
+      <ol class="flow-steps" id="flow-steps">
+        <li class="flow-step" data-step="1" tabindex="0">
+          <span class="flow-step-num">1</span>
+          <div class="flow-step-body">
+            <h3>Visitor signs in via Cognito</h3>
+            <p>The browser talks directly to a Cognito user pool's public API to sign up, confirm, log in, or reset a password — no server in the middle, and the resulting tokens live only in the browser's local storage.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="2" tabindex="0">
+          <span class="flow-step-num">2</span>
+          <div class="flow-step-body">
+            <h3>Browser requests an upload slot</h3>
+            <p>With a valid Cognito id token attached, the browser calls <code>POST /uploads</code>. API Gateway's JWT authorizer verifies the token against the user pool before Lambda ever runs.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="3" tabindex="0">
+          <span class="flow-step-num">3</span>
+          <div class="flow-step-body">
+            <h3>Lambda creates a pending record and a presigned upload URL</h3>
+            <p>A new DynamoDB item is written with status <code>PENDING</code>, then a presigned S3 <em>POST</em> (not PUT) is generated — its policy conditions let S3 itself enforce the 5MB size limit and JPEG/PNG/WebP content-type restriction, not just a client-side check.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="4" tabindex="0">
+          <span class="flow-step-num">4</span>
+          <div class="flow-step-body">
+            <h3>Browser uploads directly to a private S3 quarantine bucket</h3>
+            <p>The image bytes go straight from the browser to S3 using that presigned POST — Lambda never sees or touches the file itself, only its metadata.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="5" tabindex="0">
+          <span class="flow-step-num">5</span>
+          <div class="flow-step-body">
+            <h3>A Lambda function runs Rekognition content moderation</h3>
+            <p>The quarantine bucket's <code>ObjectCreated</code> event triggers a Lambda that calls Rekognition's <code>DetectModerationLabels</code> API against the new object.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="6" tabindex="0">
+          <span class="flow-step-num">6</span>
+          <div class="flow-step-body">
+            <h3>Approved images move to the gallery, rejected ones are deleted</h3>
+            <p>Clean images are copied to the public gallery bucket and the DynamoDB record flips to <code>APPROVED</code>. Flagged images are deleted from quarantine immediately and the record flips to <code>REJECTED</code> — nothing that fails moderation is ever retained. Meanwhile the browser polls <code>GET /uploads/{id}</code> every couple seconds to show the live result.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
+      <div data-reveal>
+      <p class="eyebrow">Use cases</p>
+      <h2 id="use-cases-heading">Where this pattern fits</h2>
+      <p class="muted section-intro">
+        Automated content moderation shows up anywhere user-generated
+        images reach other people without a human in the loop first.
+      </p>
+      </div>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="8.5" y="14" width="7" height="7" rx="1.5" />
+              <path d="M6.5 10v2a1.5 1.5 0 0 0 1.5 1.5h0M17.5 10v2A1.5 1.5 0 0 1 16 13.5h0" stroke-linecap="round" />
+            </svg>
+          </span>
+          <h3>Marketplace &amp; listing photos</h3>
+          <p class="muted">
+            Any marketplace that lets sellers upload their own product
+            photos needs this exact check before a listing photo goes
+            live to buyers.
+          </p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <h3>Community &amp; social platforms</h3>
+          <p class="muted">
+            Forums, comment sections, and social apps use the same
+            pattern to auto-screen avatars and post attachments before
+            they're visible to other users.
+          </p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 3v4M12 17v4M3 12h4M17 12h4" stroke-linecap="round" />
+              <circle cx="12" cy="12" r="5" />
+            </svg>
+          </span>
+          <h3>Employee &amp; user-submitted content portals</h3>
+          <p class="muted">
+            Internal tools that accept photo uploads — expense receipts,
+            asset photos, support tickets — benefit from the same
+            automatic screening before storage.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
+      <div data-reveal>
+      <p class="eyebrow">Pricing</p>
+      <h2 id="pricing-heading">What this actually costs</h2>
+      <p class="muted section-intro">
+        Same pay-per-use model as the rest of this site's projects — an
+        unused demo costs nothing. These are estimates based on public
+        AWS list pricing, not a guarantee.
+      </p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-tier">Low volume</p>
+          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            A handful of uploads and account sign-ins a month —
+            comfortably inside Rekognition's 5,000-image free tier
+            (first 12 months) plus Cognito's 50,000 MAU free tier.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">Moderate volume</p>
+          <p class="pricing-amount">~$1–3<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            A few thousand uploads a month — Rekognition's moderation
+            check, billed at $1.00 per 1,000 images, becomes the main
+            driver once the free tier is used up.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">High volume</p>
+          <p class="pricing-amount">~$10–20<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Tens of thousands of uploads a month — still dominated by
+            Rekognition's per-image cost; Lambda, S3, DynamoDB, and API
+            Gateway together add only a small fraction on top.
+          </p>
+        </div>
+      </div>
+      <div class="pricing-breakdown">
+        <h3>What drives the cost</h3>
+        <ul>
+          <li><strong>Rekognition</strong> — one <code>DetectModerationLabels</code> call per upload, billed per image after a 5,000-image/month free tier for the first year.</li>
+          <li><strong>Cognito</strong> — free for up to 50,000 monthly active users; this demo will never come close.</li>
+          <li><strong>S3</strong> — negligible storage cost for approved images; quarantine objects never persist past a single moderation check.</li>
+          <li><strong>Lambda, DynamoDB, API Gateway</strong> — same pay-per-request, effectively-free-at-this-scale pattern as every other project on this site.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
+      <div data-reveal>
+        <p class="eyebrow">Design decisions</p>
+        <h2 id="decisions-heading">Why I built it this way</h2>
+        <p class="muted section-intro">
+          A few choices here aren't the only way to build this — here's the
+          reasoning behind them.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Custom sign-up/login forms, not Cognito Hosted UI</h3>
+          <p class="muted">
+            Hosted UI is the faster path, but it redirects the visitor
+            off this page entirely to a Cognito-hosted domain. Calling
+            Cognito's public API directly with <code>fetch()</code> keeps
+            the whole experience — including this project's own
+            look and feel — on one page, with no OAuth redirect round trip.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Presigned POST, not a presigned PUT</h3>
+          <p class="muted">
+            A presigned PUT URL only controls <em>who</em> can upload —
+            any size or content-type limit would exist purely as an
+            unenforced client-side suggestion. A presigned POST's policy
+            conditions let S3 itself reject an oversized or wrong-type
+            file server-side, before it's even fully received.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Binary approved/rejected status only</h3>
+          <p class="muted">
+            Rekognition returns specific moderation categories (nudity,
+            violence, etc.), but this project deliberately never stores
+            or surfaces which one triggered a rejection — only that it
+            was rejected. That keeps the guidelines section above the one
+            and only place the rules are documented, instead of the API
+            response becoming a second, conflicting source of truth.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>A separate quarantine bucket, deleted on rejection</h3>
+          <p class="muted">
+            Rejected uploads are deleted outright rather than kept around
+            "for review" — there's no moderator in this system to review
+            them, so retaining flagged content would only be a liability
+            with no benefit. Quarantine and gallery are two separate
+            buckets specifically so a rejected image is never briefly
+            reachable from the same bucket approved images live in.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>The public gallery reuses the sparse-GSI pattern</h3>
+          <p class="muted">
+            Same idea as the <a href="/project/workflow/project4.html">workflow visualizer</a>'s
+            recent-jobs list: <code>galleryPk</code> is only ever set on an
+            item once it's approved, so the gallery's GSI naturally
+            contains exactly the public gallery's contents — no read-time
+            filtering needed to keep pending or rejected uploads out.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
+      <div class="footer-right">
+        <nav aria-label="Footer navigation">
+          <a href="/">Home</a>
+          <a href="/#projects">Projects</a>
+          <a href="/#about">About</a>
+        </nav>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+            <img src="/assets/linkedin.png" alt="" />
+          </a>
+          <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <img src="/assets/github.png" alt="" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <details class="mobile-menu" id="mobile-menu">
+    <summary class="mobile-menu-button" aria-label="Open menu">
+      <svg class="mobile-menu-icon-open" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+      <svg class="mobile-menu-icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+    </summary>
+    <nav class="mobile-menu-panel" aria-label="Mobile navigation">
+      <a href="/">Home</a>
+      <span class="mobile-menu-group-label">On this page</span>
+      <a class="mobile-menu-sublink" href="#guidelines">Guidelines</a>
+      <a class="mobile-menu-sublink" href="#demo">Try it</a>
+      <a class="mobile-menu-sublink" href="#gallery">Gallery</a>
+      <a class="mobile-menu-sublink" href="#how-it-works">How it works</a>
+      <a class="mobile-menu-sublink" href="#use-cases">Use cases</a>
+      <a class="mobile-menu-sublink" href="#pricing">Pricing</a>
+      <a class="mobile-menu-sublink" href="#design-decisions">Design decisions</a>
+      <span class="mobile-menu-group-label">Projects</span>
+      <a class="mobile-menu-sublink" href="/project/contactform/project1.html">Contact Form</a>
+      <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
+      <a class="mobile-menu-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+      <a class="mobile-menu-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
+      <a class="mobile-menu-sublink" href="#top">Moderated Image Gallery</a>
+      <a class="mobile-menu-sublink" href="/#projects">View all projects</a>
+      <a href="/#about">About</a>
+          <button type="button" class="theme-toggle mobile-menu-theme-toggle" id="theme-toggle-mobile" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Dark mode</span>
+      </button>
+    </nav>
+  </details>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

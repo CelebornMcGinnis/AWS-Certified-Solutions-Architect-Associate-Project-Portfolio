@@ -14,7 +14,7 @@ function stagingDirFor(stage: Stage): string {
 }
 
 export type Stage = 'prod' | 'beta';
-export type ProjectKey = 'contactForm' | 'livePoll' | 'fanningSns' | 'workflowVisualizer';
+export type ProjectKey = 'contactForm' | 'livePoll' | 'fanningSns' | 'workflowVisualizer' | 'moderatedImageGallery';
 
 interface ProjectMapping {
   key: ProjectKey;
@@ -71,6 +71,17 @@ const PROJECTS: ProjectMapping[] = [
     homepageCardFile: 'projects/workflow-visualizer/homepage-card.html',
     navLinkHtml: '<a href="/project/workflow/project4.html">Workflow Visualizer</a>',
     mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>',
+  },
+  {
+    key: 'moderatedImageGallery',
+    frontendDir: 'projects/moderated-image-gallery/frontend',
+    destPrefix: 'project/gallery',
+    rename: { 'index.html': 'project5.html' },
+    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
+    stages: ['beta'],
+    homepageCardFile: 'projects/moderated-image-gallery/homepage-card.html',
+    navLinkHtml: '<a href="/project/gallery/project5.html">Moderated Image Gallery</a>',
+    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>',
   },
 ];
 
@@ -169,12 +180,24 @@ export function buildWebsiteContentDir(stage: Stage): string {
  * embedded token via Fn::Sub before the deployment's custom resource ever
  * runs, so the uploaded file has the real, deployed URL -- never manually
  * pasted in again after a deploy.
+ *
+ * `extraReplacements` covers projects whose config.js needs more than just
+ * the one __API_ENDPOINT__ token -- moderated-image-gallery's also carries
+ * its stage's Cognito user pool id/client id, which aren't API endpoints
+ * at all but are resolved through this exact same mechanism.
  */
-export function buildConfigJsSources(stage: Stage, endpoints: Record<ProjectKey, string>): { destinationKey: string; content: string }[] {
+export function buildConfigJsSources(
+  stage: Stage,
+  endpoints: Record<ProjectKey, string>,
+  extraReplacements: Partial<Record<ProjectKey, Record<string, string>>> = {},
+): { destinationKey: string; content: string }[] {
   return PROJECTS.filter((project) => projectAppliesToStage(project, stage)).map((project) => {
     const templatePath = path.join(REPO_ROOT, project.frontendDir, 'config.js');
     const template = fs.readFileSync(templatePath, 'utf8');
-    const content = template.replaceAll(CONFIG_JS_PLACEHOLDER, endpoints[project.key]);
+    let content = template.replaceAll(CONFIG_JS_PLACEHOLDER, endpoints[project.key]);
+    for (const [placeholder, value] of Object.entries(extraReplacements[project.key] ?? {})) {
+      content = content.replaceAll(placeholder, value);
+    }
     return { destinationKey: `${project.destPrefix}/config.js`, content };
   });
 }
