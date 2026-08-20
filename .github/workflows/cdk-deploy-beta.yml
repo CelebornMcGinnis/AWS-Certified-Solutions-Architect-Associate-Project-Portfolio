@@ -62,4 +62,5 @@ jobs:
             habit-tracker-beta \
             nova-summarizer-beta \
             order-processing-beta \
+            website-chatbot-beta \
             portfolio-website-beta

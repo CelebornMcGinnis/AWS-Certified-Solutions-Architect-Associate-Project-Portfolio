@@ -9,6 +9,7 @@ import { ModeratedImageGalleryStack } from '../lib/moderated-image-gallery-stack
 import { HabitTrackerStack } from '../lib/habit-tracker-stack';
 import { NovaSummarizerStack } from '../lib/nova-summarizer-stack';
 import { OrderProcessingStack } from '../lib/order-processing-stack';
+import { WebsiteChatbotStack } from '../lib/website-chatbot-stack';
 import { WebsiteStack } from '../lib/website-stack';
 import { GitHubOidcStack } from '../lib/github-oidc-stack';
 import { ProjectKey } from '../lib/website-content';
@@ -71,10 +72,15 @@ const novaSummarizerBeta = new NovaSummarizerStack(app, 'nova-summarizer-beta', 
 const orderProcessingProd = new OrderProcessingStack(app, 'order-processing', { env, stage: 'prod' });
 const orderProcessingBeta = new OrderProcessingStack(app, 'order-processing-beta', { env, stage: 'beta' });
 
-for (const stack of [fanningSnsProd, livePollProd, contactFormProd, workflowVisualizerProd, moderatedImageGalleryProd, habitTrackerProd, novaSummarizerProd, orderProcessingProd]) {
+// Same backend-first rollout again -- frontend gated to stages: ['beta']
+// in website-content.ts until reviewed.
+const websiteChatbotProd = new WebsiteChatbotStack(app, 'website-chatbot', { env, stage: 'prod' });
+const websiteChatbotBeta = new WebsiteChatbotStack(app, 'website-chatbot-beta', { env, stage: 'beta' });
+
+for (const stack of [fanningSnsProd, livePollProd, contactFormProd, workflowVisualizerProd, moderatedImageGalleryProd, habitTrackerProd, novaSummarizerProd, orderProcessingProd, websiteChatbotProd]) {
   cdk.Tags.of(stack).add('Stage', 'prod');
 }
-for (const stack of [fanningSnsBeta, livePollBeta, contactFormBeta, workflowVisualizerBeta, moderatedImageGalleryBeta, habitTrackerBeta, novaSummarizerBeta, orderProcessingBeta]) {
+for (const stack of [fanningSnsBeta, livePollBeta, contactFormBeta, workflowVisualizerBeta, moderatedImageGalleryBeta, habitTrackerBeta, novaSummarizerBeta, orderProcessingBeta, websiteChatbotBeta]) {
   cdk.Tags.of(stack).add('Stage', 'beta');
 }
 
@@ -87,6 +93,7 @@ const prodApiEndpoints: Record<ProjectKey, string> = {
   habitTracker: habitTrackerProd.apiEndpoint,
   novaSummarizer: novaSummarizerProd.apiEndpoint,
   orderProcessing: orderProcessingProd.apiEndpoint,
+  websiteChatbot: websiteChatbotProd.apiEndpoint,
 };
 const betaApiEndpoints: Record<ProjectKey, string> = {
   contactForm: contactFormBeta.apiEndpoint,
@@ -97,6 +104,7 @@ const betaApiEndpoints: Record<ProjectKey, string> = {
   habitTracker: habitTrackerBeta.apiEndpoint,
   novaSummarizer: novaSummarizerBeta.apiEndpoint,
   orderProcessing: orderProcessingBeta.apiEndpoint,
+  websiteChatbot: websiteChatbotBeta.apiEndpoint,
 };
 
 // moderated-image-gallery's config.js needs its stage's Cognito ids too,
@@ -107,11 +115,19 @@ const prodExtraConfigReplacements = {
     __COGNITO_USER_POOL_ID__: moderatedImageGalleryProd.userPoolId,
     __COGNITO_USER_POOL_CLIENT_ID__: moderatedImageGalleryProd.userPoolClientId,
   },
+  websiteChatbot: {
+    __COGNITO_USER_POOL_ID__: websiteChatbotProd.userPoolId,
+    __COGNITO_USER_POOL_CLIENT_ID__: websiteChatbotProd.userPoolClientId,
+  },
 };
 const betaExtraConfigReplacements = {
   moderatedImageGallery: {
     __COGNITO_USER_POOL_ID__: moderatedImageGalleryBeta.userPoolId,
     __COGNITO_USER_POOL_CLIENT_ID__: moderatedImageGalleryBeta.userPoolClientId,
+  },
+  websiteChatbot: {
+    __COGNITO_USER_POOL_ID__: websiteChatbotBeta.userPoolId,
+    __COGNITO_USER_POOL_CLIENT_ID__: websiteChatbotBeta.userPoolClientId,
   },
 };
 
