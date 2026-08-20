@@ -10,8 +10,8 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Landing Concept 4 — Violet Oversized Photo (Draft)</title>
-  <meta name="description" content="Draft landing page concept — an oversized photo circle bleeding off the edge of the hero. Not linked from site navigation." />
+  <title>Landing Concept 8 — Forest Polaroid (Draft)</title>
+  <meta name="description" content="Draft landing page concept — a tilted polaroid-style photo card hero. Not linked from site navigation." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -20,53 +20,88 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    /* ---- Concept 4: violet palette, oversized photo bleeding off the hero edge ---- */
+    /* ---- Concept 8: forest green palette, tilted polaroid-card hero ---- */
     :root {
-      --accent: #7c3aed;
-      --accent-dark: #6d28d9;
-      --info-bg: #f3ecfe;
-      --info-text: #6d28d9;
+      --accent: #15803d;
+      --accent-dark: #166534;
+      --info-bg: #e8f7ec;
+      --info-text: #166534;
     }
     :root[data-theme="dark"] {
-      --accent: #a78bfa;
-      --accent-dark: #c4b5fd;
-      --info-bg: #241a3d;
-      --info-text: #c4b5fd;
+      --accent: #4ade80;
+      --accent-dark: #86efac;
+      --info-bg: #10241a;
+      --info-text: #86efac;
     }
     body {
       background:
-        radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 32rem),
+        radial-gradient(circle at top left, rgba(21, 128, 61, 0.14), transparent 32rem),
         var(--bg);
-      overflow-x: hidden;
     }
     :root[data-theme="dark"] body {
       background:
-        radial-gradient(circle at top left, rgba(167, 139, 250, 0.16), transparent 32rem),
+        radial-gradient(circle at top left, rgba(74, 222, 128, 0.1), transparent 32rem),
         var(--bg);
     }
 
     .concept-hero {
-      position: relative;
       max-width: 1080px;
       margin: 0 auto;
-      padding: 5rem 1.5rem;
-      min-height: 560px;
-      display: flex;
+      padding: 5rem 1.5rem 4rem;
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 3rem;
       align-items: center;
     }
-    .concept-hero-copy {
-      max-width: 440px;
+    .concept-polaroid {
+      background: #fff;
+      border-radius: 4px;
+      padding: 1rem 1rem 2.8rem;
+      box-shadow: var(--shadow);
+      transform: rotate(-4deg);
       position: relative;
-      z-index: 2;
+      justify-self: center;
+      width: 260px;
+    }
+    .concept-polaroid-photo {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 2px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 3.6rem;
+      font-weight: 800;
+    }
+    .concept-polaroid-caption {
+      margin: 0.9rem 0 0;
+      text-align: center;
+      font-style: italic;
+      color: #333;
+      font-size: 0.85rem;
+    }
+    .concept-tape {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-3deg);
+      width: 90px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
     }
     .concept-hero-copy h1 {
-      font-size: clamp(2.1rem, 4vw, 3rem);
+      font-size: clamp(2rem, 3.6vw, 2.9rem);
       line-height: 1.14;
       margin: 0.6rem 0 1.1rem;
     }
     .concept-hero-copy p {
       color: var(--muted);
       font-size: 1.06rem;
+      max-width: 42ch;
     }
     .concept-hero-actions {
       display: flex;
@@ -74,65 +109,16 @@
       margin-top: 1.6rem;
       flex-wrap: wrap;
     }
-    .concept-photo-blob {
-      position: absolute;
-      right: -70px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 480px;
-      height: 480px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 7.5rem;
-      font-weight: 800;
-      box-shadow: var(--shadow);
-      z-index: 1;
-    }
-    .concept-photo-caption-tag {
-      position: absolute;
-      left: 50%;
-      bottom: -18px;
-      transform: translateX(-50%);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 0.75rem;
-      padding: 0.45rem 0.85rem;
-      border-radius: 999px;
-      white-space: nowrap;
-      box-shadow: var(--shadow);
-    }
-    @media (max-width: 900px) {
-      .concept-photo-blob { width: 360px; height: 360px; right: -60px; font-size: 6rem; }
-    }
     @media (max-width: 760px) {
       .concept-hero {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         text-align: center;
-        padding: 3rem 1.5rem 5rem;
-        min-height: 0;
+        padding: 3rem 1.25rem 2.5rem;
         gap: 2.5rem;
       }
-      .concept-hero-copy { max-width: none; }
+      .concept-hero-copy p { margin-left: auto; margin-right: auto; }
       .concept-hero-actions { justify-content: center; }
-      .concept-photo-blob {
-        position: static;
-        transform: none;
-        width: 220px;
-        height: 220px;
-        font-size: 3.6rem;
-        margin: 0 auto;
-      }
-      .concept-photo-caption-tag {
-        position: static;
-        transform: none;
-        display: inline-block;
-        margin-top: 0.9rem;
-      }
+      .concept-polaroid { transform: rotate(-2deg); }
     }
   </style>
 </head>
@@ -167,8 +153,13 @@
 
   <main>
     <section class="concept-hero" data-reveal>
+      <div class="concept-polaroid">
+        <div class="concept-tape" aria-hidden="true"></div>
+        <div class="concept-polaroid-photo" aria-hidden="true">CM</div>
+        <p class="concept-polaroid-caption">celeborn.jpg — swap me in!</p>
+      </div>
       <div class="concept-hero-copy">
-        <p class="eyebrow">Landing concept 4 · Draft — violet oversized photo</p>
+        <p class="eyebrow">Landing concept 8 · Draft — forest polaroid</p>
         <h1>Cloud architecture, with a face behind it.</h1>
         <p>
           Hello, I'm <strong>Celeborn McGinnis</strong>, an AWS Certified Solutions
@@ -179,10 +170,6 @@
           <a class="button-link" href="#projects">View projects</a>
           <a class="button-link ghost" href="/index.html#about">About me</a>
         </div>
-      </div>
-      <div class="concept-photo-blob" aria-hidden="true">
-        CM
-        <p class="concept-photo-caption-tag">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
       </div>
     </section>
 

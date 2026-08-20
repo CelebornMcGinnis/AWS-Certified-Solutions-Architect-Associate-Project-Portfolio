@@ -10,8 +10,8 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Landing Concept 4 — Violet Oversized Photo (Draft)</title>
-  <meta name="description" content="Draft landing page concept — an oversized photo circle bleeding off the edge of the hero. Not linked from site navigation." />
+  <title>Landing Concept 5 — Terminal (Draft)</title>
+  <meta name="description" content="Draft landing page concept — a command-line-styled hero. Not linked from site navigation." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -20,119 +20,107 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    /* ---- Concept 4: violet palette, oversized photo bleeding off the hero edge ---- */
+    /* ---- Concept 5: terminal / CLI hero, green-on-black ---- */
     :root {
-      --accent: #7c3aed;
-      --accent-dark: #6d28d9;
-      --info-bg: #f3ecfe;
-      --info-text: #6d28d9;
+      --accent: #0a8f3c;
+      --accent-dark: #067a30;
+      --info-bg: #e3f7e9;
+      --info-text: #0a8f3c;
     }
     :root[data-theme="dark"] {
-      --accent: #a78bfa;
-      --accent-dark: #c4b5fd;
-      --info-bg: #241a3d;
-      --info-text: #c4b5fd;
+      --accent: #39ff88;
+      --accent-dark: #22cc66;
+      --info-bg: #0d2116;
+      --info-text: #39ff88;
     }
     body {
       background:
-        radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 32rem),
+        radial-gradient(circle at top left, rgba(10, 143, 60, 0.14), transparent 32rem),
         var(--bg);
-      overflow-x: hidden;
     }
     :root[data-theme="dark"] body {
       background:
-        radial-gradient(circle at top left, rgba(167, 139, 250, 0.16), transparent 32rem),
+        radial-gradient(circle at top left, rgba(57, 255, 136, 0.1), transparent 32rem),
         var(--bg);
     }
 
     .concept-hero {
-      position: relative;
-      max-width: 1080px;
+      max-width: 880px;
       margin: 0 auto;
-      padding: 5rem 1.5rem;
-      min-height: 560px;
-      display: flex;
-      align-items: center;
+      padding: 4.5rem 1.5rem 4rem;
     }
-    .concept-hero-copy {
-      max-width: 440px;
-      position: relative;
-      z-index: 2;
-    }
-    .concept-hero-copy h1 {
-      font-size: clamp(2.1rem, 4vw, 3rem);
-      line-height: 1.14;
-      margin: 0.6rem 0 1.1rem;
-    }
-    .concept-hero-copy p {
-      color: var(--muted);
-      font-size: 1.06rem;
-    }
-    .concept-hero-actions {
-      display: flex;
-      gap: 0.9rem;
-      margin-top: 1.6rem;
-      flex-wrap: wrap;
-    }
-    .concept-photo-blob {
-      position: absolute;
-      right: -70px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 480px;
-      height: 480px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 7.5rem;
-      font-weight: 800;
-      box-shadow: var(--shadow);
-      z-index: 1;
-    }
-    .concept-photo-caption-tag {
-      position: absolute;
-      left: 50%;
-      bottom: -18px;
-      transform: translateX(-50%);
+    .terminal-window {
       background: var(--surface);
       border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 0.75rem;
-      padding: 0.45rem 0.85rem;
-      border-radius: 999px;
-      white-space: nowrap;
+      border-radius: 14px;
+      overflow: hidden;
       box-shadow: var(--shadow);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     }
-    @media (max-width: 900px) {
-      .concept-photo-blob { width: 360px; height: 360px; right: -60px; font-size: 6rem; }
+    .terminal-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
     }
+    .terminal-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .terminal-dot.red { background: #ff5f56; }
+    .terminal-dot.yellow { background: #ffbd2e; }
+    .terminal-dot.green { background: #27c93f; }
+    .terminal-titlebar-label {
+      margin-left: 0.6rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .terminal-body {
+      padding: 1.8rem 1.6rem 2.2rem;
+      color: var(--text);
+      font-size: 0.98rem;
+      line-height: 1.75;
+    }
+    .terminal-line { margin: 0 0 0.3rem; }
+    .terminal-prompt { color: var(--accent); font-weight: 700; }
+    .terminal-output { color: var(--muted); margin: 0 0 1.3rem; }
+    .terminal-output strong { color: var(--text); }
+    .terminal-photo-box {
+      display: inline-block;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 1.1rem 1.6rem;
+      margin: 0 0 1.3rem;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .terminal-photo-caption {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0 0 1.3rem;
+    }
+    .terminal-cursor {
+      display: inline-block;
+      width: 0.55em;
+      height: 1.05em;
+      background: var(--accent);
+      vertical-align: text-bottom;
+      margin-left: 0.15em;
+      animation: term-blink 1s steps(1) infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .terminal-cursor { animation: none; }
+    }
+    .terminal-actions {
+      display: flex;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+      margin-top: 0.4rem;
+    }
+    .terminal-actions .button-link { border-radius: 6px; }
     @media (max-width: 760px) {
-      .concept-hero {
-        flex-direction: column;
-        text-align: center;
-        padding: 3rem 1.5rem 5rem;
-        min-height: 0;
-        gap: 2.5rem;
-      }
-      .concept-hero-copy { max-width: none; }
-      .concept-hero-actions { justify-content: center; }
-      .concept-photo-blob {
-        position: static;
-        transform: none;
-        width: 220px;
-        height: 220px;
-        font-size: 3.6rem;
-        margin: 0 auto;
-      }
-      .concept-photo-caption-tag {
-        position: static;
-        transform: none;
-        display: inline-block;
-        margin-top: 0.9rem;
-      }
+      .concept-hero { padding: 3rem 1.25rem 2.5rem; }
+      .terminal-body { padding: 1.4rem 1.1rem 1.8rem; font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -167,22 +155,34 @@
 
   <main>
     <section class="concept-hero" data-reveal>
-      <div class="concept-hero-copy">
-        <p class="eyebrow">Landing concept 4 · Draft — violet oversized photo</p>
-        <h1>Cloud architecture, with a face behind it.</h1>
-        <p>
-          Hello, I'm <strong>Celeborn McGinnis</strong>, an AWS Certified Solutions
-          Architect – Associate. I design and deploy real AWS infrastructure, then
-          document exactly how and why it's built the way it is.
-        </p>
-        <div class="concept-hero-actions">
-          <a class="button-link" href="#projects">View projects</a>
-          <a class="button-link ghost" href="/index.html#about">About me</a>
+      <p class="eyebrow">Landing concept 5 · Draft — terminal</p>
+      <div class="terminal-window">
+        <div class="terminal-titlebar">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-titlebar-label">celeborn@mcginnisarchitecture:~</span>
         </div>
-      </div>
-      <div class="concept-photo-blob" aria-hidden="true">
-        CM
-        <p class="concept-photo-caption-tag">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
+        <div class="terminal-body">
+          <p class="terminal-line"><span class="terminal-prompt">$</span> whoami</p>
+          <p class="terminal-output"><strong>Celeborn McGinnis</strong> — AWS Certified Solutions Architect – Associate</p>
+
+          <p class="terminal-line"><span class="terminal-prompt">$</span> cat about.txt</p>
+          <p class="terminal-output">
+            Real AWS infrastructure, designed and deployed end to end —
+            documented from architecture through production.
+          </p>
+
+          <p class="terminal-line"><span class="terminal-prompt">$</span> open photo.jpg</p>
+          <div class="terminal-photo-box" aria-hidden="true">[ PHOTO: CM ]</div>
+          <p class="terminal-photo-caption">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
+
+          <p class="terminal-line"><span class="terminal-prompt">$</span> ./view-projects.sh<span class="terminal-cursor" aria-hidden="true"></span></p>
+          <div class="terminal-actions">
+            <a class="button-link" href="#projects">View projects</a>
+            <a class="button-link ghost" href="/index.html#about">About me</a>
+          </div>
+        </div>
       </div>
     </section>
 

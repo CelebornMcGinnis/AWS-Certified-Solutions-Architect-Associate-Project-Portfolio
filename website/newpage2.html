@@ -10,8 +10,8 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Landing Concept 2 — Terracotta Bento (Draft)</title>
-  <meta name="description" content="Draft landing page concept — bento-grid hero with a warm terracotta palette. Not linked from site navigation." />
+  <title>Landing Concept 2 — Terracotta Full-Bleed Split (Draft)</title>
+  <meta name="description" content="Draft landing page concept — full-bleed split hero, photo panel fills half the screen. Not linked from site navigation." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -20,7 +20,7 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    /* ---- Concept 2 only: terracotta palette + bento-grid hero ---- */
+    /* ---- Concept 2: terracotta palette, full-bleed split hero (photo panel = half the screen) ---- */
     :root {
       --accent: #c2542e;
       --accent-dark: #9c3f1f;
@@ -45,108 +45,78 @@
     }
 
     .concept-hero {
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 4.5rem 1.5rem 4rem;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-auto-rows: auto;
-      gap: 1.1rem;
+      grid-template-columns: 1fr 1fr;
+      min-height: 560px;
     }
-    .concept-eyebrow-wrap { grid-column: 1 / 5; }
-    .concept-photo-card {
-      grid-column: 1 / 3;
-      grid-row: 2 / 4;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 1.4rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--shadow);
-    }
-    .concept-photo-placeholder {
-      width: 150px;
-      height: 150px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-      color: #fff;
-      font-size: 2.6rem;
-      font-weight: 800;
-    }
-    .concept-photo-caption {
-      text-align: center;
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-top: 0.9rem;
-    }
-    .concept-headline-card {
-      grid-column: 3 / 5;
-      grid-row: 2;
+    .concept-hero-copy-wrap {
       display: flex;
       flex-direction: column;
       justify-content: center;
+      max-width: 460px;
+      margin-left: auto;
+      padding: 3rem 3rem 3rem 1.5rem;
     }
-    .concept-headline-card h1 {
-      font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+    .concept-hero-copy-wrap h1 {
+      font-size: clamp(2rem, 3.6vw, 2.9rem);
       line-height: 1.14;
-      margin: 0;
+      margin: 0.6rem 0 1.1rem;
     }
-    .concept-copy-card {
-      grid-column: 3 / 5;
-      grid-row: 3;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 1.6rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 1rem;
-    }
-    .concept-copy-card p {
-      margin: 0;
+    .concept-hero-copy-wrap p {
       color: var(--muted);
+      font-size: 1.06rem;
     }
     .concept-hero-actions {
       display: flex;
-      gap: 0.85rem;
-      flex-wrap: wrap;
-    }
-    .concept-stat-row {
-      grid-column: 1 / 5;
-      display: flex;
       gap: 0.9rem;
+      margin-top: 1.6rem;
       flex-wrap: wrap;
     }
-    .concept-stat-chip {
-      background: var(--info-bg);
-      color: var(--info-text);
+    .concept-photo-panel {
+      position: relative;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .concept-photo-panel .concept-photo-initials {
+      color: #fff;
+      font-size: 7rem;
+      font-weight: 800;
+      opacity: 0.92;
+    }
+    .concept-photo-caption-tag {
+      position: absolute;
+      left: 1.25rem;
+      bottom: 1.25rem;
+      background: rgba(0, 0, 0, 0.38);
+      color: #fff;
+      font-size: 0.76rem;
+      padding: 0.5rem 0.85rem;
       border-radius: 999px;
-      padding: 0.55rem 1.15rem;
-      font-size: 0.88rem;
-      font-weight: 700;
+      backdrop-filter: blur(2px);
+    }
+    .concept-photo-caption-tag code {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.18);
     }
     @media (max-width: 760px) {
       .concept-hero {
         grid-template-columns: 1fr;
-        padding: 3rem 1.25rem 2.5rem;
+        min-height: 0;
       }
-      .concept-photo-card,
-      .concept-headline-card,
-      .concept-copy-card,
-      .concept-stat-row {
-        grid-column: 1;
-        grid-row: auto;
+      .concept-photo-panel {
+        order: -1;
+        min-height: 260px;
       }
-      .concept-headline-card { text-align: center; }
+      .concept-photo-panel .concept-photo-initials { font-size: 4.5rem; }
+      .concept-hero-copy-wrap {
+        margin: 0 auto;
+        text-align: center;
+        padding: 2.5rem 1.5rem;
+        max-width: none;
+      }
       .concept-hero-actions { justify-content: center; }
-      .concept-stat-row { justify-content: center; }
     }
   </style>
 </head>
@@ -181,31 +151,22 @@
 
   <main>
     <section class="concept-hero" data-reveal>
-      <div class="concept-eyebrow-wrap">
-        <p class="eyebrow">Landing concept 2 · Draft — terracotta bento</p>
-      </div>
-      <div class="concept-photo-card">
-        <div class="concept-photo-placeholder" aria-hidden="true">CM</div>
-        <p class="concept-photo-caption">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
-      </div>
-      <div class="concept-headline-card">
-        <h1>Cloud infrastructure, built by hand.</h1>
-      </div>
-      <div class="concept-copy-card">
+      <div class="concept-hero-copy-wrap">
+        <p class="eyebrow">Landing concept 2 · Draft — terracotta full-bleed split</p>
+        <h1>Cloud architecture, with a face behind it.</h1>
         <p>
           Hello, I'm <strong>Celeborn McGinnis</strong>, an AWS Certified Solutions
-          Architect – Associate. Every project here is real, deployed
-          infrastructure — documented from design through deployment.
+          Architect – Associate. I design and deploy real AWS infrastructure, then
+          document exactly how and why it's built the way it is.
         </p>
         <div class="concept-hero-actions">
           <a class="button-link" href="#projects">View projects</a>
           <a class="button-link ghost" href="/index.html#about">About me</a>
         </div>
       </div>
-      <div class="concept-stat-row">
-        <span class="concept-stat-chip">4 live AWS projects</span>
-        <span class="concept-stat-chip">3 AWS certifications</span>
-        <span class="concept-stat-chip">100% deployed</span>
+      <div class="concept-photo-panel">
+        <span class="concept-photo-initials" aria-hidden="true">CM</span>
+        <p class="concept-photo-caption-tag">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
       </div>
     </section>
 
