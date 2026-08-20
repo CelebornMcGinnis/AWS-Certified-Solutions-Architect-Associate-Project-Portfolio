@@ -1,16 +1,26 @@
 name: CDK deploy (beta)
 
-# Auto-deploys ONLY the beta stacks on every push to main -- prod is
-# deliberately never touched by this workflow. See cdk-deploy-prod.yml
-# for prod, which only runs when manually triggered.
+# Two ways to run this, both scoped to beta only -- prod is deliberately
+# never touched by this workflow. See cdk-deploy-prod.yml for prod.
 #
-# The stack list below is an explicit allow-list, not "--all" filtered
-# down: a newly added project's prod stack must never be auto-deployed
-# just because its beta stack was added here, so each new project has
-# to be added to this list on purpose, stack by stack, not swept in by
-# a wildcard. portfolio-github-oidc is intentionally excluded from both
-# this and the prod workflow -- it changes rarely and any change to its
-# trust policy is high-stakes enough to always be a deliberate, manual
+# 1. Push to main: auto-deploys every approved beta stack, no inputs
+#    involved. This is the continuous-deployment guarantee -- main is
+#    always live on beta.
+# 2. Manual (Actions tab, or `gh workflow run cdk-deploy-beta.yml`):
+#    lets you deploy OR destroy a specific stack (or several), for
+#    ad-hoc rebuild/teardown of one piece of beta without touching the
+#    rest. No confirmation input on purpose -- beta is meant to be
+#    freely destroyable and rebuildable; that friction belongs on prod,
+#    not here.
+#
+# The stack list below (used when `stacks` is left as "all") is an
+# explicit allow-list, not "--all" filtered down: a newly added
+# project's prod stack must never be auto-deployed just because its
+# beta stack was added here, so each new project has to be added to
+# this list on purpose, stack by stack, not swept in by a wildcard.
+# portfolio-github-oidc is intentionally excluded from both this and
+# the prod workflow -- it changes rarely and any change to its trust
+# policy is high-stakes enough to always be a deliberate, manual
 # `cdk deploy portfolio-github-oidc`.
 
 on:
@@ -20,6 +30,16 @@ on:
       - "cdk/**"
       - "website/**"
       - "projects/**"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "deploy or destroy"
+        type: choice
+        options: [deploy, destroy]
+        default: deploy
+      stacks:
+        description: 'Space-separated stack names, or "all" for the full beta list'
+        default: all
 
 permissions:
   id-token: write
@@ -51,16 +71,20 @@ jobs:
           role-to-assume: arn:aws:iam::942960194803:role/github-actions-portfolio-cdk-deploy
           aws-region: us-east-1
 
-      - name: cdk deploy (beta stacks only)
+      - name: Resolve stack list
+        id: stacks
         run: |
-          npx cdk deploy --require-approval never \
-            fanning-sns-beta \
-            live-poll-beta \
-            contact-form-api-beta \
-            workflow-visualizer-beta \
-            moderated-image-gallery-beta \
-            habit-tracker-beta \
-            nova-summarizer-beta \
-            order-processing-beta \
-            website-chatbot-beta \
-            portfolio-website-beta
+          REQUESTED="${{ github.event.inputs.stacks }}"
+          if [ -z "$REQUESTED" ] || [ "$REQUESTED" = "all" ]; then
+            echo "list=fanning-sns-beta live-poll-beta contact-form-api-beta workflow-visualizer-beta moderated-image-gallery-beta habit-tracker-beta nova-summarizer-beta order-processing-beta website-chatbot-beta portfolio-website-beta" >> "$GITHUB_OUTPUT"
+          else
+            echo "list=$REQUESTED" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: cdk deploy
+        if: github.event.inputs.action != 'destroy'
+        run: npx cdk deploy --require-approval never ${{ steps.stacks.outputs.list }}
+
+      - name: cdk destroy
+        if: github.event.inputs.action == 'destroy'
+        run: npx cdk destroy --force ${{ steps.stacks.outputs.list }}
