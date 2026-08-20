@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Landing Concept 1 — Split Hero (Draft)</title>
+  <meta name="description" content="Draft landing page concept — split hero with a photo. Not linked from site navigation." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f7fb" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    /* ---- Concept 1 only: split hero, photo on the right ---- */
+    .concept-hero {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 5rem 1.5rem 4rem;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .concept-hero-copy h1 {
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      line-height: 1.12;
+      margin: 0.6rem 0 1.1rem;
+    }
+    .concept-hero-copy p {
+      color: var(--muted);
+      font-size: 1.08rem;
+      max-width: 42ch;
+    }
+    .concept-hero-actions {
+      display: flex;
+      gap: 0.9rem;
+      margin-top: 1.6rem;
+      flex-wrap: wrap;
+    }
+    .concept-photo-wrap {
+      position: relative;
+      justify-self: center;
+    }
+    .concept-photo-ring {
+      position: absolute;
+      inset: -14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--info-text));
+      opacity: 0.25;
+      filter: blur(2px);
+    }
+    .concept-photo-placeholder {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      font-size: 4rem;
+      font-weight: 800;
+      box-shadow: var(--shadow);
+      border: 4px solid var(--surface);
+    }
+    .concept-photo-caption {
+      text-align: center;
+      margin-top: 0.9rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .concept-photo-caption code {
+      font-size: 0.8rem;
+    }
+    @media (max-width: 760px) {
+      .concept-hero {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 3rem 1.25rem 2.5rem;
+      }
+      .concept-hero-copy p {
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .concept-hero-actions {
+        justify-content: center;
+      }
+      .concept-photo-placeholder {
+        width: 200px;
+        height: 200px;
+        font-size: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand-row">
+        <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
+          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+        </a>
+      </div>
+      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <nav aria-label="Main navigation">
+        <details class="nav-dropdown">
+          <summary>Projects</summary>
+          <div class="nav-dropdown-menu">
+            <a href="/project/contactform/project1.html">Contact Form</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <a class="nav-dropdown-all" href="/index.html#projects">View all projects</a>
+          </div>
+        </details>
+        <a href="/index.html#about">About</a>
+              <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="concept-hero" data-reveal>
+      <div class="concept-hero-copy">
+        <p class="eyebrow">Landing concept 1 · Draft — split hero</p>
+        <h1>
+          Cloud architecture,<br />
+          with a face behind it.
+        </h1>
+        <p>
+          Hello, I'm <strong>Celeborn McGinnis</strong>, an AWS Certified Solutions
+          Architect – Associate. I design and deploy real AWS infrastructure, then
+          document exactly how and why it's built the way it is.
+        </p>
+        <div class="concept-hero-actions">
+          <a class="button-link" href="#projects">View projects</a>
+          <a class="button-link ghost" href="/index.html#about">About me</a>
+        </div>
+      </div>
+      <div class="concept-photo-wrap">
+        <div class="concept-photo-ring" aria-hidden="true"></div>
+        <div class="concept-photo-placeholder" aria-hidden="true">CM</div>
+        <p class="concept-photo-caption">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
+      </div>
+    </section>
+
+    <section class="projects" id="projects" aria-labelledby="projects-heading">
+      <div data-reveal>
+        <p class="eyebrow">Selected work</p>
+        <h2 id="projects-heading">Projects</h2>
+        <p class="muted section-intro">
+          A few of the deployed AWS projects from this portfolio.
+          <a href="/index.html#projects">See the full list →</a>
+        </p>
+      </div>
+
+      <div class="project-grid">
+        <article class="project-card is-live" id="project-fanningsns" data-reveal>
+          <a class="project-link" href="/project/fanningsns/project3.html" aria-label="View the SNS Notification Fan-Out project">
+            <div class="project-thumb thumb-icons" aria-hidden="true">
+              <svg viewBox="0 0 320 200" class="icon-scene fanout-thumb-scene" aria-hidden="true">
+                <g class="fanout-thumb-line fanout-thumb-line-1"><line x1="112" y1="93" x2="188" y2="58" /></g>
+                <g class="fanout-thumb-line fanout-thumb-line-2"><line x1="112" y1="107" x2="188" y2="142" /></g>
+                <g class="fanout-thumb-hub">
+                  <rect x="47" y="75" width="50" height="50" rx="12" class="icon-node-bg" />
+                  <image href="/assets/aws-icons/sns.png" x="57" y="85" width="30" height="30" />
+                </g>
+                <g class="fanout-thumb-node fanout-thumb-node-1">
+                  <rect x="198" y="33" width="50" height="50" rx="12" class="icon-node-bg" />
+                  <image href="/assets/aws-icons/lambda.png" x="208" y="43" width="30" height="30" />
+                </g>
+                <g class="fanout-thumb-node fanout-thumb-node-2">
+                  <rect x="198" y="117" width="50" height="50" rx="12" class="icon-node-bg" />
+                  <image href="/assets/aws-icons/sqs.png" x="208" y="127" width="30" height="30" />
+                </g>
+              </svg>
+            </div>
+            <div class="project-body">
+              <p class="project-meta"><span class="status-dot" aria-hidden="true"></span>Live · August · 2026</p>
+              <h3>SNS Fan-Out</h3>
+              <p class="muted">One SNS publish fans out to two independent subscribers in real time, with results streamed back to a live log table.</p>
+            </div>
+            <div class="project-hover-cta" aria-hidden="true"><span>View Project</span></div>
+          </a>
+        </article>
+
+        <article class="project-card is-live" id="project-polling" data-reveal>
+          <a class="project-link" href="/project/polling/project2.html" aria-label="View the Movie Poll project">
+            <div class="project-thumb thumb-reel" aria-hidden="true">
+              <svg viewBox="0 0 320 200" class="icon-scene reel-scene" aria-hidden="true">
+                <g class="film-reel">
+                  <circle cx="160" cy="100" r="64" class="reel-disc" />
+                  <circle cx="160" cy="62" r="18" class="reel-hole" />
+                  <circle cx="198" cy="86" r="18" class="reel-hole" />
+                  <circle cx="184" cy="130" r="18" class="reel-hole" />
+                  <circle cx="136" cy="130" r="18" class="reel-hole" />
+                  <circle cx="122" cy="86" r="18" class="reel-hole" />
+                  <circle cx="160" cy="100" r="4.5" class="reel-hole-tiny" />
+                  <circle cx="171" cy="93" r="3.5" class="reel-hole-tiny" />
+                  <circle cx="171" cy="107" r="3.5" class="reel-hole-tiny" />
+                  <circle cx="149" cy="107" r="3.5" class="reel-hole-tiny" />
+                  <circle cx="149" cy="93" r="3.5" class="reel-hole-tiny" />
+                </g>
+              </svg>
+            </div>
+            <div class="project-body">
+              <p class="project-meta"><span class="status-dot" aria-hidden="true"></span>Live · July · 2026</p>
+              <h3>Movie Poll</h3>
+              <p class="muted">A real-time WebSocket poll on API Gateway, Lambda, and DynamoDB — votes broadcast instantly to every open tab.</p>
+            </div>
+            <div class="project-hover-cta" aria-hidden="true"><span>View Project</span></div>
+          </a>
+        </article>
+
+        <article class="project-card is-live" id="project-contact-form" data-reveal>
+          <a class="project-link" href="/project/contactform/project1.html" aria-label="View the Contact Form project">
+            <div class="project-thumb thumb-envelope" aria-hidden="true">
+              <svg viewBox="0 0 320 200" class="icon-scene envelope-scene" aria-hidden="true">
+                <g class="envelope-node envelope-node-1"><rect x="22" y="45" width="42" height="42" rx="10" class="icon-node-bg" /><image href="/assets/aws-icons/s3.png" x="28" y="51" width="30" height="30" /></g>
+                <g class="envelope-node envelope-node-2"><rect x="100" y="45" width="42" height="42" rx="10" class="icon-node-bg" /><image href="/assets/aws-icons/apigateway.png" x="106" y="51" width="30" height="30" /></g>
+                <g class="envelope-node envelope-node-3"><rect x="178" y="45" width="42" height="42" rx="10" class="icon-node-bg" /><image href="/assets/aws-icons/lambda.png" x="184" y="51" width="30" height="30" /></g>
+                <g class="envelope-node envelope-node-4"><rect x="256" y="45" width="42" height="42" rx="10" class="icon-node-bg" /><image href="/assets/aws-icons/ses.png" x="262" y="51" width="30" height="30" /></g>
+                <rect x="110" y="140" width="100" height="46" rx="5" class="envelope-body" />
+                <path d="M110 140 L210 140 L160 163 Z" class="envelope-top-quad" />
+                <g class="envelope-seams">
+                  <line x1="110" y1="140" x2="160" y2="163" />
+                  <line x1="210" y1="140" x2="160" y2="163" />
+                  <line x1="110" y1="186" x2="160" y2="163" />
+                  <line x1="210" y1="186" x2="160" y2="163" />
+                </g>
+                <path d="M110 140 L160 105 L210 140 Z" class="envelope-flap" />
+              </svg>
+            </div>
+            <div class="project-body">
+              <p class="project-meta"><span class="status-dot" aria-hidden="true"></span>Live · July · 2026</p>
+              <h3>Contact Form</h3>
+              <p class="muted">A static contact form served from S3 that posts straight to API Gateway and Lambda, no backend server required.</p>
+            </div>
+            <div class="project-hover-cta" aria-hidden="true"><span>View Project</span></div>
+          </a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
+      <div class="footer-right">
+        <nav aria-label="Footer navigation">
+          <a href="#projects">Projects</a>
+          <a href="/index.html#about">About</a>
+        </nav>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+            <img src="/assets/linkedin.png" alt="" />
+          </a>
+          <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <img src="/assets/github.png" alt="" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <details class="mobile-menu" id="mobile-menu">
+    <summary class="mobile-menu-button" aria-label="Open menu">
+      <svg class="mobile-menu-icon-open" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+      <svg class="mobile-menu-icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+    </summary>
+    <nav class="mobile-menu-panel" aria-label="Mobile navigation">
+      <span class="mobile-menu-group-label">Projects</span>
+      <a class="mobile-menu-sublink" href="/project/contactform/project1.html">Contact Form</a>
+      <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
+      <a class="mobile-menu-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+      <a class="mobile-menu-sublink" href="/index.html#projects">View all projects</a>
+      <a href="/index.html#about">About</a>
+          <button type="button" class="theme-toggle mobile-menu-theme-toggle" id="theme-toggle-mobile" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Dark mode</span>
+      </button>
+    </nav>
+  </details>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    var revealEls = document.querySelectorAll('[data-reveal]');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+      revealEls.forEach(function (el) { io.observe(el); });
+    } else {
+      revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+    }
+
+    document.querySelectorAll('.nav-dropdown').forEach(function (details) {
+      var menu = details.querySelector('.nav-dropdown-menu');
+      if (!menu) return;
+      details.addEventListener('toggle', function () {
+        if (details.open) {
+          menu.style.animation = 'none';
+          void menu.offsetWidth;
+          menu.style.animation = 'dropdownIn 0.18s ease forwards';
+        }
+      });
+    });
+
+    document.querySelectorAll('.nav-dropdown, .mobile-menu').forEach(function (details) {
+      document.addEventListener('click', function (event) {
+        if (details.open && !details.contains(event.target)) {
+          details.open = false;
+        }
+      });
+    });
+
+    function closeOpenNavMenus() {
+      document.querySelectorAll('.nav-dropdown[open], .mobile-menu[open]').forEach(function (details) {
+        details.open = false;
+      });
+    }
+    window.addEventListener('scroll', closeOpenNavMenus, { passive: true });
+    document.querySelectorAll('.nav-dropdown-menu a, .mobile-menu-panel a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        var details = link.closest('details');
+        if (details) details.open = false;
+      });
+    });
+
+    var siteHeader = document.querySelector('.site-header');
+    if (siteHeader) {
+      var wasScrolled = false;
+      var headerRafId = null;
+      var updateHeaderState = function () {
+        headerRafId = null;
+        var threshold = wasScrolled ? 4 : 48;
+        var scrolled = window.scrollY > threshold;
+        if (scrolled !== wasScrolled) {
+          siteHeader.classList.toggle('is-scrolled', scrolled);
+          wasScrolled = scrolled;
+        }
+      };
+      var scheduleHeaderUpdate = function () {
+        if (headerRafId === null) {
+          headerRafId = window.requestAnimationFrame(updateHeaderState);
+        }
+      };
+      updateHeaderState();
+      window.addEventListener('scroll', scheduleHeaderUpdate, { passive: true });
+    }
+
+    var backToTop = document.getElementById('back-to-top');
+    if (backToTop) {
+      var toggleBackToTop = function () {
+        backToTop.classList.toggle('is-visible', window.scrollY > 500);
+      };
+      toggleBackToTop();
+      window.addEventListener('scroll', toggleBackToTop, { passive: true });
+      backToTop.addEventListener('click', function () {
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+      });
+    }
+
+    var mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenu) {
+      var mobileMenuPanel = mobileMenu.querySelector('.mobile-menu-panel');
+      var toggleMobileMenuVisibility = function () {
+        var visible = window.scrollY > 220;
+        mobileMenu.classList.toggle('is-visible', visible);
+        if (!visible && mobileMenu.open) {
+          mobileMenu.open = false;
+        }
+      };
+      toggleMobileMenuVisibility();
+      window.addEventListener('scroll', toggleMobileMenuVisibility, { passive: true });
+      if (mobileMenuPanel) {
+        mobileMenu.addEventListener('toggle', function () {
+          if (mobileMenu.open) {
+            mobileMenuPanel.style.animation = 'none';
+            void mobileMenuPanel.offsetWidth;
+            mobileMenuPanel.style.animation = 'mobileMenuIn 0.18s ease forwards';
+          }
+        });
+      }
+    }
+
+    (function () {
+      var toggles = document.querySelectorAll('.theme-toggle');
+      if (!toggles.length) return;
+      function currentTheme() {
+        return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      }
+      function reflectState() {
+        var isDark = currentTheme() === 'dark';
+        toggles.forEach(function (btn) {
+          btn.setAttribute('aria-pressed', String(isDark));
+        });
+      }
+      reflectState();
+      toggles.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var next = currentTheme() === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          try { localStorage.setItem('theme', next); } catch (e) {}
+          reflectState();
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
