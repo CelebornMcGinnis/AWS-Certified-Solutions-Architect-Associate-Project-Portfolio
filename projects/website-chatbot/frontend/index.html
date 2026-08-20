@@ -14,7 +14,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Website Chatbot — McGinnis Architecture</title>
-  <meta name="description" content="A Cognito-protected site chatbot -- a deterministic FAQ layer answers what it can, Amazon Bedrock's Nova Lite (behind a Guardrail) handles the rest." />
+  <meta name="description" content="A Cognito-protected site chatbot — a deterministic FAQ layer answers what it can, Amazon Bedrock's Nova Lite (behind a Guardrail) handles the rest." />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
@@ -76,9 +76,10 @@
         which path answered it.
       </p>
       <div class="hero-actions">
-        <a class="button-link" href="#demo">Try it</a>
         <a class="button-link" href="#how-it-works">See how it works</a>
+        <a class="button-link" href="#use-cases">Use cases</a>
         <a class="button-link" href="#pricing">Pricing</a>
+        <a class="button-link" href="#design-decisions">Design decisions</a>
       </div>
     </section>
 
@@ -96,7 +97,7 @@
         <p class="muted small-note">
           <strong>Privacy notice:</strong> messages are stored only long
           enough to redisplay your conversation, and expire
-          automatically after 24 hours via DynamoDB TTL -- nothing is
+          automatically after 24 hours via DynamoDB TTL — nothing is
           kept beyond that.
         </p>
       </div>
@@ -204,7 +205,7 @@
       </div>
 
       <div class="flow-diagram-sentinel" aria-hidden="true"></div>
-      <div class="flow-diagram" id="flow-diagram">
+      <div class="flow-diagram chatbot-diagram" id="flow-diagram">
         <div class="flow-track">
           <div class="flow-node" data-node="visitor">
             <span class="flow-node-icon" aria-hidden="true">
@@ -280,7 +281,7 @@
           <span class="flow-step-num">1</span>
           <div class="flow-step-body">
             <h3>Visitor signs in via Cognito</h3>
-            <p>The browser talks directly to a Cognito user pool's public API to sign up, confirm, log in, or reset a password -- no server in the middle, same pattern as the <a href="/project/gallery/project5.html">moderated image gallery</a>.</p>
+            <p>The browser talks directly to a Cognito user pool's public API to sign up, confirm, log in, or reset a password — no server in the middle, same pattern as the <a href="/project/gallery/project5.html">moderated image gallery</a>.</p>
           </div>
         </li>
 
@@ -288,7 +289,7 @@
           <span class="flow-step-num">2</span>
           <div class="flow-step-body">
             <h3>Browser sends the message to API Gateway</h3>
-            <p>With a valid Cognito id token attached, the browser calls <code>POST /chat</code>. API Gateway's JWT authorizer verifies the token before Lambda ever runs -- there's no anonymous path into this Lambda at all.</p>
+            <p>With a valid Cognito id token attached, the browser calls <code>POST /chat</code>. API Gateway's JWT authorizer verifies the token before Lambda ever runs — there's no anonymous path into this Lambda at all.</p>
           </div>
         </li>
 
@@ -304,7 +305,7 @@
           <span class="flow-step-num">4</span>
           <div class="flow-step-body">
             <h3>Unmatched questions go to Bedrock behind a Guardrail</h3>
-            <p>Only messages the FAQ layer can't answer reach Nova Lite -- and every one of those still passes through a Bedrock Guardrail first, which can block a request outright (try asking for investment advice) before the model ever sees it.</p>
+            <p>Only messages the FAQ layer can't answer reach Nova Lite — and every one of those still passes through a Bedrock Guardrail first, which can block a request outright (try asking for investment advice) before the model ever sees it.</p>
           </div>
         </li>
 
@@ -312,7 +313,7 @@
           <span class="flow-step-num">5</span>
           <div class="flow-step-body">
             <h3>DynamoDB stores the exchange with a 24-hour TTL</h3>
-            <p>Both your message and the reply are written with a <code>ttl</code> attribute set 24 hours out -- DynamoDB deletes the item automatically once that time passes, no cleanup job required.</p>
+            <p>Both your message and the reply are written with a <code>ttl</code> attribute set 24 hours out — DynamoDB deletes the item automatically once that time passes, no cleanup job required.</p>
           </div>
         </li>
       </ol>
@@ -334,7 +335,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 9h10M7 13h10M7 17h6" stroke-linecap="round"/></svg>
           </span>
           <h3>Product support widgets</h3>
-          <p class="muted">Most support questions are the same handful of FAQs -- answering those for free and reserving AI for the genuinely novel ones keeps cost proportional to how helpful it actually needs to be.</p>
+          <p class="muted">Most support questions are the same handful of FAQs — answering those for free and reserving AI for the genuinely novel ones keeps cost proportional to how helpful it actually needs to be.</p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
@@ -348,7 +349,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
           <h3>Regulated or safety-sensitive domains</h3>
-          <p class="muted">Anywhere certain topics genuinely shouldn't get an AI-generated answer at all -- a Guardrail's topic-denial policy blocks the request before the model even sees it, not after.</p>
+          <p class="muted">Anywhere certain topics genuinely shouldn't get an AI-generated answer at all — a Guardrail's topic-denial policy blocks the request before the model even sees it, not after.</p>
         </div>
       </div>
     </section>
@@ -369,7 +370,7 @@
           <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
           <p class="muted">
             A handful of conversations a month, mostly answered by the
-            free FAQ layer -- comfortably inside Cognito's 50,000 MAU
+            free FAQ layer — comfortably inside Cognito's 50,000 MAU
             free tier plus Lambda/DynamoDB/API Gateway free tiers.
           </p>
         </div>
@@ -377,7 +378,7 @@
           <p class="pricing-tier">Moderate volume</p>
           <p class="pricing-amount">~$0.50–2<span class="pricing-period">/mo</span></p>
           <p class="muted">
-            Hundreds of AI-fallback questions a month -- cost scales
+            Hundreds of AI-fallback questions a month — cost scales
             with how often visitors ask something the FAQ layer
             doesn't cover, not with total message volume.
           </p>
@@ -386,7 +387,7 @@
           <p class="pricing-tier">High volume</p>
           <p class="pricing-amount">~$3–8<span class="pricing-period">/mo</span></p>
           <p class="muted">
-            Thousands of AI-fallback questions a month -- still
+            Thousands of AI-fallback questions a month — still
             dominated by Nova Lite's low per-token cost; the FAQ layer
             keeps this from scaling with total traffic.
           </p>
@@ -417,7 +418,7 @@
           <h3>The browser never talks to Bedrock directly</h3>
           <p class="muted">
             Every model call happens inside <code>chat_handler.py</code>
-            -- the only thing in this stack holding Bedrock permissions
+            — the only thing in this stack holding Bedrock permissions
             at all. That keeps the FAQ-first cost control and the
             guardrail enforcement both mandatory, not something a
             modified client request could route around.
@@ -427,7 +428,7 @@
           <h3>The FAQ layer is genuinely deterministic, not a second AI call</h3>
           <p class="muted">
             <code>faq.py</code> is plain keyword matching against a
-            fixed list -- no model involved. That's the entire point:
+            fixed list — no model involved. That's the entire point:
             it costs nothing to run, answers instantly, and its
             behavior never drifts, unlike asking a model "is this an
             FAQ question?" would.
@@ -439,7 +440,7 @@
             Content filters mostly matter for content nobody would
             responsibly type into a portfolio demo to prove. A denied
             topic (financial advice) is something anyone can safely and
-            immediately trigger -- "what stock should I buy?" -- making
+            immediately trigger — "what stock should I buy?" — making
             the guardrail's existence actually demonstrable, not just
             configured.
           </p>
@@ -450,7 +451,7 @@
             The <a href="/project/habits/project6.html">habit tracker</a>
             already shows a scheduled Lambda job on this site. Expiring
             conversation history is a better fit for TTL specifically
-            -- each item already knows its own expiration the moment
+            — each item already knows its own expiration the moment
             it's written, so there's no separate job to schedule,
             monitor, or fail.
           </p>

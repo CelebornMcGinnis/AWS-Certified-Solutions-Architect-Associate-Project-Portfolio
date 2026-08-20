@@ -14,7 +14,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nova Lite Summarizer — McGinnis Architecture</title>
-  <meta name="description" content="Paste any text and get an instant AI summary from Amazon Bedrock's Nova Lite model -- a real GenAI demo, not a mockup." />
+  <meta name="description" content="Paste any text and get an instant AI summary from Amazon Bedrock's Nova Lite model — a real GenAI demo, not a mockup." />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
@@ -72,9 +72,10 @@
         to a foundation model, not a canned response.
       </p>
       <div class="hero-actions">
-        <a class="button-link" href="#demo">Try it</a>
         <a class="button-link" href="#how-it-works">See how it works</a>
+        <a class="button-link" href="#use-cases">Use cases</a>
         <a class="button-link" href="#pricing">Pricing</a>
+        <a class="button-link" href="#design-decisions">Design decisions</a>
       </div>
     </section>
 
@@ -100,7 +101,7 @@
       <form class="contact-form" id="summarize-form">
         <label>
           Text to summarize
-          <textarea id="summarize-text" rows="8" maxlength="6000" placeholder="Paste an article, an email thread, meeting notes -- anything." required></textarea>
+          <textarea id="summarize-text" rows="8" maxlength="6000" placeholder="Paste an article, an email thread, meeting notes — anything." required></textarea>
         </label>
         <p class="char-count" id="char-count">0 / 6000 characters</p>
 
@@ -140,7 +141,7 @@
       </div>
 
       <div class="flow-diagram-sentinel" aria-hidden="true"></div>
-      <div class="flow-diagram" id="flow-diagram">
+      <div class="flow-diagram summarizer-diagram" id="flow-diagram">
         <div class="flow-track">
           <div class="flow-node" data-node="visitor">
             <span class="flow-node-icon" aria-hidden="true">
@@ -224,7 +225,7 @@
           <span class="flow-step-num">2</span>
           <div class="flow-step-body">
             <h3>Lambda checks the daily request budget</h3>
-            <p>Before spending anything on Bedrock, Lambda tries to reserve one request against today's shared quota -- a public, unauthenticated AI endpoint needs a real cost ceiling, not just a rate limit.</p>
+            <p>Before spending anything on Bedrock, Lambda tries to reserve one request against today's shared quota — a public, unauthenticated AI endpoint needs a real cost ceiling, not just a rate limit.</p>
           </div>
         </li>
 
@@ -240,7 +241,7 @@
           <span class="flow-step-num">4</span>
           <div class="flow-step-body">
             <h3>Lambda calls Amazon Bedrock's Nova Lite model</h3>
-            <p>The text, wrapped in a short instruction based on the length you picked, is sent to Nova Lite through Bedrock's Converse API -- the same standardized interface Bedrock exposes across many different foundation models.</p>
+            <p>The text, wrapped in a short instruction based on the length you picked, is sent to Nova Lite through Bedrock's Converse API — the same standardized interface Bedrock exposes across many different foundation models.</p>
           </div>
         </li>
 
@@ -248,7 +249,7 @@
           <span class="flow-step-num">5</span>
           <div class="flow-step-body">
             <h3>The summary is returned straight back to the browser</h3>
-            <p>No polling, no job queue -- Nova Lite responds fast enough that this is a single synchronous request/response round trip, same as this site's non-AI endpoints.</p>
+            <p>No polling, no job queue — Nova Lite responds fast enough that this is a single synchronous request/response round trip, same as this site's non-AI endpoints.</p>
           </div>
         </li>
       </ol>
@@ -277,7 +278,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
           <h3>Meeting notes &amp; transcripts</h3>
-          <p class="muted">Turning a raw transcript into a short recap -- the same "short vs detailed" toggle this demo offers maps directly onto "recap" vs "full notes."</p>
+          <p class="muted">Turning a raw transcript into a short recap — the same "short vs detailed" toggle this demo offers maps directly onto "recap" vs "full notes."</p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
@@ -304,7 +305,7 @@
           <p class="pricing-tier">Low volume</p>
           <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
           <p class="muted">
-            A handful of summaries a day -- Nova Lite is one of Bedrock's
+            A handful of summaries a day — Nova Lite is one of Bedrock's
             cheapest models per token, so casual use costs a fraction of
             a cent.
           </p>
@@ -314,7 +315,7 @@
           <p class="pricing-amount">~$1–2<span class="pricing-period">/mo</span></p>
           <p class="muted">
             This demo's own daily request cap fully engaged every day of
-            the month -- still a small, predictable ceiling rather than
+            the month — still a small, predictable ceiling rather than
             an open-ended bill.
           </p>
         </div>
@@ -322,7 +323,7 @@
           <p class="pricing-tier">High volume</p>
           <p class="pricing-amount">Capped by design<span class="pricing-period"></span></p>
           <p class="muted">
-            The whole point of the daily request limit -- traffic beyond
+            The whole point of the daily request limit — traffic beyond
             it is rejected with a 429 rather than ever reaching Bedrock,
             so cost can't run away regardless of how much traffic shows up.
           </p>
@@ -352,7 +353,7 @@
           <h3>Two independent limits, not just one</h3>
           <p class="muted">
             API Gateway's stage throttle stops a fast burst but can't cap
-            total cost over a day -- a slow drip of requests just under
+            total cost over a day — a slow drip of requests just under
             the rate limit could still run all day. The DynamoDB daily
             counter closes that gap; each guards against a failure mode
             the other one doesn't.
@@ -374,7 +375,7 @@
             Nova Lite's native request format works fine with a direct
             <code>InvokeModel</code> call, but Bedrock's Converse API
             gives every supported model the same request/response shape
-            -- swapping in a different model later would mean changing
+            — swapping in a different model later would mean changing
             one <code>modelId</code> string, not rewriting the payload format.
           </p>
         </div>

@@ -14,7 +14,7 @@ export interface WebsiteStackProps extends cdk.StackProps {
   bucketName: string;
   certificateArn: string;
   comment: string;
-  /** Live prod returns /index.html (SPA-style) for both 403 and 404; live beta has none configured. */
+  /** Both prod and beta return /index.html (SPA-style) for 403 and 404 -- beta was missing this from the original import (its distribution had none configured live), which meant an unmatched path fell through to a raw S3 AccessDenied XML error instead of the site. */
   customErrorResponses?: cloudfront.CfnDistribution.CustomErrorResponseProperty[];
   /** Prod's Route 53 apex only has an A alias today; beta has both A and AAAA. */
   createAaaaRecord: boolean;

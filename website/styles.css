@@ -2948,14 +2948,78 @@ footer {
   /* 2-column snake: reads left-to-right, then right-to-left, then
      left-to-right again, then the last (odd) node alone on the final
      row — same zigzag principle as project2.html's mobile diagram,
-     extended to this flow's 7 nodes instead of 4. */
-  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="users"] { grid-column: 1; grid-row: 1; }
-  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="route53"] { grid-column: 3; grid-row: 1; }
-  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="cloudfront"] { grid-column: 3; grid-row: 3; }
-  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="s3"] { grid-column: 1; grid-row: 3; }
-  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="apigateway"] { grid-column: 1; grid-row: 5; }
-  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="lambda"] { grid-column: 3; grid-row: 5; }
-  .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-node[data-node="ses"] { grid-column: 3; grid-row: 7; }
+     extended to this flow's 7 nodes instead of 4.
+
+     Every project page from project4.html onward reuses this same
+     generic .flow-diagram/.flow-node/.flow-connector markup, and more
+     than one project's nodes happen to share a [data-node] value with
+     this one (e.g. "apigateway", "lambda"). A bare
+     .flow-diagram:not(.ws-diagram):not(.fanout-diagram) guard doesn't
+     actually stop those same-named nodes on OTHER pages from matching
+     these rules too -- and because that guard carries three :not()
+     clauses, it out-specifies a simpler per-page class selector and
+     silently wins, overriding that other page's own positioning and
+     landing two nodes in the same cell. So project1's nodes get their
+     own scoping class here too (.contact-diagram, set directly in
+     contact-form-api's HTML), exactly like every project below it. */
+  .contact-diagram .flow-node[data-node="users"] { grid-column: 1; grid-row: 1; }
+  .contact-diagram .flow-node[data-node="route53"] { grid-column: 3; grid-row: 1; }
+  .contact-diagram .flow-node[data-node="cloudfront"] { grid-column: 3; grid-row: 3; }
+  .contact-diagram .flow-node[data-node="s3"] { grid-column: 1; grid-row: 3; }
+  .contact-diagram .flow-node[data-node="apigateway"] { grid-column: 1; grid-row: 5; }
+  .contact-diagram .flow-node[data-node="lambda"] { grid-column: 3; grid-row: 5; }
+  .contact-diagram .flow-node[data-node="ses"] { grid-column: 3; grid-row: 7; }
+
+  /* Same reasoning as the comment above: each project gets its own
+     scoping class (set on its .flow-diagram element in that project's
+     own HTML, alongside .ws-diagram/.fanout-diagram's existing
+     precedent) so a shared [data-node] value like "apigateway" or
+     "lambda" can safely mean a different grid cell on a different
+     page, with no specificity ambiguity between them. All six follow
+     the exact same 2-column snake shape as project1's, just stopping
+     one row-pair earlier for the five that have 6 nodes instead of 7. */
+  .workflow-diagram .flow-node[data-node="visitor"] { grid-column: 1; grid-row: 1; }
+  .workflow-diagram .flow-node[data-node="website"] { grid-column: 3; grid-row: 1; }
+  .workflow-diagram .flow-node[data-node="apigateway"] { grid-column: 3; grid-row: 3; }
+  .workflow-diagram .flow-node[data-node="lambda"] { grid-column: 1; grid-row: 3; }
+  .workflow-diagram .flow-node[data-node="stepfunctions"] { grid-column: 1; grid-row: 5; }
+  .workflow-diagram .flow-node[data-node="dynamodb"] { grid-column: 3; grid-row: 5; }
+
+  .gallery-diagram .flow-node[data-node="visitor"] { grid-column: 1; grid-row: 1; }
+  .gallery-diagram .flow-node[data-node="cognito"] { grid-column: 3; grid-row: 1; }
+  .gallery-diagram .flow-node[data-node="apigateway"] { grid-column: 3; grid-row: 3; }
+  .gallery-diagram .flow-node[data-node="lambda"] { grid-column: 1; grid-row: 3; }
+  .gallery-diagram .flow-node[data-node="s3quarantine"] { grid-column: 1; grid-row: 5; }
+  .gallery-diagram .flow-node[data-node="rekognition"] { grid-column: 3; grid-row: 5; }
+  .gallery-diagram .flow-node[data-node="outcome"] { grid-column: 3; grid-row: 7; }
+
+  .habits-diagram .flow-node[data-node="visitor"] { grid-column: 1; grid-row: 1; }
+  .habits-diagram .flow-node[data-node="apigateway"] { grid-column: 3; grid-row: 1; }
+  .habits-diagram .flow-node[data-node="lambda"] { grid-column: 3; grid-row: 3; }
+  .habits-diagram .flow-node[data-node="dynamodb"] { grid-column: 1; grid-row: 3; }
+  .habits-diagram .flow-node[data-node="scheduler"] { grid-column: 1; grid-row: 5; }
+  .habits-diagram .flow-node[data-node="resetlambda"] { grid-column: 3; grid-row: 5; }
+
+  .summarizer-diagram .flow-node[data-node="visitor"] { grid-column: 1; grid-row: 1; }
+  .summarizer-diagram .flow-node[data-node="apigateway"] { grid-column: 3; grid-row: 1; }
+  .summarizer-diagram .flow-node[data-node="lambda"] { grid-column: 3; grid-row: 3; }
+  .summarizer-diagram .flow-node[data-node="dynamodb"] { grid-column: 1; grid-row: 3; }
+  .summarizer-diagram .flow-node[data-node="bedrock"] { grid-column: 1; grid-row: 5; }
+  .summarizer-diagram .flow-node[data-node="response"] { grid-column: 3; grid-row: 5; }
+
+  .orders-diagram .flow-node[data-node="visitor"] { grid-column: 1; grid-row: 1; }
+  .orders-diagram .flow-node[data-node="apigateway"] { grid-column: 3; grid-row: 1; }
+  .orders-diagram .flow-node[data-node="lambda"] { grid-column: 3; grid-row: 3; }
+  .orders-diagram .flow-node[data-node="stepfunctions"] { grid-column: 1; grid-row: 3; }
+  .orders-diagram .flow-node[data-node="dynamodb"] { grid-column: 1; grid-row: 5; }
+  .orders-diagram .flow-node[data-node="outcome"] { grid-column: 3; grid-row: 5; }
+
+  .chatbot-diagram .flow-node[data-node="visitor"] { grid-column: 1; grid-row: 1; }
+  .chatbot-diagram .flow-node[data-node="cognito"] { grid-column: 3; grid-row: 1; }
+  .chatbot-diagram .flow-node[data-node="apigateway"] { grid-column: 3; grid-row: 3; }
+  .chatbot-diagram .flow-node[data-node="lambda"] { grid-column: 1; grid-row: 3; }
+  .chatbot-diagram .flow-node[data-node="bedrock"] { grid-column: 1; grid-row: 5; }
+  .chatbot-diagram .flow-node[data-node="dynamodb"] { grid-column: 3; grid-row: 5; }
 
   .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector {
     display: block;
