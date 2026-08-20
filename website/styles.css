@@ -381,7 +381,7 @@ textarea {
   padding: 0.55rem 1rem;
   font: inherit;
   color: var(--text);
-  background: #fff;
+  background: var(--surface);
 }
 
 input:focus,
