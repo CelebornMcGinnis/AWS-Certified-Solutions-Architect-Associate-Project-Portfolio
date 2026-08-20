@@ -4531,3 +4531,109 @@ footer {
 .gallery-empty-note {
   margin-top: 1.5rem;
 }
+
+/* ---------------------------------------------------------------------
+   24. HABIT TRACKER (project6.html only)
+   Device-id notice banner, habit cards, and the check-in calendar grid.
+   --------------------------------------------------------------------- */
+.device-notice {
+  border-radius: 14px;
+  padding: 0.85rem 1.1rem;
+  background: var(--info-bg);
+  color: var(--info-text);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.device-notice code {
+  font-weight: 700;
+}
+
+.habit-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.habit-form label {
+  flex: 1 1 240px;
+}
+
+.habit-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.habit-list-empty-note {
+  margin-top: 0;
+}
+
+.habit-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  background: var(--surface);
+  display: grid;
+  gap: 0.9rem;
+}
+
+.habit-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.habit-card-head h3 {
+  margin: 0;
+  word-break: break-word;
+}
+
+.habit-delete-button {
+  justify-self: auto;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.85rem;
+  flex-shrink: 0;
+}
+
+.habit-stats {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.habit-stats strong {
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.habit-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.habit-calendar-cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  background: var(--border);
+}
+
+.habit-calendar-cell.is-checked {
+  background: var(--accent);
+}
+
+.habit-checkin-button {
+  justify-self: stretch;
+  text-align: center;
+}
+
+.habit-checkin-button.is-done {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
