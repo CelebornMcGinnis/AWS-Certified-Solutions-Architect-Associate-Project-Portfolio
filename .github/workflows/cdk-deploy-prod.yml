@@ -54,12 +54,16 @@ jobs:
           aws-region: us-east-1
 
       - name: cdk deploy (prod stacks only)
+        # Only projects actually approved for prod belong here --
+        # moderated-image-gallery, habit-tracker, nova-summarizer,
+        # order-processing, and website-chatbot are still under beta
+        # review and must NOT be added until each one is deliberately
+        # promoted (flip its stages: [...] in website-content.ts, then
+        # add its stack name to this list in the same PR).
         run: |
           npx cdk deploy --require-approval never \
             fanning-sns \
             live-poll \
             contact-form-api \
             workflow-visualizer \
-            moderated-image-gallery \
-            habit-tracker \
             portfolio-website-prod
