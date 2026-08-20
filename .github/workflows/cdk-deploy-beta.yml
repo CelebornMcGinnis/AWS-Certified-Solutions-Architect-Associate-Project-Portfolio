@@ -61,4 +61,5 @@ jobs:
             moderated-image-gallery-beta \
             habit-tracker-beta \
             nova-summarizer-beta \
+            order-processing-beta \
             portfolio-website-beta

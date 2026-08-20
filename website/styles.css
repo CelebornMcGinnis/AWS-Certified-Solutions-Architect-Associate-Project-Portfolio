@@ -4703,3 +4703,58 @@ footer {
   font-size: 0.85rem;
   margin: 0;
 }
+
+/* ---------------------------------------------------------------------
+   26. ORDER PROCESSING (project8.html only)
+   Product picker, failed-state timeline step, and the order log table.
+   --------------------------------------------------------------------- */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.product-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+}
+
+.product-card input {
+  width: auto;
+  margin-top: 0.2rem;
+}
+
+.product-card-body h4 {
+  margin: 0 0 0.2rem;
+  font-size: 0.98rem;
+}
+
+.product-card-body p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.product-card-body .out-of-stock {
+  color: var(--error-text);
+  font-weight: 700;
+}
+
+.job-timeline-step.is-failed .job-timeline-line {
+  background: var(--error-text);
+}
+
+.job-timeline-step.is-failed .job-timeline-dot {
+  background: var(--error-text);
+  border-color: var(--error-text);
+  color: #fff;
+}
+
+.job-timeline-step.is-failed .job-timeline-label {
+  color: var(--error-text);
+}

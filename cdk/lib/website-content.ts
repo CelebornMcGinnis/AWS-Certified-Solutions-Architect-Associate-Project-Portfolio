@@ -14,7 +14,7 @@ function stagingDirFor(stage: Stage): string {
 }
 
 export type Stage = 'prod' | 'beta';
-export type ProjectKey = 'contactForm' | 'livePoll' | 'fanningSns' | 'workflowVisualizer' | 'moderatedImageGallery' | 'habitTracker' | 'novaSummarizer';
+export type ProjectKey = 'contactForm' | 'livePoll' | 'fanningSns' | 'workflowVisualizer' | 'moderatedImageGallery' | 'habitTracker' | 'novaSummarizer' | 'orderProcessing';
 
 interface ProjectMapping {
   key: ProjectKey;
@@ -104,6 +104,17 @@ const PROJECTS: ProjectMapping[] = [
     homepageCardFile: 'projects/nova-summarizer/homepage-card.html',
     navLinkHtml: '<a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>',
     mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>',
+  },
+  {
+    key: 'orderProcessing',
+    frontendDir: 'projects/order-processing/frontend',
+    destPrefix: 'project/orders',
+    rename: { 'index.html': 'project8.html' },
+    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
+    stages: ['beta'],
+    homepageCardFile: 'projects/order-processing/homepage-card.html',
+    navLinkHtml: '<a href="/project/orders/project8.html">Order Processing</a>',
+    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/orders/project8.html">Order Processing</a>',
   },
 ];
 

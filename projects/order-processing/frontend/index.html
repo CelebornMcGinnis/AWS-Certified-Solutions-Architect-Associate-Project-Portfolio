@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>
+    // Applied before first paint to avoid a flash of the wrong theme.
+    // A toggle in the nav can override the system preference; that
+    // choice is remembered in localStorage from then on.
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Order Processing — McGinnis Architecture</title>
+  <meta name="description" content="A real Step Functions Saga demo -- reserve inventory, charge payment, ship. Trigger a simulated payment failure and watch the reservation get released." />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f7fb" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body id="top">
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand-row">
+        <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
+          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+        </a>
+      </div>
+      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <nav aria-label="Main navigation">
+        <a href="/">Home</a>
+        <details class="nav-dropdown">
+          <summary>Projects</summary>
+          <div class="nav-dropdown-menu">
+            <a href="/project/contactform/project1.html">Contact Form</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/habits/project6.html">Habit Tracker</a>
+            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+            <a href="#top">Order Processing</a>
+            <span class="nav-dropdown-group-label">On this page</span>
+            <a class="nav-dropdown-sublink" href="#demo">Try it</a>
+            <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
+            <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
+            <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
+            <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
+            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+          </div>
+        </details>
+        <a href="/#about">About</a>
+              <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Project</p>
+      <h1 class="hero-title-compact">Order Processing</h1>
+      <p>
+        Place a demo order and watch it move through a real
+        <strong>Step Functions</strong> pipeline — reserve inventory,
+        charge payment, ship. Opt in to a simulated payment failure and
+        watch the state machine <strong>undo</strong> the inventory
+        reservation it already made, instead of just reporting an error.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href="#demo">Try it</a>
+        <a class="button-link" href="#how-it-works">See how it works</a>
+        <a class="button-link" href="#pricing">Pricing</a>
+      </div>
+    </section>
+
+    <section class="card" id="demo" aria-labelledby="demo-heading">
+      <div>
+        <p class="eyebrow">Demo</p>
+        <h2 id="demo-heading">Place a demo order</h2>
+        <p class="muted">
+          This runs against a real AWS backend — no mock data. Stock is
+          intentionally low per product, so ordering more than what's
+          left is a real (not staged) way to see the other failure path.
+        </p>
+        <p class="muted small-note">
+          <strong>Privacy notice:</strong> nothing personal is collected
+          — each order is just a random id, a product, and a quantity.
+        </p>
+      </div>
+
+      <div class="device-notice">
+        This demo doesn't use accounts. Your order history is stored
+        against a random id kept in this browser's local storage
+        (<code id="device-id-note"></code>&hellip;) — clearing your
+        browser data or switching devices starts you over.
+      </div>
+
+      <form class="contact-form" id="order-form">
+        <div class="product-grid" id="product-grid"></div>
+
+        <label>
+          Quantity
+          <input type="number" id="order-quantity" min="1" max="10" value="1" required />
+        </label>
+
+        <label class="checkbox-row">
+          <input type="checkbox" id="simulate-failure" />
+          <span>Simulate a payment failure, to see the inventory-release rollback happen</span>
+        </label>
+
+        <div class="form-status" id="order-status" role="status" aria-live="polite"></div>
+
+        <button type="submit" id="order-submit">Place order</button>
+      </form>
+
+      <div class="job-timeline-wrap" id="order-timeline-wrap" hidden>
+        <h3>Your order</h3>
+        <ol class="job-timeline" id="order-timeline">
+          <li class="job-timeline-step" data-status="PENDING">
+            <span class="job-timeline-line" aria-hidden="true"></span>
+            <span class="job-timeline-dot" aria-hidden="true">1</span>
+            <span class="job-timeline-label">Submitted</span>
+          </li>
+          <li class="job-timeline-step" data-status="INVENTORY_RESERVED">
+            <span class="job-timeline-line" aria-hidden="true"></span>
+            <span class="job-timeline-dot" aria-hidden="true">2</span>
+            <span class="job-timeline-label">Inventory reserved</span>
+          </li>
+          <li class="job-timeline-step" data-status="PAYMENT_CHARGED">
+            <span class="job-timeline-line" aria-hidden="true"></span>
+            <span class="job-timeline-dot" aria-hidden="true">3</span>
+            <span class="job-timeline-label">Payment charged</span>
+          </li>
+          <li class="job-timeline-step" data-status="SHIPPED">
+            <span class="job-timeline-dot" aria-hidden="true">4</span>
+            <span class="job-timeline-label">Shipped</span>
+          </li>
+        </ol>
+        <p class="rejection-note" id="order-failure-note" hidden></p>
+        <p class="muted small-note job-id-note" id="order-id-note"></p>
+      </div>
+
+      <div class="notify-log-wrap">
+        <div class="notify-log-head">
+          <h3>My orders</h3>
+          <span class="muted small-note" id="my-orders-empty-note">No orders placed yet this session.</span>
+        </div>
+        <table class="notify-log" id="my-orders-log">
+          <thead>
+            <tr>
+              <th scope="col">Product</th>
+              <th scope="col">Qty</th>
+              <th scope="col">Total</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="my-orders-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture</p>
+        <h2 id="how-it-works-heading">How it works</h2>
+        <p class="muted section-intro">
+          This is a real AWS project, not a mockup. Here's what actually
+          happens between clicking Place order above and the timeline
+          reaching Shipped -- or, if payment fails, reaching a
+          compensated Failed state instead. Click any step to jump to
+          it, or let it play through on its own.
+        </p>
+      </div>
+
+      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
+      <div class="flow-diagram" id="flow-diagram">
+        <div class="flow-track">
+          <div class="flow-node" data-node="visitor">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="12" cy="10" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M4 26c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="23" cy="12" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M18.5 26c0-3.6 2.5-6.5 6-7.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <span class="flow-node-label">Visitor</span>
+          </div>
+
+          <div class="flow-connector" data-step="1" aria-hidden="true">
+            <span class="flow-connector-num">1</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="apigateway" data-step="1" role="button" tabindex="0" aria-label="Step 1: Visitor places an order">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/apigateway.png" alt="" />
+            </span>
+            <span class="flow-node-label">API Gateway</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+            <span class="flow-connector-num">2</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="lambda" data-step="2" role="button" tabindex="0" aria-label="Step 2: Lambda creates the order and starts the state machine">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/lambda.png" alt="" />
+            </span>
+            <span class="flow-node-label">Lambda</span>
+          </div>
+
+          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
+            <span class="flow-connector-num">3</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="stepfunctions" data-step="3" role="button" tabindex="0" aria-label="Step 3: Step Functions attempts to reserve inventory">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="7" cy="8" r="3" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="16" r="3" stroke="currentColor" stroke-width="2"/><circle cx="25" cy="24" r="3" stroke="currentColor" stroke-width="2"/><path d="M9.5 10.5L13.5 13.5M18.5 18.5L22.5 21.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <span class="flow-node-label">Step Functions</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
+            <span class="flow-connector-num">4</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="dynamodb" data-step="4" role="button" tabindex="0" aria-label="Step 4: DynamoDB atomically reserves stock and charges payment">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/dynamodb.png" alt="" />
+            </span>
+            <span class="flow-node-label">DynamoDB</span>
+          </div>
+
+          <div class="flow-connector" data-step="5" aria-hidden="true">
+            <span class="flow-connector-num">5</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="outcome" data-step="5" role="button" tabindex="0" aria-label="Step 5: Order ships, or a failed payment triggers compensation">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><path d="M4 12l5 5L20 6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="flow-node-label">Shipped / Compensated</span>
+          </div>
+        </div>
+      </div>
+
+      <ol class="flow-steps" id="flow-steps">
+        <li class="flow-step" data-step="1" tabindex="0">
+          <span class="flow-step-num">1</span>
+          <div class="flow-step-body">
+            <h3>Visitor places an order</h3>
+            <p>The chosen product, quantity, and device id go to <code>POST /orders</code>, along with whether you checked "simulate a payment failure."</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="2" tabindex="0">
+          <span class="flow-step-num">2</span>
+          <div class="flow-step-body">
+            <h3>Lambda creates the order and starts the state machine</h3>
+            <p>A new DynamoDB item is written with status <code>PENDING</code>, then Lambda calls Step Functions' <code>StartExecution</code> and immediately returns the order id -- it doesn't wait for the pipeline to finish.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="3" tabindex="0">
+          <span class="flow-step-num">3</span>
+          <div class="flow-step-body">
+            <h3>Step Functions attempts to reserve inventory</h3>
+            <p>A task Lambda tries an atomic conditional decrement against the product's stock. If there isn't enough left, the order is marked <code>FAILED</code> right there -- no compensation needed, since nothing was ever reserved.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="4" tabindex="0">
+          <span class="flow-step-num">4</span>
+          <div class="flow-step-body">
+            <h3>DynamoDB atomically reserves stock and charges payment</h3>
+            <p>With inventory reserved, a second task Lambda "charges" a simulated payment. If you checked the simulate-failure box, this step reports a decline instead of succeeding.</p>
+          </div>
+        </li>
+
+        <li class="flow-step" data-step="5" tabindex="0">
+          <span class="flow-step-num">5</span>
+          <div class="flow-step-body">
+            <h3>Order ships, or a failed payment triggers compensation</h3>
+            <p>A successful charge moves straight to <code>SHIPPED</code>. A declined charge instead runs a third task Lambda that adds the reserved quantity back to stock -- undoing step 3 -- before the order is marked <code>FAILED</code>. That release step is the actual Saga-style compensating transaction this project exists to demonstrate.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
+      <div data-reveal>
+      <p class="eyebrow">Use cases</p>
+      <h2 id="use-cases-heading">Where this pattern fits</h2>
+      <p class="muted section-intro">
+        Any multi-step transaction where a later step can fail after an
+        earlier step already changed something needs this same
+        compensating-action shape.
+      </p>
+      </div>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 11h18M7 15h4" stroke-linecap="round"/></svg>
+          </span>
+          <h3>E-commerce checkout</h3>
+          <p class="muted">The textbook case -- reserve stock, charge a card, ship. A declined card after inventory is held has to release that hold, or stock silently leaks away.</p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <h3>Travel &amp; multi-vendor bookings</h3>
+          <p class="muted">Booking a flight and a hotel as one transaction -- if the hotel booking fails after the flight is confirmed, the flight reservation needs to be cancelled, not left stranded.</p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v4M12 17v4M3 12h4M17 12h4" stroke-linecap="round"/><circle cx="12" cy="12" r="5"/></svg>
+          </span>
+          <h3>Distributed financial transfers</h3>
+          <p class="muted">Debiting one account and crediting another as separate steps -- if the credit fails, the debit has to be reversed rather than money simply disappearing.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
+      <div data-reveal>
+      <p class="eyebrow">Pricing</p>
+      <h2 id="pricing-heading">What this actually costs</h2>
+      <p class="muted section-intro">
+        Same pay-per-use model as the rest of this site's projects — an
+        unclicked demo costs nothing. These are estimates based on public
+        AWS list pricing, not a guarantee.
+      </p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-tier">Low volume</p>
+          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Up to a few thousand orders a month — comfortably inside
+            Step Functions' free tier of 4,000 state transitions (each
+            order uses 2-4 depending on which path it takes), plus
+            Lambda and DynamoDB's free tiers.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">Moderate volume</p>
+          <p class="pricing-amount">~$1<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Tens of thousands of orders a month — Step Functions state
+            transitions become the main cost, still a fraction of a cent
+            per order either way.
+          </p>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-tier">High volume</p>
+          <p class="pricing-amount">~$5–10<span class="pricing-period">/mo</span></p>
+          <p class="muted">
+            Hundreds of thousands of orders a month — Step Functions and
+            Lambda invocations both start to add up, though DynamoDB
+            on-demand billing stays cheap either way.
+          </p>
+        </div>
+      </div>
+      <div class="pricing-breakdown">
+        <h3>What drives the cost</h3>
+        <ul>
+          <li><strong>Step Functions</strong> — billed per state transition; a shipped order uses 4 (reserve, charge, ship, plus the initial entry), a compensated one uses 5 (adding the release step), after a 4,000/month free tier.</li>
+          <li><strong>Lambda</strong> — up to four small functions on the order path (create, reserve, charge, release), billed per request and per millisecond.</li>
+          <li><strong>DynamoDB</strong> — on-demand billing for the orders table and its owner index, plus the tiny inventory table; no idle capacity to pay for.</li>
+          <li><strong>API Gateway</strong> — billed per request across the create/read/list/catalog routes.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
+      <div data-reveal>
+        <p class="eyebrow">Design decisions</p>
+        <h2 id="decisions-heading">Why I built it this way</h2>
+        <p class="muted section-intro">
+          A few choices here aren't the only way to build this — here's the
+          reasoning behind them.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Failures return a result, they don't raise</h3>
+          <p class="muted">
+            <code>reserve_inventory_handler.py</code> and
+            <code>charge_payment_handler.py</code> both return an
+            ordinary <code>{"success": false, "reason": ...}</code>
+            payload instead of throwing, and the state machine branches
+            on that with a Choice state. Out-of-stock and a declined
+            card are expected business outcomes here, not exceptions --
+            reserving Step Functions' error-handling machinery (Catch,
+            Retry) for genuine infrastructure failures keeps the two
+            concerns separate.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>An explicit "simulate failure" checkbox, not random chance</h3>
+          <p class="muted">
+            A randomly-failing demo is frustrating to actually demo --
+            you'd have to keep retrying to show the interesting path.
+            Making the failure deliberate and visitor-controlled means
+            the compensating-transaction behavior is reliably
+            reachable, while running out of real stock (by ordering
+            more than what's left) still demonstrates a genuinely
+            data-driven failure alongside it.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Reused the workflow visualizer's timeline component</h3>
+          <p class="muted">
+            The step-by-step timeline UI is the same generic
+            <code>.job-timeline</code> component from the
+            <a href="/project/workflow/project4.html">workflow visualizer</a>,
+            extended with one new "failed" visual state -- no reason to
+            build a second timeline widget for what's fundamentally the
+            same "watch discrete stages advance" idea.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>A tiny fixed catalog, lazily seeded</h3>
+          <p class="muted">
+            Product names and prices live in code (<code>catalog.py</code>),
+            not a database -- there's no admin UI for this demo, so a
+            resizable catalog table would be unused complexity. Stock
+            counts are the one thing that's genuinely mutable, and even
+            that's seeded lazily via DynamoDB's <code>if_not_exists()</code>
+            the first time a product is ever ordered, rather than
+            needing a separate seed step at deploy time.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
+      <div class="footer-right">
+        <nav aria-label="Footer navigation">
+          <a href="/">Home</a>
+          <a href="/#projects">Projects</a>
+          <a href="/#about">About</a>
+        </nav>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+            <img src="/assets/linkedin.png" alt="" />
+          </a>
+          <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <img src="/assets/github.png" alt="" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <details class="mobile-menu" id="mobile-menu">
+    <summary class="mobile-menu-button" aria-label="Open menu">
+      <svg class="mobile-menu-icon-open" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+      <svg class="mobile-menu-icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+      </svg>
+    </summary>
+    <nav class="mobile-menu-panel" aria-label="Mobile navigation">
+      <a href="/">Home</a>
+      <span class="mobile-menu-group-label">On this page</span>
+      <a class="mobile-menu-sublink" href="#demo">Try it</a>
+      <a class="mobile-menu-sublink" href="#how-it-works">How it works</a>
+      <a class="mobile-menu-sublink" href="#use-cases">Use cases</a>
+      <a class="mobile-menu-sublink" href="#pricing">Pricing</a>
+      <a class="mobile-menu-sublink" href="#design-decisions">Design decisions</a>
+      <span class="mobile-menu-group-label">Projects</span>
+      <a class="mobile-menu-sublink" href="/project/contactform/project1.html">Contact Form</a>
+      <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
+      <a class="mobile-menu-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+      <a class="mobile-menu-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
+      <a class="mobile-menu-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+      <a class="mobile-menu-sublink" href="/project/habits/project6.html">Habit Tracker</a>
+      <a class="mobile-menu-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+      <a class="mobile-menu-sublink" href="#top">Order Processing</a>
+      <a class="mobile-menu-sublink" href="/#projects">View all projects</a>
+      <a href="/#about">About</a>
+          <button type="button" class="theme-toggle mobile-menu-theme-toggle" id="theme-toggle-mobile" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Dark mode</span>
+      </button>
+    </nav>
+  </details>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
