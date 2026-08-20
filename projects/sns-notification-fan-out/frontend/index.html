@@ -315,7 +315,7 @@
           <span class="flow-step-num">5</span>
           <div class="flow-step-body">
             <h3>Both branches receive it simultaneously</h3>
-            <p>One Lambda is subscribed directly to the topic — no queue in front of it, so it runs the moment SNS delivers the message. At the same time, the message also lands in an SQS queue subscribed to the topic. That branch trades a little latency for durability: if its consumer Lambda is briefly unavailable, the message waits in the queue instead of being lost, retrying up to three times before landing in a dead-letter queue.</p>
+            <p>One Lambda is subscribed directly to the topic — no queue in front of it, so it runs the moment SNS delivers the message. At the same time, the message also lands in an SQS queue subscribed to the topic. That branch trades a little latency for durability: if its consumer Lambda is briefly unavailable, the message waits in the queue instead of being lost, retrying up to three times before landing in a dead-letter queue. A CloudWatch alarm watches that dead-letter queue itself — if a message sits there for more than 2 of its 4-day retention days, an SNS-triggered Lambda emails an alert, repeating every 6 hours until it's resolved, so a stuck message doesn't just quietly expire unnoticed.</p>
           </div>
         </li>
 
@@ -514,6 +514,19 @@
             REST endpoint every couple seconds — since a persistent
             connection isn't warranted just to watch two Lambdas each run
             once.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>A CloudWatch alarm on the queue, not a polling Lambda</h3>
+          <p class="muted">
+            Detecting "a message has been sitting in the dead-letter
+            queue too long" could be done with a scheduled Lambda that
+            periodically peeks at the queue — but SQS already publishes
+            exactly that number as a CloudWatch metric
+            (<code>ApproximateAgeOfOldestMessage</code>), so a metric
+            alarm gets the same detection with no polling code, no
+            schedule to maintain, and no risk of the check itself
+            silently stopping.
           </p>
         </div>
       </div>
