@@ -14,7 +14,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Order Processing — McGinnis Architecture</title>
-  <meta name="description" content="A real Step Functions Saga demo -- reserve inventory, charge payment, ship. Trigger a simulated payment failure and watch the reservation get released." />
+  <meta name="description" content="A real Step Functions Saga demo — reserve inventory, charge payment, ship. Trigger a simulated payment failure and watch the reservation get released." />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
@@ -75,9 +75,10 @@
         reservation it already made, instead of just reporting an error.
       </p>
       <div class="hero-actions">
-        <a class="button-link" href="#demo">Try it</a>
         <a class="button-link" href="#how-it-works">See how it works</a>
+        <a class="button-link" href="#use-cases">Use cases</a>
         <a class="button-link" href="#pricing">Pricing</a>
+        <a class="button-link" href="#design-decisions">Design decisions</a>
       </div>
     </section>
 
@@ -174,14 +175,14 @@
         <p class="muted section-intro">
           This is a real AWS project, not a mockup. Here's what actually
           happens between clicking Place order above and the timeline
-          reaching Shipped -- or, if payment fails, reaching a
+          reaching Shipped — or, if payment fails, reaching a
           compensated Failed state instead. Click any step to jump to
           it, or let it play through on its own.
         </p>
       </div>
 
       <div class="flow-diagram-sentinel" aria-hidden="true"></div>
-      <div class="flow-diagram" id="flow-diagram">
+      <div class="flow-diagram orders-diagram" id="flow-diagram">
         <div class="flow-track">
           <div class="flow-node" data-node="visitor">
             <span class="flow-node-icon" aria-hidden="true">
@@ -265,7 +266,7 @@
           <span class="flow-step-num">2</span>
           <div class="flow-step-body">
             <h3>Lambda creates the order and starts the state machine</h3>
-            <p>A new DynamoDB item is written with status <code>PENDING</code>, then Lambda calls Step Functions' <code>StartExecution</code> and immediately returns the order id -- it doesn't wait for the pipeline to finish.</p>
+            <p>A new DynamoDB item is written with status <code>PENDING</code>, then Lambda calls Step Functions' <code>StartExecution</code> and immediately returns the order id — it doesn't wait for the pipeline to finish.</p>
           </div>
         </li>
 
@@ -273,7 +274,7 @@
           <span class="flow-step-num">3</span>
           <div class="flow-step-body">
             <h3>Step Functions attempts to reserve inventory</h3>
-            <p>A task Lambda tries an atomic conditional decrement against the product's stock. If there isn't enough left, the order is marked <code>FAILED</code> right there -- no compensation needed, since nothing was ever reserved.</p>
+            <p>A task Lambda tries an atomic conditional decrement against the product's stock. If there isn't enough left, the order is marked <code>FAILED</code> right there — no compensation needed, since nothing was ever reserved.</p>
           </div>
         </li>
 
@@ -289,7 +290,7 @@
           <span class="flow-step-num">5</span>
           <div class="flow-step-body">
             <h3>Order ships, or a failed payment triggers compensation</h3>
-            <p>A successful charge moves straight to <code>SHIPPED</code>. A declined charge instead runs a third task Lambda that adds the reserved quantity back to stock -- undoing step 3 -- before the order is marked <code>FAILED</code>. That release step is the actual Saga-style compensating transaction this project exists to demonstrate.</p>
+            <p>A successful charge moves straight to <code>SHIPPED</code>. A declined charge instead runs a third task Lambda that adds the reserved quantity back to stock — undoing step 3 — before the order is marked <code>FAILED</code>. That release step is the actual Saga-style compensating transaction this project exists to demonstrate.</p>
           </div>
         </li>
       </ol>
@@ -311,21 +312,21 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 11h18M7 15h4" stroke-linecap="round"/></svg>
           </span>
           <h3>E-commerce checkout</h3>
-          <p class="muted">The textbook case -- reserve stock, charge a card, ship. A declined card after inventory is held has to release that hold, or stock silently leaks away.</p>
+          <p class="muted">The textbook case — reserve stock, charge a card, ship. A declined card after inventory is held has to release that hold, or stock silently leaks away.</p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
           <h3>Travel &amp; multi-vendor bookings</h3>
-          <p class="muted">Booking a flight and a hotel as one transaction -- if the hotel booking fails after the flight is confirmed, the flight reservation needs to be cancelled, not left stranded.</p>
+          <p class="muted">Booking a flight and a hotel as one transaction — if the hotel booking fails after the flight is confirmed, the flight reservation needs to be cancelled, not left stranded.</p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v4M12 17v4M3 12h4M17 12h4" stroke-linecap="round"/><circle cx="12" cy="12" r="5"/></svg>
           </span>
           <h3>Distributed financial transfers</h3>
-          <p class="muted">Debiting one account and crediting another as separate steps -- if the credit fails, the debit has to be reversed rather than money simply disappearing.</p>
+          <p class="muted">Debiting one account and crediting another as separate steps — if the credit fails, the debit has to be reversed rather than money simply disappearing.</p>
         </div>
       </div>
     </section>
@@ -423,7 +424,7 @@
             The step-by-step timeline UI is the same generic
             <code>.job-timeline</code> component from the
             <a href="/project/workflow/project4.html">workflow visualizer</a>,
-            extended with one new "failed" visual state -- no reason to
+            extended with one new "failed" visual state — no reason to
             build a second timeline widget for what's fundamentally the
             same "watch discrete stages advance" idea.
           </p>
@@ -432,7 +433,7 @@
           <h3>A tiny fixed catalog, lazily seeded</h3>
           <p class="muted">
             Product names and prices live in code (<code>catalog.py</code>),
-            not a database -- there's no admin UI for this demo, so a
+            not a database — there's no admin UI for this demo, so a
             resizable catalog table would be unused complexity. Stock
             counts are the one thing that's genuinely mutable, and even
             that's seeded lazily via DynamoDB's <code>if_not_exists()</code>

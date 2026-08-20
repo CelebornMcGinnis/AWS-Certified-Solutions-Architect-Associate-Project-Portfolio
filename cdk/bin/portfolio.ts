@@ -156,6 +156,10 @@ const websiteBeta = new WebsiteStack(app, 'portfolio-website-beta', {
   bucketName: 'mcginnisarchitecture-beta-website-942960194803-us-east-1-an',
   certificateArn: WILDCARD_CERTIFICATE_ARN,
   comment: 'beta environment for the McGinnisArchitecture webpage',
+  customErrorResponses: [
+    { errorCode: 403, responsePagePath: '/index.html', responseCode: 200, errorCachingMinTtl: 10 },
+    { errorCode: 404, responsePagePath: '/index.html', responseCode: 200, errorCachingMinTtl: 10 },
+  ],
   createAaaaRecord: true,
   manageContent,
   webAclId: 'arn:aws:wafv2:us-east-1:942960194803:global/webacl/CreatedByCloudFront-17dac3ad/83d6d067-3c62-45f4-9b93-d097179721cd',

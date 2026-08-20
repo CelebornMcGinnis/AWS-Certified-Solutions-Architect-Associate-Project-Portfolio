@@ -14,7 +14,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Habit Tracker — McGinnis Architecture</title>
-  <meta name="description" content="An anonymous, device-local habit tracker -- check in daily and watch a background EventBridge Scheduler job reset any streak you miss." />
+  <meta name="description" content="An anonymous, device-local habit tracker — check in daily and watch a background EventBridge Scheduler job reset any streak you miss." />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
@@ -68,13 +68,14 @@
       <p>
         Add a habit, check in once a day, and watch your streak grow.
         Miss a day and a background <strong>EventBridge Scheduler</strong>
-        job quietly resets it the next morning -- no visitor request has
+        job quietly resets it the next morning — no visitor request has
         to trigger that, it just happens on a schedule.
       </p>
       <div class="hero-actions">
-        <a class="button-link" href="#demo">Try it</a>
         <a class="button-link" href="#how-it-works">See how it works</a>
+        <a class="button-link" href="#use-cases">Use cases</a>
         <a class="button-link" href="#pricing">Pricing</a>
+        <a class="button-link" href="#design-decisions">Design decisions</a>
       </div>
     </section>
 
@@ -122,7 +123,7 @@
       </div>
 
       <div class="flow-diagram-sentinel" aria-hidden="true"></div>
-      <div class="flow-diagram" id="flow-diagram">
+      <div class="flow-diagram habits-diagram" id="flow-diagram">
         <div class="flow-track">
           <div class="flow-node" data-node="visitor">
             <span class="flow-node-icon" aria-hidden="true">
