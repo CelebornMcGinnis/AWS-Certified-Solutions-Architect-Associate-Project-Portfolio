@@ -1,12 +1,18 @@
+import * as path from 'path';
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sns from 'aws-cdk-lib/aws-sns';
+import * as subscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { SITE_ORIGIN, BETA_SITE_ORIGIN, SES_FROM_ADDRESS, SES_TO_ADDRESS } from './config';
+
+const BACKEND_DIR = path.join(__dirname, '../../projects/sns-notification-fan-out/backend');
 
 export interface FanningSnsStackProps extends cdk.StackProps {
   stage: 'prod' | 'beta';
@@ -67,6 +73,58 @@ export class FanningSnsStack extends cdk.Stack {
     const loggerDlq = new sqs.CfnQueue(this, 'LoggerDLQ', {
       messageRetentionPeriod: 345600, // 4 days
     });
+
+    // --- DLQ age alerting ---
+    // A message that lands in the DLQ (3 failed processing attempts)
+    // previously just sat there until its 4-day retention silently
+    // deleted it -- nothing consumed the queue or watched it. This
+    // alarm watches the queue's own ApproximateAgeOfOldestMessage
+    // metric and fires once a message is 2+ days old, giving 2 days'
+    // notice before it's gone for good. The alarm re-evaluates (and
+    // re-notifies) every 6 hours for as long as the condition holds,
+    // rather than a single email that's easy to miss in an inbox.
+    const dlqAgeAlarm = new cloudwatch.Alarm(this, 'DlqMessageNearExpiryAlarm', {
+      alarmDescription: `Oldest message in ${namePrefix}'s dead-letter queue is within 2 days of its 4-day retention limit.`,
+      metric: new cloudwatch.Metric({
+        namespace: 'AWS/SQS',
+        metricName: 'ApproximateAgeOfOldestMessage',
+        dimensionsMap: { QueueName: loggerDlq.attrQueueName },
+        statistic: 'Maximum',
+        period: cdk.Duration.hours(6),
+      }),
+      threshold: 2 * 24 * 60 * 60, // 2 days, in seconds
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    const dlqAlertTopic = new sns.Topic(this, 'DlqAgeAlertTopic');
+    dlqAgeAlarm.addAlarmAction(new cloudwatchActions.SnsAction(dlqAlertTopic));
+
+    const dlqAlertFunction = new lambda.Function(this, 'DlqAlertFunction', {
+      runtime: lambda.Runtime.PYTHON_3_13,
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 128,
+      code: lambda.Code.fromAsset(BACKEND_DIR),
+      handler: 'dlq_alert_handler.lambda_handler',
+      environment: {
+        SES_FROM_ADDRESS,
+        SES_TO_ADDRESS,
+        DLQ_URL: loggerDlq.ref,
+        DLQ_NAME: loggerDlq.attrQueueName,
+        STAGE: stage,
+      },
+    });
+    dlqAlertFunction.addToRolePolicy(new iam.PolicyStatement({ actions: ['ses:SendEmail'], resources: ['*'] }));
+    dlqAlertFunction.addToRolePolicy(
+      new iam.PolicyStatement({ actions: ['sqs:GetQueueAttributes'], resources: [loggerDlq.attrArn] }),
+    );
+    // CloudWatch metrics aren't resource-scopable the way most services
+    // are -- GetMetricStatistics has no ARN-level target to restrict to.
+    dlqAlertFunction.addToRolePolicy(
+      new iam.PolicyStatement({ actions: ['cloudwatch:GetMetricStatistics'], resources: ['*'] }),
+    );
+    dlqAlertTopic.addSubscription(new subscriptions.LambdaSubscription(dlqAlertFunction));
 
     const notificationTopic = new sns.CfnTopic(this, 'NotificationTopic', {});
 
