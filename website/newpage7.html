@@ -50,7 +50,9 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      background: linear-gradient(200deg, var(--accent), var(--accent-dark) 55%, #200008 130%);
+      background-image: url('/assets/celeborn.jpeg');
+      background-size: cover;
+      background-position: center 20%;
       color: #fff;
       overflow: hidden;
       padding-top: 2px; /* keeps the sticky header's own border visually flush */
@@ -59,20 +61,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0) 45%);
-    }
-    .concept-hero-monogram {
-      position: absolute;
-      left: 50%;
-      top: 46%;
-      transform: translate(-50%, -50%);
-      font-size: 42vw;
-      font-weight: 800;
-      color: rgba(255, 255, 255, 0.06);
-      line-height: 1;
-      pointer-events: none;
-      user-select: none;
-      white-space: nowrap;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.08) 45%);
     }
     .concept-cover-top {
       position: relative;
@@ -140,12 +129,6 @@
       border: 2px solid rgba(255, 255, 255, 0.7);
       background: transparent;
     }
-    .concept-photo-note {
-      margin: 0.9rem 0 0;
-      font-size: 0.76rem;
-      color: rgba(255, 255, 255, 0.65);
-    }
-    .concept-photo-note code { color: #fff; background: rgba(255, 255, 255, 0.15); }
     .concept-scroll-cue {
       position: absolute;
       left: 50%;
@@ -207,7 +190,6 @@
 
   <main>
     <section class="concept-hero" data-reveal>
-      <span class="concept-hero-monogram" aria-hidden="true">CM</span>
       <div class="concept-cover-top">
         <p class="concept-cover-kicker">McGinnis Architecture — Cloud Edition</p>
         <div class="concept-cover-pills">
@@ -223,7 +205,6 @@
           Architect – Associate. Real AWS infrastructure, designed and deployed
           end to end.
         </p>
-        <p class="concept-photo-note">Full-bleed photo placeholder — swap the background for a real photo at <code>/assets/celeborn.jpg</code></p>
         <div class="concept-hero-actions">
           <a class="button-link" href="#projects">View projects</a>
           <a class="button-link ghost" href="/index.html#about">About me</a>

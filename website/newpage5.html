@@ -88,16 +88,15 @@
       display: inline-block;
       border: 1px dashed var(--border);
       border-radius: 6px;
-      padding: 1.1rem 1.6rem;
+      padding: 6px;
       margin: 0 0 1.3rem;
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 1.1rem;
     }
-    .terminal-photo-caption {
-      color: var(--muted);
-      font-size: 0.85rem;
-      margin: 0 0 1.3rem;
+    .terminal-photo-box img {
+      display: block;
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 3px;
     }
     .terminal-cursor {
       display: inline-block;
@@ -174,8 +173,9 @@
           </p>
 
           <p class="terminal-line"><span class="terminal-prompt">$</span> open photo.jpg</p>
-          <div class="terminal-photo-box" aria-hidden="true">[ PHOTO: CM ]</div>
-          <p class="terminal-photo-caption">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
+          <div class="terminal-photo-box">
+            <img src="/assets/celeborn.jpeg" alt="Celeborn McGinnis" />
+          </div>
 
           <p class="terminal-line"><span class="terminal-prompt">$</span> ./view-projects.sh<span class="terminal-cursor" aria-hidden="true"></span></p>
           <div class="terminal-actions">

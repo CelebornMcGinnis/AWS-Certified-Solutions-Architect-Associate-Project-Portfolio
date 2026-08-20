@@ -93,28 +93,14 @@
     .concept-panel-photo {
       background: linear-gradient(135deg, var(--accent-dark), #1a1300 130%);
       margin-left: -14%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       position: relative;
     }
-    .concept-panel-photo .concept-photo-initials {
-      color: #fff;
-      font-size: 7rem;
-      font-weight: 800;
-      opacity: 0.92;
+    .concept-panel-photo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
-    .concept-photo-caption-tag {
-      position: absolute;
-      left: 1.5rem;
-      bottom: 1.5rem;
-      background: rgba(0, 0, 0, 0.4);
-      color: #fff;
-      font-size: 0.76rem;
-      padding: 0.5rem 0.85rem;
-      border-radius: 999px;
-    }
-    .concept-photo-caption-tag code { color: #fff; background: rgba(255, 255, 255, 0.18); }
     @media (max-width: 760px) {
       .concept-hero { grid-template-columns: 1fr; min-height: 0; }
       .concept-panel-text {
@@ -125,7 +111,6 @@
       .concept-panel-text p { margin-left: auto; margin-right: auto; }
       .concept-hero-actions { justify-content: center; }
       .concept-panel-photo { margin-left: 0; min-height: 240px; order: -1; }
-      .concept-panel-photo .concept-photo-initials { font-size: 4.5rem; }
     }
   </style>
 </head>
@@ -173,8 +158,7 @@
         </div>
       </div>
       <div class="concept-panel-photo">
-        <span class="concept-photo-initials" aria-hidden="true">CM</span>
-        <p class="concept-photo-caption-tag">Placeholder — swap for a real photo at <code>/assets/celeborn.jpg</code></p>
+        <img src="/assets/celeborn.jpeg" alt="Celeborn McGinnis" />
       </div>
     </section>
 
