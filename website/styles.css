@@ -4693,9 +4693,22 @@ footer {
   margin-top: 1.5rem;
 }
 
-.summarize-result-text {
-  white-space: pre-wrap;
+.summarize-result h3 {
   margin: 0 0 0.75rem;
+}
+
+.summarize-result-bullets {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.summarize-result-bullets li {
+  margin-bottom: 0.35rem;
+}
+
+.summarize-result-takeaways-label {
+  font-weight: 700;
+  margin: 0 0 0.5rem;
 }
 
 .summarize-result-meta {
