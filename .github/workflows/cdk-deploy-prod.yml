@@ -55,6 +55,9 @@ jobs:
 
       - name: cdk deploy (prod stacks only)
         # Only projects actually approved for prod belong here --
+        # workflow-visualizer is deliberately held back for now (its
+        # prod backend stack already exists but isn't being auto
+        # re-deployed until that's revisited), and
         # moderated-image-gallery, habit-tracker, nova-summarizer,
         # order-processing, and website-chatbot are still under beta
         # review and must NOT be added until each one is deliberately
@@ -65,5 +68,4 @@ jobs:
             fanning-sns \
             live-poll \
             contact-form-api \
-            workflow-visualizer \
             portfolio-website-prod
