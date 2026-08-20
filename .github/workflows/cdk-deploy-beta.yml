@@ -60,4 +60,5 @@ jobs:
             workflow-visualizer-beta \
             moderated-image-gallery-beta \
             habit-tracker-beta \
+            nova-summarizer-beta \
             portfolio-website-beta
