@@ -14,7 +14,7 @@ function stagingDirFor(stage: Stage): string {
 }
 
 export type Stage = 'prod' | 'beta';
-export type ProjectKey = 'contactForm' | 'livePoll' | 'fanningSns' | 'workflowVisualizer' | 'moderatedImageGallery' | 'habitTracker' | 'novaSummarizer' | 'orderProcessing';
+export type ProjectKey = 'contactForm' | 'livePoll' | 'fanningSns' | 'workflowVisualizer' | 'moderatedImageGallery' | 'habitTracker' | 'novaSummarizer' | 'orderProcessing' | 'websiteChatbot';
 
 interface ProjectMapping {
   key: ProjectKey;
@@ -115,6 +115,17 @@ const PROJECTS: ProjectMapping[] = [
     homepageCardFile: 'projects/order-processing/homepage-card.html',
     navLinkHtml: '<a href="/project/orders/project8.html">Order Processing</a>',
     mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/orders/project8.html">Order Processing</a>',
+  },
+  {
+    key: 'websiteChatbot',
+    frontendDir: 'projects/website-chatbot/frontend',
+    destPrefix: 'project/chatbot',
+    rename: { 'index.html': 'project9.html' },
+    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
+    stages: ['beta'],
+    homepageCardFile: 'projects/website-chatbot/homepage-card.html',
+    navLinkHtml: '<a href="/project/chatbot/project9.html">Website Chatbot</a>',
+    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>',
   },
 ];
 
