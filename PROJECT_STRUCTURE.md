@@ -10,6 +10,8 @@ This repository separates the public website, project-specific frontend code, La
 ├── PROJECT_STRUCTURE.md
 ├── LICENSE
 ├── .gitignore
+├── .github/
+├── cdk/
 ├── website/
 ├── projects/
 └── docs/
@@ -21,6 +23,8 @@ This repository separates the public website, project-specific frontend code, La
 | `PROJECT_STRUCTURE.md` | Repository layout and source-to-production mapping. |
 | `LICENSE` | MIT license for source code, subject to the branding notice in the README. |
 | `.gitignore` | Excludes local files, credentials, SAM artifacts, virtual environments, logs, and ZIP savepoints. |
+| `.github/` | GitHub Actions workflows (`cdk-pr.yml`, `cdk-deploy.yml`) and Dependabot config. |
+| `cdk/` | The AWS CDK app that actually deploys everything below -- see [`cdk/README.md`](cdk/README.md). |
 
 ## Website
 
@@ -65,7 +69,7 @@ website/
 
 The current site includes dark mode, social links, SNS/SQS service icons, responsive desktop and mobile navigation, project-page section links, and a custom 404 page. The page markup keeps absolute production URLs where needed so the same files can be deployed under the public paths shown above.
 
-For CloudFront, configure custom error responses for origin codes `403` and `404`, serve `/404.html`, and return HTTP status `404`. The 403 mapping is important for private S3 origins because a missing object can be reported as 403 rather than 404.
+CloudFront's custom error response behavior is now defined in `cdk/lib/website-stack.ts` and differs by environment: production returns `/index.html` with an HTTP 200 for both 403 and 404 origin errors (SPA-style fallback, not `/404.html` as earlier drafts of this doc described); beta has no custom error responses configured. The 403 mapping matters for a private S3 origin because a missing object can be reported as 403 rather than 404.
 
 ## Contact Form API
 
@@ -97,6 +101,8 @@ projects/contact-form-api/
 | `project/contactform/template.yaml` | `projects/contact-form-api/infrastructure/template.yaml` | AWS SAM template |
 
 The infrastructure template intentionally uses `CodeUri: ../backend/` because it lives in a separate `infrastructure/` folder.
+
+**This `template.yaml` is a reference to the original SAM-based design and is not what's actually deployed.** The equivalent (and in this project's case, corrected-to-match-what-was-really-live) resources are defined in `cdk/lib/contact-form-stack.ts` -- see [`cdk/README.md`](cdk/README.md).
 
 ## Real-Time Polling App
 
@@ -130,6 +136,8 @@ projects/realtime-polling-app/
 
 The infrastructure template intentionally uses `CodeUri: ../backend/` for each function.
 
+**This `template.yaml` is a reference to the original SAM-based design and is not what's actually deployed** -- see `cdk/lib/live-poll-stack.ts` and [`cdk/README.md`](cdk/README.md).
+
 ## SNS Notification Fan-Out
 
 ```text
@@ -162,6 +170,8 @@ projects/sns-notification-fan-out/
 
 The repository name is more descriptive than the original working folder name. Existing deployed Lambda function names beginning with `fanningsns-` are retained to avoid unnecessary resource replacement. The infrastructure template uses `CodeUri: ../backend/` for the repository layout.
 
+**This `template.yaml` is a reference to the original SAM-based design and is not what's actually deployed** -- see `cdk/lib/fanning-sns-stack.ts` and [`cdk/README.md`](cdk/README.md).
+
 ## Architecture documentation
 
 ```text
@@ -192,6 +202,8 @@ __pycache__/
 .venv/
 node_modules/
 *.log
+cdk/cdk.out/
+cdk/.website-dist/
 ```
 
 Savepoint ZIP files should remain outside the repository. Git history already provides versioned checkpoints for committed work.
