@@ -105,6 +105,12 @@
       .concept-panel-text p { margin-left: auto; margin-right: auto; }
       .concept-hero-actions { justify-content: center; }
       .concept-panel-photo { margin-left: 0; min-height: 240px; order: -1; }
+      /* The desktop crop (medium) has the subject roughly centered;
+         at the mobile band's much shorter aspect ratio that crops in
+         from both sides. The wide crop has more headroom on the
+         right, and anchoring left keeps the subject clear of the
+         crop instead of relying on default centering. */
+      .concept-panel-photo img { object-position: left center; }
     }
   </style>
 </head>
@@ -158,7 +164,10 @@
         </div>
       </div>
       <div class="concept-panel-photo">
-        <img src="/assets/celeborn-headshot-medium.jpg" alt="Celeborn McGinnis" />
+        <picture>
+          <source media="(max-width: 760px)" srcset="/assets/celeborn-headshot-wide.jpg" />
+          <img src="/assets/celeborn-headshot-medium.jpg" alt="Celeborn McGinnis" />
+        </picture>
       </div>
     </section>
 
