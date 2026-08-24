@@ -29,6 +29,8 @@ var DeviceId = (function () {
 
   var deviceIdNote = document.getElementById('device-id-note');
   var productGrid = document.getElementById('product-grid');
+  var resetInventoryButton = document.getElementById('reset-inventory-button');
+  var resetInventoryStatus = document.getElementById('reset-inventory-status');
   var quantityInput = document.getElementById('order-quantity');
   var simulateFailureInput = document.getElementById('simulate-failure');
   var submitButton = document.getElementById('order-submit');
@@ -91,10 +93,35 @@ var DeviceId = (function () {
         renderProducts(data.products || []);
       })
       .catch(function () {
-        productGrid.innerHTML = '<p class="muted small-note">Could not load the product catalog -- try refreshing the page.</p>';
+        productGrid.innerHTML = '<p class="muted small-note">Could not load the product catalog right now. Please try again shortly.</p>';
       });
   }
   loadProducts();
+
+  if (resetInventoryButton) {
+    resetInventoryButton.addEventListener('click', function () {
+      resetInventoryButton.disabled = true;
+      resetInventoryStatus.textContent = 'Resetting…';
+      fetchWithTimeout(cfg.apiBase + '/inventory/reset', { method: 'POST' })
+        .then(function (res) {
+          if (!res.ok) throw new Error('Request failed: ' + res.status);
+          return res.json();
+        })
+        .then(function () {
+          resetInventoryStatus.textContent = 'Inventory reset — stock levels are back to normal.';
+          loadProducts();
+        })
+        .catch(function () {
+          resetInventoryStatus.textContent = 'Could not reset inventory. Please try again shortly.';
+        })
+        .finally(function () {
+          resetInventoryButton.disabled = false;
+          window.setTimeout(function () {
+            resetInventoryStatus.textContent = '';
+          }, 4000);
+        });
+    });
+  }
 
   // --- My orders log ---
   var rowData = Object.create(null);
@@ -169,6 +196,25 @@ var DeviceId = (function () {
 
   // --- Timeline ---
   var STAGE_ORDER = ['PENDING', 'INVENTORY_RESERVED', 'PAYMENT_CHARGED', 'SHIPPED'];
+  var REPLAY_STEP_MS = 400;
+
+  // The backend runs the whole Reserve -> Charge -> Ship/Fail chain in
+  // well under a second, so the first poll (fired ~1s after submit)
+  // almost always lands on the terminal status directly -- the visitor
+  // never actually observes the intermediate stages, even though they
+  // genuinely happened. lastAppliedIndex tracks the last stage this UI
+  // has shown, so a jump straight to a terminal status can be replayed
+  // through the real stages it skipped instead of snapping to it.
+  var lastAppliedIndex = 0;
+
+  function computeFailedAtIndex(order) {
+    return (order.failureReason || '').toLowerCase().indexOf('payment') !== -1 ? 2 : 1;
+  }
+
+  function terminalTargetIndex(order) {
+    if (order.status === 'FAILED') return computeFailedAtIndex(order);
+    return STAGE_ORDER.length - 1; // SHIPPED
+  }
 
   function applyTimelineStatus(order) {
     timelineSteps.forEach(function (el) {
@@ -177,7 +223,7 @@ var DeviceId = (function () {
     failureNote.hidden = true;
 
     if (order.status === 'FAILED') {
-      var failedAtIndex = (order.failureReason || '').toLowerCase().indexOf('payment') !== -1 ? 2 : 1;
+      var failedAtIndex = computeFailedAtIndex(order);
       timelineSteps.forEach(function (el, index) {
         var dot = el.querySelector('.job-timeline-dot');
         if (index < failedAtIndex) {
@@ -210,8 +256,52 @@ var DeviceId = (function () {
     });
   }
 
+  // Renders steps 0..activeIndex-1 as done and activeIndex as active,
+  // with no failure state -- used only for the intermediate frames of
+  // a replay, never as the final render.
+  function renderProgressUpTo(activeIndex) {
+    timelineSteps.forEach(function (el, index) {
+      el.classList.remove('is-done', 'is-active', 'is-failed');
+      var dot = el.querySelector('.job-timeline-dot');
+      if (index < activeIndex) {
+        el.classList.add('is-done');
+        dot.textContent = '✓';
+      } else {
+        if (index === activeIndex) el.classList.add('is-active');
+        dot.textContent = String(index + 1);
+      }
+    });
+    failureNote.hidden = true;
+  }
+
+  // Steps through the real stages between fromIndex and toIndex one at
+  // a time (an honest replay of what already happened on the backend,
+  // not a fake animation), then calls done().
+  function replayStages(fromIndex, toIndex, done) {
+    var i = fromIndex;
+    function step() {
+      if (i >= toIndex) {
+        done();
+        return;
+      }
+      renderProgressUpTo(i + 1);
+      i += 1;
+      window.setTimeout(step, REPLAY_STEP_MS);
+    }
+    step();
+  }
+
   var pollsLeft = 0;
   var pollTimer = null;
+
+  function finishTerminal(data, targetIndex) {
+    applyTimelineStatus(data);
+    lastAppliedIndex = targetIndex;
+    upsertOrder(data);
+    setStatus(data.status === 'SHIPPED' ? 'Order shipped.' : 'Order failed.', data.status === 'SHIPPED' ? 'success' : 'error');
+    clearStatusSoon();
+    loadProducts(); // stock may have changed
+  }
 
   function pollOrder(orderId) {
     fetchWithTimeout(cfg.apiBase + '/orders/' + orderId + '?ownerId=' + encodeURIComponent(DeviceId))
@@ -220,19 +310,27 @@ var DeviceId = (function () {
         return res.json();
       })
       .then(function (data) {
-        applyTimelineStatus(data);
-        upsertOrder(data);
-
         if (data.status === 'SHIPPED' || data.status === 'FAILED') {
-          setStatus(data.status === 'SHIPPED' ? 'Order shipped.' : 'Order failed.', data.status === 'SHIPPED' ? 'success' : 'error');
-          clearStatusSoon();
-          loadProducts(); // stock may have changed
+          var targetIndex = terminalTargetIndex(data);
+          var replayFrom = lastAppliedIndex + 1;
+          if (replayFrom < targetIndex) {
+            replayStages(replayFrom, targetIndex, function () {
+              finishTerminal(data, targetIndex);
+            });
+          } else {
+            finishTerminal(data, targetIndex);
+          }
           return;
         }
 
+        applyTimelineStatus(data);
+        var stageIndex = STAGE_ORDER.indexOf(data.status);
+        lastAppliedIndex = Math.max(lastAppliedIndex, stageIndex === -1 ? 0 : stageIndex);
+        upsertOrder(data);
+
         pollsLeft -= 1;
         if (pollsLeft <= 0) {
-          setStatus('Still processing — refresh in a moment to see it finish.', 'info');
+          setStatus('Still processing — check back in a moment to see it finish.', 'info');
           clearStatusSoon();
           return;
         }
@@ -267,6 +365,7 @@ var DeviceId = (function () {
     setStatus('Placing your order…', 'info');
     timelineWrap.hidden = false;
     applyTimelineStatus({ status: 'PENDING' });
+    lastAppliedIndex = 0;
     orderIdNote.textContent = '';
 
     fetchWithTimeout(cfg.apiBase + '/orders', {

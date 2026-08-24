@@ -511,6 +511,15 @@ button:disabled {
   box-shadow: 0 16px 34px rgba(38, 63, 160, 0.28);
 }
 
+/* Compact variant for secondary in-form actions that shouldn't compete
+   with the form's real submit button — add class="button-link small". */
+.button-link.small {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: none;
+}
+
 /* ---------------------------------------------------------------------
    8. FOOTER
    The <footer><div class="footer-row">...</div></footer> at the
@@ -4808,6 +4817,13 @@ footer {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem;
+}
+
+.reset-inventory-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .product-card {
