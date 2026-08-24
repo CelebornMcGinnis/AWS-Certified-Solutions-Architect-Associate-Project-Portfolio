@@ -470,12 +470,18 @@ button,
   transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-button:hover,
-.button-link:hover {
-  background: var(--accent-dark);
-  text-decoration: none;
-  transform: translateY(-3px);
-  box-shadow: 0 16px 34px rgba(52, 84, 209, 0.32);
+/* Guarded to real hover-capable pointers only -- without this, touch
+   browsers latch a tapped element's :hover state and don't clear it
+   until the next tap elsewhere, which reads as the button staying
+   "pressed"/selected (most noticeable on the theme toggle below). */
+@media (hover: hover) and (pointer: fine) {
+  button:hover,
+  .button-link:hover {
+    background: var(--accent-dark);
+    text-decoration: none;
+    transform: translateY(-3px);
+    box-shadow: 0 16px 34px rgba(52, 84, 209, 0.32);
+  }
 }
 
 button:active,
@@ -771,7 +777,7 @@ footer {
   left: 50%;
   transform: translateX(-50%);
   display: grid;
-  gap: 0.15rem;
+  gap: 0.1rem;
   min-width: 230px;
   padding: 0.6rem;
   background: var(--surface);
@@ -796,7 +802,7 @@ footer {
 .nav-dropdown-menu a {
   color: var(--text);
   font-weight: 600;
-  padding: 0.55rem 0.7rem;
+  padding: 0.45rem 0.7rem;
   border-radius: 10px;
   transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
 }
@@ -817,7 +823,7 @@ footer {
 }
 
 .nav-dropdown-group-label {
-  padding: 0.5rem 0.7rem 0.1rem;
+  padding: 0.3rem 0.7rem 0.1rem;
   font-size: 0.68rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -2720,8 +2726,10 @@ footer {
     display: none;
   }
 
-  .mobile-menu-button:hover {
-    background: var(--accent-dark);
+  @media (hover: hover) and (pointer: fine) {
+    .mobile-menu-button:hover {
+      background: var(--accent-dark);
+    }
   }
 
   .mobile-menu-button:focus-visible {
@@ -2751,7 +2759,7 @@ footer {
     top: calc(100% + 0.6rem);
     right: 0;
     display: grid;
-    gap: 0.15rem;
+    gap: 0.1rem;
     min-width: 210px;
     padding: 0.6rem;
     background: var(--surface);
@@ -2774,12 +2782,12 @@ footer {
   .mobile-menu-panel a {
     color: var(--text);
     font-weight: 600;
-    padding: 0.6rem 0.7rem;
+    padding: 0.48rem 0.7rem;
     border-radius: 10px;
   }
 
   .mobile-menu-group-label {
-    padding: 0.65rem 0.7rem 0.15rem;
+    padding: 0.4rem 0.7rem 0.15rem;
     font-size: 0.72rem;
     font-weight: 800;
     text-transform: uppercase;
@@ -2793,10 +2801,12 @@ footer {
     font-size: 0.92rem;
   }
 
-  .mobile-menu-panel a:hover {
-    background: var(--info-bg);
-    color: var(--accent);
-    text-decoration: none;
+  @media (hover: hover) and (pointer: fine) {
+    .mobile-menu-panel a:hover {
+      background: var(--info-bg);
+      color: var(--accent);
+      text-decoration: none;
+    }
   }
 }
 
@@ -2808,21 +2818,24 @@ footer {
    extra top clearance since the stacked header is taller on mobile.
    --------------------------------------------------------------------- */
 @media (max-width: 760px) {
-  .site-header-inner,
   .card,
   .about-grid {
     display: block;
   }
 
-  /* Centering technique: the parent is a block box with text-align:
-     center, and .brand-row / nav are switched from full-width
-     display:flex to shrink-to-fit display:inline-flex — an
-     inline-level box respects the parent's text-align, so this
-     reliably centers each row as a group regardless of its content
-     width, rather than depending on justify-content inside an
-     already-full-width flex container. */
+  /* Two-row layout via grid-template-areas: the hearts badge gets its
+     own full-width centered row on top, and the logo + nav share the
+     row beneath it (logo left, nav right) — chosen over DOM reorder
+     specifically so this needs no HTML changes; grid-template-areas
+     places each named child regardless of source order (.brand-row
+     is the first child in markup, .top-mark the second, but the
+     "topmark" area still renders above "brand"/"nav"). */
   .site-header-inner {
-    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "topmark topmark" "brand nav";
+    align-items: center;
+    text-align: initial;
   }
 
   /* The header stacks logo/hearts/nav vertically here, which makes it
@@ -2848,20 +2861,24 @@ footer {
   }
 
   .brand-row {
+    grid-area: brand;
+    justify-self: start;
     display: inline-flex;
   }
 
   .top-mark {
-    margin: 0.4rem auto; /* block-level centering — text-align on the parent
-                            doesn't apply here since this stays display:block */
+    grid-area: topmark;
+    justify-self: center;
+    margin: 0 auto 0.5rem;
   }
 
   .site-header nav {
+    grid-area: nav;
+    justify-self: end;
     display: inline-flex;
-    margin-top: 0.6rem;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.75rem 1.25rem;
+    justify-content: flex-end;
+    gap: 0.6rem 1rem;
   }
 
   .hero {
@@ -3280,9 +3297,11 @@ footer {
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
-.theme-toggle-icon-btn:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .theme-toggle-icon-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
 }
 
 .mobile-menu-theme-toggle {
