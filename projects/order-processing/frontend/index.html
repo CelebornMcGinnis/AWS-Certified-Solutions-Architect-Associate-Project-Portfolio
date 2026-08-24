@@ -107,6 +107,11 @@
       <form class="contact-form" id="order-form">
         <div class="product-grid" id="product-grid"></div>
 
+        <div class="reset-inventory-row">
+          <button type="button" class="button-link ghost small" id="reset-inventory-button">Reset inventory</button>
+          <span class="muted small-note" id="reset-inventory-status" role="status" aria-live="polite"></span>
+        </div>
+
         <label>
           Quantity
           <input type="number" id="order-quantity" min="1" max="10" value="1" required />

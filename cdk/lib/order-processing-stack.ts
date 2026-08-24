@@ -193,6 +193,16 @@ export class OrderProcessingStack extends cdk.Stack {
     } as lambda.FunctionProps);
     inventoryTable.grantReadData(getCatalogFunction);
 
+    // Lets a visitor restore every product's stock to its catalog
+    // default, so depleting inventory while testing the failure paths
+    // doesn't lock them (or anyone else) out of placing further orders.
+    const resetInventoryFunction = new lambda.Function(this, 'ResetInventoryFunction', {
+      ...functionDefaults,
+      handler: 'reset_inventory_handler.lambda_handler',
+      environment: { INVENTORY_TABLE: inventoryTable.tableName, ALLOWED_ORIGIN: origin },
+    } as lambda.FunctionProps);
+    inventoryTable.grantWriteData(resetInventoryFunction);
+
     // --- API ---
     const api = new apigwv2.HttpApi(this, 'OrdersApi', {
       apiName: namePrefix,
@@ -222,6 +232,11 @@ export class OrderProcessingStack extends cdk.Stack {
       path: '/orders/{id}',
       methods: [apigwv2.HttpMethod.GET],
       integration: new HttpLambdaIntegration('GetOrderIntegration', getOrderFunction),
+    });
+    api.addRoutes({
+      path: '/inventory/reset',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new HttpLambdaIntegration('ResetInventoryIntegration', resetInventoryFunction),
     });
 
     this.apiEndpoint = api.apiEndpoint;
