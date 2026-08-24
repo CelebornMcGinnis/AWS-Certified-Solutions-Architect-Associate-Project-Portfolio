@@ -851,43 +851,108 @@ footer {
 }
 
 /* ---------------------------------------------------------------------
-   13. HOME HERO — BLUEPRINT GRID (index.html only)
+   13. HOME HERO — PHOTO POSTER (index.html only)
    .home-hero is layered on top of the base .hero styles (Section 5) on
-   index.html specifically. The ::before pseudo-element draws the
-   faint animated grid pattern in the top-right of the hero, meant to
-   evoke a blueprint/schematic. gridDrift slowly scrolls that pattern.
+   index.html specifically. Desktop: a diagonal-clipped colored panel
+   (.home-hero-copy) sits beside a full-bleed photo panel
+   (.home-hero-photo-wrap), like a poster split down the middle. Below
+   the 760px breakpoint that same photo becomes a small circular
+   avatar stacked above plain, centered copy instead — see the
+   .home-hero-copy/.home-hero-photo-wrap overrides in the mobile media
+   query (Section 4/header block).
    --------------------------------------------------------------------- */
 .home-hero {
-  position: relative;
   max-width: none;
   padding: 1.125rem 0 3.5rem;
 }
 
-.home-hero::before {
-  content: "";
-  position: absolute;
-  top: -1.25rem;
-  right: 0;
-  width: min(46%, 480px);
-  aspect-ratio: 1;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 28px 28px;
-  -webkit-mask-image: radial-gradient(circle at 70% 30%, black 55%, transparent 78%);
-  mask-image: radial-gradient(circle at 70% 30%, black 55%, transparent 78%);
-  pointer-events: none;
-  z-index: -1;
-  animation: gridDrift 16s linear infinite;
+.home-hero-grid {
+  position: relative;
+  min-height: 560px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  border-radius: 28px;
 }
 
-@keyframes gridDrift {
-  from {
-    background-position: 0 0;
+.home-hero-copy {
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 4rem 3rem 1.5rem;
+  clip-path: polygon(0 0, 100% 0, 78% 100%, 0% 100%);
+  position: relative;
+  z-index: 2;
+}
+
+.home-hero-copy .eyebrow {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.home-hero-copy h1 {
+  color: #fff;
+}
+
+.home-hero-copy .hero-arrow {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.home-hero-copy p {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.home-hero-copy .button-link {
+  background: #fff;
+  /* Fixed navy, not var(--accent-dark) -- that token flips to a
+     *light* blue in dark mode (for text-on-accent elsewhere), which
+     would be low-contrast against this button's always-white fill. */
+  color: #263fa0;
+}
+
+.home-hero-copy .button-link.ghost {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+}
+
+/* min-width guard keeps this scoped to the diagonal poster panel above
+   -- below 760px .home-hero-copy switches to a plain solid button on a
+   plain background, where the global button:hover rule already applies. */
+@media (hover: hover) and (pointer: fine) and (min-width: 761px) {
+  .home-hero-copy .button-link:hover {
+    background: rgba(255, 255, 255, 0.85);
   }
-  to {
-    background-position: 28px 28px;
+
+  .home-hero-copy .button-link.ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: #fff;
   }
+}
+
+.home-hero-photo-wrap {
+  background: linear-gradient(135deg, var(--accent-dark), #0e1320 130%);
+  margin-left: -14%;
+  position: relative;
+}
+
+.home-hero-photo-ring {
+  display: none;
+}
+
+.home-hero-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.home-hero-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .hero-actions {
@@ -2938,8 +3003,84 @@ footer {
     height: 60px; /* mobile logo size */
   }
 
-  .home-hero::before {
-    display: none; /* hide the blueprint grid animation on small screens */
+  /* Below this breakpoint the poster-split hero above collapses into
+     the "circle avatar over centered copy" treatment instead of just
+     reflowing the two columns -- the colored diagonal panel look
+     doesn't work at this width, so it's dropped in favor of plain
+     centered text with a small round photo above it. */
+  .home-hero-grid {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    border-radius: 0;
+  }
+
+  .home-hero-copy {
+    order: 2;
+    background: none;
+    color: inherit;
+    clip-path: none;
+    padding: 0 0 1rem;
+    text-align: center;
+  }
+
+  .home-hero-copy .eyebrow {
+    color: var(--accent);
+  }
+
+  .home-hero-copy h1 {
+    color: inherit;
+  }
+
+  .home-hero-copy .hero-arrow {
+    color: var(--accent);
+  }
+
+  .home-hero-copy p {
+    color: var(--muted);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .home-hero-copy .hero-actions {
+    justify-content: center;
+  }
+
+  .home-hero-copy .button-link {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .home-hero-copy .button-link.ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--border);
+  }
+
+  .home-hero-photo-wrap {
+    order: 1;
+    justify-self: center;
+    width: 200px;
+    height: 200px;
+    margin: 0 0 1.5rem;
+    background: none;
+  }
+
+  .home-hero-photo-ring {
+    display: block;
+    position: absolute;
+    inset: -14px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--info-text));
+    opacity: 0.25;
+    filter: blur(2px);
+  }
+
+  .home-hero-photo {
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 4px solid var(--surface);
   }
 
   .contact-form {

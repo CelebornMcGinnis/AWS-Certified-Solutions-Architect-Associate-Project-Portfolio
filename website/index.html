@@ -54,18 +54,33 @@
 
   <main>
     <section class="hero home-hero" data-reveal>
-      <p class="eyebrow">Project portfolio · Cloud architecture</p>
-      <h1>
-        Concepts<br />
-        <span class="hero-arrow" aria-hidden="true">–</span> <span class="hero-deployed">Deployed</span><span class="hero-dot">.</span>
-      </h1>
-      <p>
-        Hello, I'm <strong>Celeborn McGinnis</strong>, an AWS Certified Solutions Architect – Associate.
-        This portfolio showcases cloud architectures developed to reflect real-world AWS
-        implementations — solutions that have been thoughtfully designed and actively deployed.
-        Each project represents live infrastructure, documented to provide clear
-        insight into its architecture, design decisions, and operational functionality.
-      </p>
+      <div class="home-hero-grid">
+        <div class="home-hero-copy">
+          <p class="eyebrow">Project portfolio · Cloud architecture</p>
+          <h1>
+            Concepts<br />
+            <span class="hero-arrow" aria-hidden="true">–</span> <span class="hero-deployed">Deployed</span><span class="hero-dot">.</span>
+          </h1>
+          <p>
+            Hello, I'm <strong>Celeborn McGinnis</strong>, an AWS Certified Solutions Architect – Associate.
+            This portfolio showcases cloud architectures developed to reflect real-world AWS
+            implementations — solutions that have been thoughtfully designed and actively deployed.
+            Each project represents live infrastructure, documented to provide clear
+            insight into its architecture, design decisions, and operational functionality.
+          </p>
+          <div class="hero-actions">
+            <a class="button-link" href="#projects">View projects</a>
+            <a class="button-link ghost" href="#about">About me</a>
+          </div>
+        </div>
+        <div class="home-hero-photo-wrap">
+          <div class="home-hero-photo-ring" aria-hidden="true"></div>
+          <picture class="home-hero-photo">
+            <source media="(max-width: 760px)" srcset="/assets/celeborn-headshot-close.jpg" />
+            <img src="/assets/celeborn-headshot-medium.jpg" alt="Celeborn McGinnis" />
+          </picture>
+        </div>
+      </div>
     </section>
 
     <section class="projects" id="projects" aria-labelledby="projects-heading">
