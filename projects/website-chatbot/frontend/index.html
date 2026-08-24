@@ -103,6 +103,15 @@
       </div>
 
       <div id="auth-section">
+        <button type="button" class="button-link" id="auth-open-button">Log in</button>
+      </div>
+
+      <dialog class="auth-modal" id="auth-modal" aria-labelledby="auth-modal-heading">
+        <button type="button" class="auth-modal-close" id="auth-modal-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+        </button>
+        <h3 class="auth-modal-heading" id="auth-modal-heading">Sign in</h3>
+
         <div class="auth-tabs">
           <button type="button" class="auth-tab is-active" data-panel="signup">Sign up</button>
           <button type="button" class="auth-tab" data-panel="login">Log in</button>
@@ -175,7 +184,7 @@
             Didn't get a code? <button type="button" id="resend-code-button">Resend it</button>
           </p>
         </div>
-      </div>
+      </dialog>
 
       <div class="session-row" id="session-row" hidden>
         <p class="muted">Signed in as <strong id="session-email"></strong></p>

@@ -96,36 +96,39 @@
           beyond "rejected" is stored or shown back to you.
         </p>
       </div>
-      <div class="usecase-grid compact">
-        <div class="usecase-card">
-          <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 4v5c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V7l8-4z" stroke-linejoin="round"/></svg>
-          </span>
-          <h3>Nudity &amp; sexual content</h3>
-          <p class="muted">Explicit nudity, sexual activity, and non-explicit content like swimwear/underwear or intimate kissing are all flagged.</p>
+      <details class="guidelines-disclosure">
+        <summary>Want to see exactly what's restricted? Expand to review the full list.</summary>
+        <div class="usecase-grid compact">
+          <div class="usecase-card">
+            <span class="usecase-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 4v5c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V7l8-4z" stroke-linejoin="round"/></svg>
+            </span>
+            <h3>Nudity &amp; sexual content</h3>
+            <p class="muted">Explicit nudity, sexual activity, and non-explicit content like swimwear/underwear or intimate kissing are all flagged.</p>
+          </div>
+          <div class="usecase-card">
+            <span class="usecase-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 9v4M12 17h.01" stroke-linecap="round" /><path d="M10.3 3.9L2.5 18a1.8 1.8 0 0 0 1.6 2.7h15.8a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0z" stroke-linejoin="round" /></svg>
+            </span>
+            <h3>Violence &amp; disturbing imagery</h3>
+            <p class="muted">Graphic violence, weapons in a threatening context, self-harm, and visually disturbing content (blood, corpses, etc.) are all flagged.</p>
+          </div>
+          <div class="usecase-card">
+            <span class="usecase-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 3h6l-1 5h3l-8 12 1.5-8H7l2-9z" stroke-linejoin="round" /></svg>
+            </span>
+            <h3>Drugs, alcohol &amp; tobacco</h3>
+            <p class="muted">Illegal drug use and paraphernalia, plus any depiction of alcoholic beverages or tobacco products, are flagged — even in a casual context.</p>
+          </div>
+          <div class="usecase-card">
+            <span class="usecase-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="M8.5 15s1.2 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9h.01M15 9h.01" stroke-linecap="round" /></svg>
+            </span>
+            <h3>Hate symbols &amp; rude gestures</h3>
+            <p class="muted">Hate group symbols and offensive gestures are flagged, along with gambling imagery (cards, chips, slot machines).</p>
+          </div>
         </div>
-        <div class="usecase-card">
-          <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 9v4M12 17h.01" stroke-linecap="round" /><path d="M10.3 3.9L2.5 18a1.8 1.8 0 0 0 1.6 2.7h15.8a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0z" stroke-linejoin="round" /></svg>
-          </span>
-          <h3>Violence &amp; disturbing imagery</h3>
-          <p class="muted">Graphic violence, weapons in a threatening context, self-harm, and visually disturbing content (blood, corpses, etc.) are all flagged.</p>
-        </div>
-        <div class="usecase-card">
-          <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 3h6l-1 5h3l-8 12 1.5-8H7l2-9z" stroke-linejoin="round" /></svg>
-          </span>
-          <h3>Drugs, alcohol &amp; tobacco</h3>
-          <p class="muted">Illegal drug use and paraphernalia, plus any depiction of alcoholic beverages or tobacco products, are flagged — even in a casual context.</p>
-        </div>
-        <div class="usecase-card">
-          <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="M8.5 15s1.2 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9h.01M15 9h.01" stroke-linecap="round" /></svg>
-          </span>
-          <h3>Hate symbols &amp; rude gestures</h3>
-          <p class="muted">Hate group symbols and offensive gestures are flagged, along with gambling imagery (cards, chips, slot machines).</p>
-        </div>
-      </div>
+      </details>
       <p class="muted small-note">
         This is Rekognition's full default moderation taxonomy applied at
         its default confidence threshold — a deliberately strict,
@@ -150,6 +153,15 @@
       </div>
 
       <div id="auth-section">
+        <button type="button" class="button-link" id="auth-open-button">Log in</button>
+      </div>
+
+      <dialog class="auth-modal" id="auth-modal" aria-labelledby="auth-modal-heading">
+        <button type="button" class="auth-modal-close" id="auth-modal-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+        </button>
+        <h3 class="auth-modal-heading" id="auth-modal-heading">Sign in</h3>
+
         <div class="auth-tabs">
           <button type="button" class="auth-tab is-active" data-panel="signup">Sign up</button>
           <button type="button" class="auth-tab" data-panel="login">Log in</button>
@@ -222,7 +234,7 @@
             Didn't get a code? <button type="button" id="resend-code-button">Resend it</button>
           </p>
         </div>
-      </div>
+      </dialog>
 
       <div class="session-row" id="session-row" hidden>
         <p class="muted">Signed in as <strong id="session-email"></strong></p>

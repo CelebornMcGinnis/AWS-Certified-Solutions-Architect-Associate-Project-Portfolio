@@ -788,6 +788,7 @@ footer {
   display: grid;
   gap: 0.1rem;
   min-width: 230px;
+  max-width: calc(100vw - 2rem);
   padding: 0.6rem;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -2817,6 +2818,50 @@ footer {
   font-size: 0.85rem;
 }
 
+/* Collapses the restricted-content list (moderated-image-gallery only)
+   behind a one-line disclosure instead of always showing all four
+   cards -- most visitors just need to know a list exists, not read it
+   up front. */
+.guidelines-disclosure summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--accent);
+  list-style: none;
+}
+
+.guidelines-disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.guidelines-disclosure summary::before {
+  /* chevron, matches the one used on .nav-dropdown summary */
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  flex: none;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.guidelines-disclosure[open] summary::before {
+  transform: rotate(-135deg) translate(1px, 1px);
+}
+
+.guidelines-disclosure summary:focus-visible {
+  outline: 3px solid rgba(52, 84, 209, 0.35);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.guidelines-disclosure .usecase-grid {
+  margin-top: 1rem;
+}
+
 /* ---------------------------------------------------------------------
    18. PRICING (project1.html only)
    Three cost-tier cards plus a breakdown list of what drives cost.
@@ -3031,10 +3076,11 @@ footer {
   .mobile-menu-panel {
     position: absolute;
     top: calc(100% + 0.6rem);
-    right: 0;
+    right: 0.5rem;
     display: grid;
     gap: 0.1rem;
     min-width: 210px;
+    max-width: calc(100vw - 2rem);
     padding: 0.6rem;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -3097,18 +3143,20 @@ footer {
     display: block;
   }
 
-  /* Two-row layout via grid-template-areas: the hearts badge gets its
-     own full-width centered row on top, and the logo + nav share the
-     row beneath it (logo left, nav right) — chosen over DOM reorder
-     specifically so this needs no HTML changes; grid-template-areas
-     places each named child regardless of source order (.brand-row
-     is the first child in markup, .top-mark the second, but the
-     "topmark" area still renders above "brand"/"nav"). */
+  /* Two-row layout via grid-template-areas: logo and hearts badge
+     share a top row (logo left, hearts right, same horizontal axis),
+     and the nav gets its own full-width row underneath, free to wrap
+     and spread out instead of squeezing into a corner — chosen over
+     DOM reorder specifically so this needs no HTML changes;
+     grid-template-areas places each named child regardless of source
+     order. */
   .site-header-inner {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-areas: "topmark topmark" "brand nav";
+    grid-template-areas: "brand topmark" "nav nav";
     align-items: center;
+    row-gap: 0.5rem;
+    padding: 0.5rem 1.25rem; /* a bit thinner than the desktop default */
     text-align: initial;
   }
 
@@ -3142,16 +3190,16 @@ footer {
 
   .top-mark {
     grid-area: topmark;
-    justify-self: center;
-    margin: 0 auto 0.5rem;
+    justify-self: end;
+    margin: 0;
   }
 
   .site-header nav {
     grid-area: nav;
-    justify-self: end;
-    display: inline-flex;
+    justify-self: stretch;
+    display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 0.6rem 1rem;
   }
 
@@ -3165,6 +3213,20 @@ footer {
 
   .logo-mark img {
     height: 60px; /* mobile logo size */
+  }
+
+  /* Logo/hearts stay one fixed size on mobile regardless of scroll
+     position -- the shrink-on-scroll effect below only makes sense on
+     desktop, where the header stays pinned in view; on mobile the
+     header scrolls away entirely (position: static above), so the
+     brief size change right before that happens just read as an
+     unexpected jump rather than a purposeful shrink. */
+  .site-header.is-scrolled .logo-mark img {
+    height: 60px;
+  }
+
+  .site-header.is-scrolled .top-mark {
+    height: 28px;
   }
 
   /* Below this breakpoint the poster-split hero above collapses into
@@ -4832,10 +4894,71 @@ footer {
 }
 
 /* ---------------------------------------------------------------------
-   23. MODERATED IMAGE GALLERY (project5.html only)
-   Auth tabs, the upload form's guidelines checkbox + rejection banner,
-   and the public gallery grid.
+   23. AUTH (moderated-image-gallery + website-chatbot)
+   Sign up / log in / forgot password tabs live inside a <dialog>,
+   opened from a single "Log in" button (#auth-section) so the demo
+   section shows one control instead of a permanently-visible form
+   stack. The gallery's upload-form guidelines checkbox + rejection
+   banner and the public gallery grid are further down this section.
    --------------------------------------------------------------------- */
+.auth-modal {
+  /* No position override here on purpose -- the UA stylesheet's
+     default `position: fixed` on <dialog> is what centers it in the
+     viewport when shown via showModal(). Overriding that (even to
+     `relative`) breaks centering, since `fixed` is already a valid
+     containing block for the absolutely-positioned close button
+     below -- there's nothing else position needs to do here. */
+  width: calc(100vw - 2rem);
+  max-width: 420px;
+  padding: 1.75rem;
+  border: none;
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.auth-modal::backdrop {
+  background: rgba(10, 14, 26, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.auth-modal-heading {
+  margin: 0 0 1rem;
+  padding-right: 2rem;
+  font-size: 1.3rem;
+}
+
+.auth-modal-close {
+  justify-self: auto;
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--info-bg);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.auth-modal-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .auth-modal-close:hover {
+    background: var(--border);
+    transform: none;
+  }
+}
+
 .auth-tabs {
   display: flex;
   gap: 0.5rem;
@@ -4890,6 +5013,15 @@ footer {
   border-radius: 14px;
   margin-bottom: 1.25rem;
   background: var(--info-bg);
+}
+
+/* Without this, the [hidden] attribute set by reflectSession() in
+   script.js has no visible effect -- .session-row's own `display: flex`
+   above ties the native [hidden] UA rule on specificity, and an author
+   rule always wins that tie, so the row stayed visibly rendered
+   regardless of sign-in state until this override was added. */
+.session-row[hidden] {
+  display: none;
 }
 
 .session-row .muted {
@@ -5220,6 +5352,14 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* Same fix as .session-row[hidden] above -- .chat-window's own
+   `display: flex` otherwise wins the specificity tie against the
+   native [hidden] UA rule, so the chat window stayed visibly rendered
+   before a visitor ever signed in. */
+.chat-window[hidden] {
+  display: none;
 }
 
 .chat-messages {

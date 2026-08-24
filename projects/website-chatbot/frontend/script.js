@@ -177,6 +177,9 @@ var Session = (function () {
 // -----------------------------------------------------------------------
 (function () {
   var authSection = document.getElementById('auth-section');
+  var authOpenButton = document.getElementById('auth-open-button');
+  var authModal = document.getElementById('auth-modal');
+  var authModalClose = document.getElementById('auth-modal-close');
   var sessionRow = document.getElementById('session-row');
   var sessionEmail = document.getElementById('session-email');
   var logoutButton = document.getElementById('logout-button');
@@ -185,11 +188,30 @@ var Session = (function () {
 
   var tabs = Array.prototype.slice.call(document.querySelectorAll('.auth-tab'));
   var panels = {
-    signup: document.getElementById('signup-panel'),
-    login: document.getElementById('login-panel'),
+    signup: document.getElementById('signup-form'),
+    login: document.getElementById('login-form'),
     forgot: document.getElementById('forgot-panel'),
     confirm: document.getElementById('confirm-panel'),
   };
+
+  // Sign up / log in / forgot password all live inside a <dialog> now,
+  // opened on demand from a single "Log in" button instead of being
+  // permanently rendered inline -- keeps the demo section to one
+  // control until the visitor actually wants to authenticate.
+  if (authOpenButton && authModal && authModal.showModal) {
+    authOpenButton.addEventListener('click', function () {
+      authModal.showModal();
+    });
+    authModalClose.addEventListener('click', function () {
+      authModal.close();
+    });
+    // A click that lands on the <dialog> element itself (not one of its
+    // children) is a click on the ::backdrop -- dialogs don't close on
+    // backdrop click by default, so this adds that behavior back in.
+    authModal.addEventListener('click', function (event) {
+      if (event.target === authModal) authModal.close();
+    });
+  }
 
   function showPanel(name) {
     Object.keys(panels).forEach(function (key) {
@@ -217,7 +239,10 @@ var Session = (function () {
     authSection.hidden = signedIn;
     sessionRow.hidden = !signedIn;
     chatSection.hidden = !signedIn;
-    if (signedIn) sessionEmail.textContent = session.email;
+    if (signedIn) {
+      sessionEmail.textContent = session.email;
+      if (authModal && authModal.open) authModal.close();
+    }
   }
 
   Session.onChange(reflectSession);
