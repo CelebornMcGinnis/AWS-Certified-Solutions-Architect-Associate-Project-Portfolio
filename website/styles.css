@@ -1678,6 +1678,170 @@ footer {
 }
 
 /* ---------------------------------------------------------------------
+   14b. BETA PROJECT CARD SCENES (homepage-card.html, one per project)
+   Each beta card shares the placeholder's arch-node/arch-line
+   3-node skeleton (Section 14), but adds one small motion flourish on
+   top of it that's specific to what the project actually does, so the
+   six beta cards read as distinct from each other and from the
+   placeholder rather than as six copies of the same icon. Workflow
+   Visualizer departs from the shared skeleton entirely -- a moving
+   "current state" ring reads better for a state machine than three
+   identical boxes.
+   --------------------------------------------------------------------- */
+
+/* Habit Tracker: four little streak dots under the check-in node fill
+   in one at a time, then reset together -- the streak building up
+   before the nightly EventBridge job can break it. */
+.habit-streak-dot {
+  fill: var(--accent);
+  opacity: 0.25;
+}
+
+.habit-streak-dot-1 { animation: habitStreakFill 8s ease-in-out infinite; animation-delay: 0.2s; }
+.habit-streak-dot-2 { animation: habitStreakFill 8s ease-in-out infinite; animation-delay: 0.45s; }
+.habit-streak-dot-3 { animation: habitStreakFill 8s ease-in-out infinite; animation-delay: 0.7s; }
+.habit-streak-dot-4 { animation: habitStreakFill 8s ease-in-out infinite; animation-delay: 0.95s; }
+
+@keyframes habitStreakFill {
+  0%, 8% { opacity: 0.25; }
+  20%, 78% { opacity: 1; }
+  92%, 100% { opacity: 0.25; }
+}
+
+/* Moderated Image Gallery: a light scan bar sweeps down the
+   Rekognition node, like a moderation pass running over the photo. */
+.gallery-scan-bar {
+  fill: rgba(255, 255, 255, 0.55);
+  transform-box: fill-box;
+  opacity: 0;
+  animation: gallerySweep 8s ease-in-out infinite;
+}
+
+@keyframes gallerySweep {
+  0%, 24% { transform: translateY(0); opacity: 0; }
+  30% { opacity: 0.9; }
+  62% { transform: translateY(44px); opacity: 0.9; }
+  70%, 100% { transform: translateY(44px); opacity: 0; }
+}
+
+/* Nova Lite Summarizer: the source-text lines compress down, then the
+   summary lines glow in -- a paragraph getting condensed. */
+.nova-doc-lines {
+  transform-box: fill-box;
+  transform-origin: 0% 50%;
+  animation: novaDocPulse 8s ease-in-out infinite;
+}
+
+@keyframes novaDocPulse {
+  0%, 15% { transform: scaleX(1); }
+  35%, 55% { transform: scaleX(0.55); }
+  75%, 100% { transform: scaleX(1); }
+}
+
+.nova-summary-lines {
+  animation: novaSummaryGlow 8s ease-in-out infinite;
+}
+
+@keyframes novaSummaryGlow {
+  0%, 40% { opacity: 0.5; }
+  55%, 85% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* Order Processing: a small dot travels along the connector line
+   through the middle node and disappears behind each box in turn --
+   the order itself moving through reserve -> charge -> ship. Placed
+   before the node boxes in the markup so it passes visibly behind
+   them, only showing over the connector gaps. */
+.order-ship-dot {
+  fill: #fff;
+  filter: drop-shadow(0 0 4px var(--accent));
+  opacity: 0;
+  animation: orderShipTravel 8s ease-in-out infinite;
+}
+
+@keyframes orderShipTravel {
+  0%, 8% { opacity: 0; transform: translateX(0); }
+  14% { opacity: 1; }
+  46% { opacity: 1; transform: translateX(140px); }
+  52%, 100% { opacity: 0; transform: translateX(140px); }
+}
+
+/* Website Chatbot: the two static dots in the chat-bubble node become
+   three, bouncing in sequence like a real typing indicator. */
+.chat-typing-dot {
+  animation: chatTypingBounce 1.1s ease-in-out infinite;
+}
+
+.chat-typing-dot-1 { animation-delay: 0s; }
+.chat-typing-dot-2 { animation-delay: 0.15s; }
+.chat-typing-dot-3 { animation-delay: 0.3s; }
+
+@keyframes chatTypingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+
+/* Workflow Visualizer: three state circles on a line, with a ring that
+   jumps from one to the next -- a state machine's current state
+   advancing, rather than three parallel boxes lighting up together. */
+.workflow-thumb-line {
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.workflow-thumb-state {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.workflow-thumb-glyph {
+  stroke: var(--accent);
+}
+
+.workflow-thumb-active-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  opacity: 0;
+  animation: workflowStateJump 8s ease-in-out infinite;
+}
+
+@keyframes workflowStateJump {
+  0%, 4% { transform: translateX(0); opacity: 0; }
+  8%, 28% { transform: translateX(0); opacity: 1; }
+  32% { transform: translateX(95px); opacity: 0; }
+  36%, 56% { transform: translateX(95px); opacity: 1; }
+  60% { transform: translateX(190px); opacity: 0; }
+  64%, 84% { transform: translateX(190px); opacity: 1; }
+  88%, 100% { transform: translateX(190px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .habit-streak-dot,
+  .gallery-scan-bar,
+  .nova-doc-lines,
+  .nova-summary-lines,
+  .order-ship-dot,
+  .chat-typing-dot,
+  .workflow-thumb-active-ring {
+    animation: none;
+  }
+
+  .habit-streak-dot,
+  .nova-summary-lines {
+    opacity: 1;
+  }
+
+  .gallery-scan-bar,
+  .order-ship-dot,
+  .workflow-thumb-active-ring {
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------
    15. ABOUT / PRACTICE SECTION (index.html only)
    The two-column panel near the bottom: copy on the left (.about-copy),
    the AWS certification badge grid on the right (.about-badges /

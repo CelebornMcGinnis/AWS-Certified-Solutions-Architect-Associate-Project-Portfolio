@@ -2,30 +2,22 @@
           <a class="project-link" href="/project/workflow/project4.html" aria-label="View the Workflow Visualizer project">
             <div class="project-thumb thumb-arch" aria-hidden="true">
               <svg viewBox="0 0 320 200" class="icon-scene workflow-thumb-scene" aria-hidden="true">
-                <g class="arch-line arch-line-1">
-                  <line x1="90" y1="110" x2="135" y2="110" />
-                </g>
-                <g class="arch-line arch-line-2">
-                  <line x1="185" y1="110" x2="230" y2="110" />
-                </g>
+                <line x1="91" y1="110" x2="134" y2="110" class="workflow-thumb-line" />
+                <line x1="186" y1="110" x2="229" y2="110" class="workflow-thumb-line" />
 
-                <g class="arch-node arch-node-1">
-                  <rect x="40" y="85" width="50" height="50" rx="12" />
-                  <circle cx="62" cy="107" r="7" class="arch-glyph-stroke" />
-                  <line x1="67" y1="112" x2="74" y2="119" class="arch-glyph-stroke" />
-                </g>
+                <circle cx="65" cy="110" r="26" class="workflow-thumb-state" />
+                <circle cx="65" cy="107" r="7" class="workflow-thumb-glyph arch-glyph-stroke" fill="none" />
+                <line x1="70" y1="112" x2="77" y2="119" class="workflow-thumb-glyph arch-glyph-stroke" />
 
-                <g class="arch-node arch-node-2">
-                  <rect x="135" y="85" width="50" height="50" rx="12" />
-                  <circle cx="150" cy="110" r="3" fill="#fff" />
-                  <circle cx="160" cy="110" r="3" fill="#fff" />
-                  <circle cx="170" cy="110" r="3" fill="#fff" />
-                </g>
+                <circle cx="160" cy="110" r="26" class="workflow-thumb-state" />
+                <circle cx="150" cy="110" r="3" fill="var(--accent)" />
+                <circle cx="160" cy="110" r="3" fill="var(--accent)" />
+                <circle cx="170" cy="110" r="3" fill="var(--accent)" />
 
-                <g class="arch-node arch-node-3">
-                  <rect x="230" y="85" width="50" height="50" rx="12" />
-                  <path d="M244 110l7 7 14-14" class="arch-glyph-stroke" />
-                </g>
+                <circle cx="255" cy="110" r="26" class="workflow-thumb-state" />
+                <path d="M249 110l7 7 14-14" class="workflow-thumb-glyph arch-glyph-stroke" fill="none" />
+
+                <circle cx="65" cy="110" r="32" class="workflow-thumb-active-ring" />
               </svg>
             </div>
             <div class="project-body">
