@@ -490,6 +490,18 @@ button:active,
   transition-duration: 0.1s;
 }
 
+/* A mouse or touch click still leaves the element focused after the
+   click ends -- browsers already suppress the focus ring for that case
+   via :focus-visible in the normal run of things, but this makes it
+   explicit rather than relying on default UA behavior, so a clicked
+   "View projects"/"About me" style CTA never looks like it's stuck
+   "selected" once the click itself is over. Keyboard focus is
+   untouched -- :focus-visible still gets its own ring further down. */
+button:focus:not(:focus-visible),
+.button-link:focus:not(:focus-visible) {
+  outline: none;
+}
+
 button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
@@ -729,14 +741,26 @@ footer {
   transition: right 0.25s ease;
 }
 
-.site-header nav > a:hover,
 .site-header nav > a:focus-visible {
   text-decoration: none;
 }
 
-.site-header nav > a:hover::after,
 .site-header nav > a:focus-visible::after {
   right: 0;
+}
+
+/* Guarded like the buttons in Section 7 -- without this, a tap on a
+   touch device latches the underline sweep on via :hover and it never
+   retracts, since touch devices never fire a later "hover cleared"
+   event the way a mouse does. */
+@media (hover: hover) and (pointer: fine) {
+  .site-header nav > a:hover {
+    text-decoration: none;
+  }
+
+  .site-header nav > a:hover::after {
+    right: 0;
+  }
 }
 
 .nav-dropdown {
@@ -849,6 +873,42 @@ footer {
 
 .nav-dropdown-menu a.nav-dropdown-sublink:hover {
   padding-left: 1.6rem;
+}
+
+/* The current page's own on-page sections collapse behind a disclosure
+   instead of always being expanded, so the rest of the project list
+   stays reachable without scrolling past them. .nav-dropdown-sublink
+   is a direct child of .nav-dropdown-menu's grid everywhere else, but
+   once nested inside this <details> it needs `display: block` itself
+   to keep stacking one per line -- <details> is a plain block box, not
+   a grid, so its children fall back to inline layout otherwise. */
+.nav-dropdown-subsection summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.nav-dropdown-subsection summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-dropdown-subsection summary::before {
+  content: "";
+  display: inline-block;
+  width: 0.45em;
+  height: 0.45em;
+  margin-right: 0.45em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.nav-dropdown-subsection[open] summary::before {
+  transform: rotate(-135deg) translate(1px, 1px);
+}
+
+.nav-dropdown-subsection a.nav-dropdown-sublink {
+  display: block;
 }
 
 /* ---------------------------------------------------------------------
@@ -2104,8 +2164,15 @@ footer {
   object-fit: contain;
   /* Start desaturated; each icon "lights up" in its original AWS color
      once its step becomes active or done — this is the state cue now
-     that there's no circular frame to recolor. */
-  filter: grayscale(100%) opacity(0.45);
+     that there's no circular frame to recolor. The trailing
+     drop-shadow(...0) term is a no-op visually (zero alpha) but keeps
+     every state's filter list the same shape (grayscale, opacity,
+     drop-shadow) as .is-active's below — when a transition crosses
+     between filter lists of different lengths, browsers can't
+     interpolate them and instead hold the old value until a late,
+     abrupt flip, which is exactly what made the glow look "stuck" on
+     the previous node after the dot had already moved on. */
+  filter: grayscale(100%) opacity(0.45) drop-shadow(0 6px 14px rgba(52, 84, 209, 0));
   transition: filter 0.35s ease, transform 0.35s ease;
 }
 
@@ -2122,7 +2189,7 @@ footer {
    instantly. is-active waits ~1.1s — matching flowDotTravel's duration —
    so the icon doesn't turn on until the traveling dot actually arrives. */
 .flow-node.is-done .flow-node-icon img {
-  filter: grayscale(0%) opacity(1);
+  filter: grayscale(0%) opacity(1) drop-shadow(0 6px 14px rgba(52, 84, 209, 0));
   transition: filter 0.35s ease, transform 0.35s ease;
 }
 
@@ -3121,6 +3188,38 @@ footer {
     font-size: 0.92rem;
   }
 
+  /* Same collapsible treatment as .nav-dropdown-subsection -- see that
+     rule's comment for why the sublinks need `display: block` once
+     nested inside a <details> instead of being direct grid children. */
+  .mobile-menu-subsection summary {
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .mobile-menu-subsection summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-menu-subsection summary::before {
+    content: "";
+    display: inline-block;
+    width: 0.45em;
+    height: 0.45em;
+    margin-right: 0.45em;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+  }
+
+  .mobile-menu-subsection[open] summary::before {
+    transform: rotate(-135deg) translate(1px, 1px);
+  }
+
+  .mobile-menu-subsection a.mobile-menu-sublink {
+    display: block;
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .mobile-menu-panel a:hover {
       background: var(--info-bg);
@@ -3229,6 +3328,20 @@ footer {
     height: 28px;
   }
 
+  /* Smaller, tighter grid on mobile so the public gallery doesn't
+     spend a full screen's height on a single photo. */
+  .gallery-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  /* Two project cards per row on mobile instead of one -- the default
+     220px column minimum only ever fits one column at this width. */
+  .project-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
+  }
+
   /* Below this breakpoint the poster-split hero above collapses into
      the "circle avatar over centered copy" treatment instead of just
      reflowing the two columns -- the colored diagonal panel look
@@ -3287,7 +3400,7 @@ footer {
     justify-self: center;
     width: 200px;
     height: 200px;
-    margin: 0 0 1.5rem;
+    margin: 1rem 0 1.5rem;
     background: none;
   }
 
@@ -5051,7 +5164,7 @@ footer {
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-top: 1.5rem;
 }
