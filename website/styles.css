@@ -2552,6 +2552,42 @@ footer {
   letter-spacing: -0.02em;
 }
 
+/* Compact variant — used for the moderated-image-gallery guidelines
+   section, where these cards are a quick pre-upload reminder rather
+   than a marketing-card callout. Add class="compact" alongside
+   .usecase-grid. */
+.usecase-grid.compact {
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.usecase-grid.compact .usecase-card {
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.usecase-grid.compact .usecase-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0.5rem;
+  border-radius: 9px;
+}
+
+.usecase-grid.compact .usecase-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.usecase-grid.compact .usecase-card h3 {
+  margin-bottom: 0.3rem;
+  font-size: 0.92rem;
+}
+
+.usecase-grid.compact .usecase-card p {
+  font-size: 0.85rem;
+}
+
 /* ---------------------------------------------------------------------
    18. PRICING (project1.html only)
    Three cost-tier cards plus a breakdown list of what drives cost.
