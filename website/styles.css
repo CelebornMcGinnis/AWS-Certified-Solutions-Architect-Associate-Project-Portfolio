@@ -23,7 +23,7 @@
    17. Use cases (project1.html only)
    18. Pricing (project1.html only)
    19. Back-to-top button (both pages)
-   20. Expanding mobile menu button (mobile only, all pages)
+   20. Mobile sidebar nav (mobile only, all pages)
    21. Mobile responsive overrides (max-width: 760px)
    22. Reduced-motion accessibility override
 
@@ -3060,40 +3060,86 @@ footer {
 }
 
 /* ---------------------------------------------------------------------
-   20. EXPANDING MOBILE MENU BUTTON (mobile only, all pages)
-   A small circular hamburger button, fixed to the top-right corner.
-   Hidden entirely on desktop (display: none below), and hidden-but-
-   present on mobile until a script adds "is-visible" once the page has
-   scrolled past 220px — same fade pattern as .back-to-top, just a
-   shorter trigger distance since finding the nav again is useful
-   sooner than "scroll to top" is. It's a native <details>/<summary>,
-   so opening/closing needs no JS; the hamburger swaps to an X via the
-   [open] attribute selector below.
+   20. MOBILE SIDEBAR NAV (mobile only, all pages)
+   A left-edge sidebar that replaces both the old scroll-triggered
+   popover menu AND the in-header nav on mobile (the header nav is
+   hidden below at the same breakpoint — see Section 21). Two pieces,
+   both always in the DOM:
+     .mobile-sidebar-rail  — a small stack of 3 circular buttons
+       (expand, home, dark mode) pinned top-left. This is the entire
+       visible footprint while collapsed, present from first paint
+       rather than fading in on scroll like the old button did.
+     .mobile-sidebar-panel — the full option list. Hidden at width: 0
+       while collapsed; .is-open (toggled by script.js) animates it
+       out to a capped width and gives it its own overflow-y so the
+       menu scrolls independently of the page underneath.
+   A backdrop dims the page and closes the sidebar on tap, standard
+   drawer behavior. Nothing here needs a real "device" to reason about
+   sizing: the rail's icons stay put and only .mobile-sidebar-panel's
+   width animates, so partial-width states never reflow the icons.
    --------------------------------------------------------------------- */
-.mobile-menu {
+.mobile-sidebar {
   display: none;
 }
 
 @media (max-width: 760px) {
-  .mobile-menu {
+  .mobile-sidebar {
     display: block;
     position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 95;
-    opacity: 0;
-    transform: translateY(-8px);
+    inset: 0 auto 0 0;
+    height: 100dvh;
+    z-index: 150;
     pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
   }
 
-  .mobile-menu.is-visible {
+  .mobile-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 18, 32, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 140;
+  }
+
+  .mobile-sidebar.is-open .mobile-sidebar-backdrop {
     opacity: 1;
-    transform: translateY(0);
     pointer-events: auto;
   }
 
-  .mobile-menu-button {
+  /* Vertically centered while collapsed — the header logo lives in
+     that top-left corner at scroll position 0, and since the sidebar
+     is visible from first paint (not faded in after scrolling, like
+     the button this replaces was), pinning the rail there would sit
+     right on top of the logo. Once open, the panel's own opaque
+     background covers that corner instead of the transparent page, so
+     the rail relocates to top-left there — same spot a drawer's close
+     control normally lives. */
+  .mobile-sidebar-rail {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    z-index: 151;
+    transition: top 0.28s ease, transform 0.28s ease;
+  }
+
+  /* Row instead of column once open — a horizontal strip only needs
+     the panel's existing top padding to clear it, instead of the much
+     taller allowance a 3-high stack would need. */
+  .mobile-sidebar.is-open .mobile-sidebar-rail {
+    top: 1rem;
+    left: 1rem;
+    transform: none;
+    flex-direction: row;
+  }
+
+  .mobile-sidebar-toggle,
+  .mobile-sidebar-home,
+  .mobile-sidebar-rail-theme {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3104,86 +3150,124 @@ footer {
     color: #fff;
     cursor: pointer;
     box-shadow: 0 12px 30px rgba(52, 84, 209, 0.32);
-    list-style: none;
+    pointer-events: auto;
     transition: background 0.2s ease;
   }
 
-  .mobile-menu-button::-webkit-details-marker {
-    display: none;
-  }
-
   @media (hover: hover) and (pointer: fine) {
-    .mobile-menu-button:hover {
+    .mobile-sidebar-toggle:hover,
+    .mobile-sidebar-home:hover,
+    .mobile-sidebar-rail-theme:hover {
       background: var(--accent-dark);
     }
   }
 
-  .mobile-menu-button:focus-visible {
+  .mobile-sidebar-toggle:focus-visible,
+  .mobile-sidebar-home:focus-visible,
+  .mobile-sidebar-rail-theme:focus-visible {
     outline: 3px solid rgba(52, 84, 209, 0.35);
     outline-offset: 3px;
   }
 
-  .mobile-menu-button svg {
+  .mobile-sidebar-toggle svg,
+  .mobile-sidebar-home svg,
+  .mobile-sidebar-rail-theme svg {
     width: 20px;
     height: 20px;
+    flex-shrink: 0;
   }
 
-  .mobile-menu-icon-close {
+  .mobile-sidebar-toggle .icon-collapse {
     display: none;
   }
 
-  .mobile-menu[open] .mobile-menu-icon-open {
+  .mobile-sidebar.is-open .mobile-sidebar-toggle .icon-expand {
     display: none;
   }
 
-  .mobile-menu[open] .mobile-menu-icon-close {
+  .mobile-sidebar.is-open .mobile-sidebar-toggle .icon-collapse {
     display: block;
   }
 
-  .mobile-menu-panel {
+  /* Panel: width-only transition (not transform) so the rail above it
+     never has to move — it stays anchored at top-left in both states. */
+  .mobile-sidebar-panel {
     position: absolute;
-    top: calc(100% + 0.6rem);
-    right: 0.5rem;
-    display: grid;
-    gap: 0.1rem;
-    min-width: 210px;
-    max-width: calc(100vw - 2rem);
-    padding: 0.6rem;
+    inset: 0 auto 0 0;
+    width: 0;
+    max-width: 33vw;
+    overflow: hidden;
+    visibility: hidden;
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
+    border-right: 1px solid var(--border);
     box-shadow: var(--shadow);
+    transition: width 0.28s ease, visibility 0s linear 0.28s;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    padding: 4.6rem 0 0.6rem;
   }
 
-  @keyframes mobileMenuIn {
-    from {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  .mobile-sidebar.is-open .mobile-sidebar-panel {
+    width: 33vw;
+    visibility: visible;
+    overflow-y: auto;
+    pointer-events: auto;
+    /* Deliberately NOT redeclaring `transition` here -- the base rule's
+       value (with visibility's 0.28s delay, so it stays visible for
+       the full width shrink when closing) must stay in effect on both
+       sides of the toggle. Overriding it here too, even to the same
+       width portion, made the width transition change its own
+       transition property mid-flight and get stuck part-way. */
   }
 
-  .mobile-menu-panel a {
+  .mobile-sidebar-panel a,
+  .mobile-sidebar-panel button.mobile-sidebar-link {
     color: var(--text);
     font-weight: 600;
-    padding: 0.48rem 0.7rem;
+    padding: 0.5rem 0.9rem;
+    margin: 0 0.6rem;
+    border-radius: 10px;
+    text-align: left;
+    background: none;
+    border: none;
+    width: calc(100% - 1.2rem);
+    font-size: inherit;
+    cursor: pointer;
+  }
+
+  .mobile-sidebar-group-summary {
+    padding: 0.5rem 0.9rem;
+    margin: 0 0.6rem;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
     border-radius: 10px;
   }
 
-  .mobile-menu-group-label {
-    padding: 0.4rem 0.7rem 0.15rem;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
+  .mobile-sidebar-group-summary::-webkit-details-marker {
+    display: none;
   }
 
-  .mobile-menu-panel a.mobile-menu-sublink {
-    padding-left: 1.5rem;
+  .mobile-sidebar-group-summary::before {
+    content: "";
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    margin-right: 0.55em;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+  }
+
+  .mobile-sidebar-group[open] > .mobile-sidebar-group-summary::before {
+    transform: rotate(-135deg) translate(1px, 1px);
+  }
+
+  .mobile-sidebar-group-content a.mobile-sidebar-sublink {
+    display: block;
+    padding-left: 1.7rem;
     font-weight: 500;
     font-size: 0.92rem;
   }
@@ -3191,16 +3275,25 @@ footer {
   /* Same collapsible treatment as .nav-dropdown-subsection -- see that
      rule's comment for why the sublinks need `display: block` once
      nested inside a <details> instead of being direct grid children. */
-  .mobile-menu-subsection summary {
+  .mobile-sidebar-subgroup summary {
     cursor: pointer;
     list-style: none;
   }
 
-  .mobile-menu-subsection summary::-webkit-details-marker {
+  .mobile-sidebar-subgroup summary::-webkit-details-marker {
     display: none;
   }
 
-  .mobile-menu-subsection summary::before {
+  .mobile-sidebar-group-label {
+    padding: 0.4rem 0.7rem 0.15rem 1.7rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  .mobile-sidebar-subgroup summary.mobile-sidebar-group-label::before {
     content: "";
     display: inline-block;
     width: 0.45em;
@@ -3212,16 +3305,19 @@ footer {
     transition: transform 0.15s ease;
   }
 
-  .mobile-menu-subsection[open] summary::before {
+  .mobile-sidebar-subgroup[open] summary.mobile-sidebar-group-label::before {
     transform: rotate(-135deg) translate(1px, 1px);
   }
 
-  .mobile-menu-subsection a.mobile-menu-sublink {
+  .mobile-sidebar-subgroup a.mobile-sidebar-sublink {
     display: block;
+    padding-left: 2.4rem;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .mobile-menu-panel a:hover {
+    .mobile-sidebar-panel a:hover,
+    .mobile-sidebar-panel button.mobile-sidebar-link:hover,
+    .mobile-sidebar-group-summary:hover {
       background: var(--info-bg);
       color: var(--accent);
       text-decoration: none;
@@ -3242,19 +3338,15 @@ footer {
     display: block;
   }
 
-  /* Two-row layout via grid-template-areas: logo and hearts badge
-     share a top row (logo left, hearts right, same horizontal axis),
-     and the nav gets its own full-width row underneath, free to wrap
-     and spread out instead of squeezing into a corner — chosen over
-     DOM reorder specifically so this needs no HTML changes;
-     grid-template-areas places each named child regardless of source
-     order. */
+  /* Single-row layout via grid-template-areas: logo left, hearts
+     right, same horizontal axis. The nav no longer gets a row here —
+     .mobile-sidebar (Section 20) is the sole mobile nav entry point,
+     so .site-header nav is hidden below instead of being placed. */
   .site-header-inner {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-areas: "brand topmark" "nav nav";
+    grid-template-areas: "brand topmark";
     align-items: center;
-    row-gap: 0.5rem;
     padding: 0.5rem 1.25rem; /* a bit thinner than the desktop default */
     text-align: initial;
   }
@@ -3293,13 +3385,10 @@ footer {
     margin: 0;
   }
 
+  /* Replaced by .mobile-sidebar (Section 20) on mobile — the dropdown,
+     About link, and theme toggle all live in the sidebar instead. */
   .site-header nav {
-    grid-area: nav;
-    justify-self: stretch;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.6rem 1rem;
+    display: none;
   }
 
   .hero {
@@ -3829,10 +3918,8 @@ footer {
   }
 }
 
-.mobile-menu-theme-toggle {
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  border-radius: 12px;
+.mobile-sidebar-theme-toggle {
+  width: calc(100% - 1.2rem);
   font-weight: 700;
   font-size: 0.95rem;
 }

@@ -278,7 +278,12 @@ if ('IntersectionObserver' in window) {
   revealEls.forEach(function (el) { el.classList.add('is-visible'); });
 }
 
-document.querySelectorAll('.nav-dropdown, .mobile-menu').forEach(function (details) {
+// Close the "Projects" dropdown when clicking anywhere outside of
+// it. (Deliberately not closing on mouseleave -- there's a gap
+// between the "Projects" trigger and the menu below it, so moving
+// the mouse there would exit .nav-dropdown's hit area and close
+// the menu before you could click anything in it.)
+document.querySelectorAll('.nav-dropdown').forEach(function (details) {
   document.addEventListener('click', function (event) {
     if (details.open && !details.contains(event.target)) {
       details.open = false;
@@ -286,13 +291,18 @@ document.querySelectorAll('.nav-dropdown, .mobile-menu').forEach(function (detai
   });
 });
 
+// Close the dropdown the instant scrolling starts, and close it if
+// a link was just clicked inside it -- both count as "the visitor
+// is done with this menu," whether they picked something or just
+// scrolled past it. (.mobile-sidebar is deliberately excluded -- it
+// stays open across scrolling, see the dedicated block below.)
 function closeOpenNavMenus() {
-  document.querySelectorAll('.nav-dropdown[open], .mobile-menu[open]').forEach(function (details) {
+  document.querySelectorAll('.nav-dropdown[open]').forEach(function (details) {
     details.open = false;
   });
 }
 window.addEventListener('scroll', closeOpenNavMenus, { passive: true });
-document.querySelectorAll('.nav-dropdown-menu a, .mobile-menu-panel a').forEach(function (link) {
+document.querySelectorAll('.nav-dropdown-menu a').forEach(function (link) {
   link.addEventListener('click', function () {
     var details = link.closest('details');
     if (details) details.open = false;
@@ -335,26 +345,50 @@ if (backToTop) {
   });
 }
 
-var mobileMenu = document.getElementById('mobile-menu');
-if (mobileMenu) {
-  var mobileMenuPanel = mobileMenu.querySelector('.mobile-menu-panel');
-  var toggleMobileMenuVisibility = function () {
-    var visible = window.scrollY > 220;
-    mobileMenu.classList.toggle('is-visible', visible);
-    if (!visible && mobileMenu.open) {
-      mobileMenu.open = false;
-    }
-  };
-  toggleMobileMenuVisibility();
-  window.addEventListener('scroll', toggleMobileMenuVisibility, { passive: true });
+// Mobile sidebar: present from first paint (unlike the old
+// scroll-triggered popover it replaces), toggled by its own button
+// rather than a native <details> so its width can transition
+// smoothly. Closes on: the toggle button, a backdrop tap, Escape,
+// or clicking any link inside the panel -- but NOT on scroll, since
+// it's a persistent drawer rather than a transient popover.
+var mobileSidebar = document.getElementById('mobile-sidebar');
+if (mobileSidebar) {
+  var sidebarToggle = document.getElementById('mobile-sidebar-toggle');
+  var sidebarPanel = document.getElementById('mobile-sidebar-panel');
+  var sidebarBackdrop = document.getElementById('mobile-sidebar-backdrop');
 
-  if (mobileMenuPanel) {
-    mobileMenu.addEventListener('toggle', function () {
-      if (mobileMenu.open) {
-        mobileMenuPanel.style.animation = 'none';
-        void mobileMenuPanel.offsetWidth;
-        mobileMenuPanel.style.animation = 'mobileMenuIn 0.18s ease forwards';
-      }
+  var setSidebarOpen = function (open) {
+    mobileSidebar.classList.toggle('is-open', open);
+    if (sidebarToggle) {
+      sidebarToggle.setAttribute('aria-expanded', String(open));
+      sidebarToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    }
+    if (sidebarPanel) sidebarPanel.setAttribute('aria-hidden', String(!open));
+  };
+
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', function () {
+      setSidebarOpen(!mobileSidebar.classList.contains('is-open'));
+    });
+  }
+
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', function () {
+      setSidebarOpen(false);
+    });
+  }
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && mobileSidebar.classList.contains('is-open')) {
+      setSidebarOpen(false);
+    }
+  });
+
+  if (sidebarPanel) {
+    sidebarPanel.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        setSidebarOpen(false);
+      });
     });
   }
 }

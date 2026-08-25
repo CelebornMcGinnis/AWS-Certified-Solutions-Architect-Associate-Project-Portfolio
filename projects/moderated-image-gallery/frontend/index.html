@@ -643,41 +643,55 @@
     </svg>
   </button>
 
-  <details class="mobile-menu" id="mobile-menu">
-    <summary class="mobile-menu-button" aria-label="Open menu">
-      <svg class="mobile-menu-icon-open" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-      </svg>
-      <svg class="mobile-menu-icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-      </svg>
-    </summary>
-    <nav class="mobile-menu-panel" aria-label="Mobile navigation">
-      <a href="/">Home</a>
-      <span class="mobile-menu-group-label">Projects</span>
-      <a class="mobile-menu-sublink" href="/project/contactform/project1.html">Contact Form</a>
-      <a class="mobile-menu-sublink" href="/project/polling/project2.html">Movie Poll</a>
-      <a class="mobile-menu-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
-      <a class="mobile-menu-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-      <details class="mobile-menu-subsection">
-        <summary class="mobile-menu-group-label">Moderated Image Gallery</summary>
-        <a class="mobile-menu-sublink" href="#guidelines">Guidelines</a>
-        <a class="mobile-menu-sublink" href="#demo">Try it</a>
-        <a class="mobile-menu-sublink" href="#gallery">Gallery</a>
-        <a class="mobile-menu-sublink" href="#how-it-works">How it works</a>
-        <a class="mobile-menu-sublink" href="#use-cases">Use cases</a>
-        <a class="mobile-menu-sublink" href="#pricing">Pricing</a>
-        <a class="mobile-menu-sublink" href="#design-decisions">Design decisions</a>
+  <div class="mobile-sidebar" id="mobile-sidebar">
+    <div class="mobile-sidebar-backdrop" id="mobile-sidebar-backdrop"></div>
+    <div class="mobile-sidebar-rail">
+      <button type="button" class="mobile-sidebar-toggle" id="mobile-sidebar-toggle" aria-expanded="false" aria-controls="mobile-sidebar-panel" aria-label="Open menu">
+        <svg class="icon-expand" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+        <svg class="icon-collapse" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </button>
+      <a class="mobile-sidebar-home" href="/" aria-label="Home">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9h5v-5h2v5h5v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <button type="button" class="theme-toggle mobile-sidebar-rail-theme" id="theme-toggle-sidebar-rail" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <nav class="mobile-sidebar-panel" id="mobile-sidebar-panel" aria-label="Mobile navigation" aria-hidden="true">
+      <a class="mobile-sidebar-link" href="/">Home</a>
+      <details class="mobile-sidebar-group">
+        <summary class="mobile-sidebar-group-summary">Projects</summary>
+        <div class="mobile-sidebar-group-content">
+        <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
+        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
+        <details class="mobile-sidebar-subgroup">
+          <summary class="mobile-sidebar-group-label">Moderated Image Gallery</summary>
+          <a class="mobile-sidebar-sublink" href="#guidelines">Guidelines</a>
+          <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
+          <a class="mobile-sidebar-sublink" href="#gallery">Gallery</a>
+          <a class="mobile-sidebar-sublink" href="#how-it-works">How it works</a>
+          <a class="mobile-sidebar-sublink" href="#use-cases">Use cases</a>
+          <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
+          <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
+        </details>
+        <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
+        </div>
       </details>
-      <a class="mobile-menu-sublink" href="/#projects">View all projects</a>
-      <a href="/#about">About</a>
-          <button type="button" class="theme-toggle mobile-menu-theme-toggle" id="theme-toggle-mobile" aria-pressed="false" aria-label="Toggle dark mode">
+      <a class="mobile-sidebar-link" href="/#about">About</a>
+      <button type="button" class="theme-toggle mobile-sidebar-link mobile-sidebar-theme-toggle" id="theme-toggle-sidebar-panel" aria-pressed="false" aria-label="Toggle dark mode">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
         <span>Dark mode</span>
       </button>
     </nav>
-  </details>
+  </div>
 
   <script src="config.js"></script>
   <script src="script.js"></script>
