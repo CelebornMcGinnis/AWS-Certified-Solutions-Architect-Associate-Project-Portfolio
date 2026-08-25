@@ -3396,6 +3396,23 @@ footer {
        against. */
     padding-top: 5.2rem;
   }
+
+  /* Back-to-top, homepage only: nudged in from the bare corner, and
+     given the same rest/scroll opacity behavior as the sidebar rail
+     above -- script.js adds "is-scrolling" to it on the same scroll
+     listener as the rail. */
+  .page-home .back-to-top {
+    right: 1.75rem;
+    bottom: 1.75rem;
+  }
+
+  .page-home .back-to-top.is-visible {
+    opacity: 0.25;
+  }
+
+  .page-home .back-to-top.is-visible.is-scrolling {
+    opacity: 1;
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -3513,6 +3530,14 @@ footer {
     grid-template-columns: 1fr;
     min-height: 0;
     border-radius: 0;
+    /* Base rule's overflow: hidden exists only to clip the desktop
+       diagonal clip-path panel and the grid's own rounded corners --
+       both dropped below this breakpoint (clip-path: none on
+       .home-hero-copy above, border-radius: 0 here), so nothing left
+       needs clipping. Left hidden, it was cutting the CTA buttons'
+       box-shadow off in a hard rectangle wherever it crossed the
+       grid's edge instead of letting it fade out naturally. */
+    overflow: visible;
   }
 
   .home-hero-copy {

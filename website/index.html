@@ -22,7 +22,7 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
-<body>
+<body class="page-home">
   <header class="site-header">
     <div class="site-header-inner">
       <div class="brand-row">
@@ -499,6 +499,16 @@
         var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
       });
+
+      // Same rest/scroll opacity behavior as the sidebar rail below.
+      var backToTopFadeTimer = null;
+      window.addEventListener('scroll', function () {
+        backToTop.classList.add('is-scrolling');
+        if (backToTopFadeTimer) clearTimeout(backToTopFadeTimer);
+        backToTopFadeTimer = setTimeout(function () {
+          backToTop.classList.remove('is-scrolling');
+        }, 400);
+      }, { passive: true });
     }
 
     // Mobile sidebar: present from first paint (unlike the old
