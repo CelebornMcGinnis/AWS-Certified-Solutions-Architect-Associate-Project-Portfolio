@@ -291,10 +291,18 @@
       </div>
       <p class="muted">
         Anyone can view this gallery — it only shows images that already
-        passed moderation. Hover (or tap) an image to download it.
+        passed moderation. Click an image to expand it, or hover (or tap)
+        it to download.
       </p>
       <div class="gallery-grid" id="gallery-grid"></div>
       <p class="muted small-note gallery-empty-note" id="gallery-empty-note">No approved images yet — be the first to upload one above.</p>
+
+      <dialog class="gallery-lightbox" id="gallery-lightbox" aria-label="Expanded gallery image">
+        <button type="button" class="gallery-lightbox-close" id="gallery-lightbox-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" /></svg>
+        </button>
+        <img id="gallery-lightbox-img" src="" alt="" />
+      </dialog>
     </section>
 
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">

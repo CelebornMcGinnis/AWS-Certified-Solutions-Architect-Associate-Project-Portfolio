@@ -5325,6 +5325,14 @@ footer {
   height: 100%;
   object-fit: cover;
   display: block;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gallery-item img:hover {
+    transform: scale(1.04);
+  }
 }
 
 .gallery-item a.gallery-download {
@@ -5350,6 +5358,62 @@ footer {
 
 .gallery-empty-note {
   margin-top: 1.5rem;
+}
+
+/* Expanded view of a gallery image, opened via showModal() on click --
+   same <dialog>/::backdrop pattern as .auth-modal above, just sized to
+   the image instead of a fixed card width. */
+.gallery-lightbox {
+  max-width: 90vw;
+  max-height: 90vh;
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  overflow: visible;
+}
+
+.gallery-lightbox::backdrop {
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(2px);
+}
+
+.gallery-lightbox img {
+  display: block;
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.gallery-lightbox-close {
+  justify-self: auto;
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+
+.gallery-lightbox-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gallery-lightbox-close:hover {
+    background: var(--accent-dark);
+    transform: none;
+  }
 }
 
 /* ---------------------------------------------------------------------

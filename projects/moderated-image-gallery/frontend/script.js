@@ -587,6 +587,32 @@ var Session = (function () {
   var galleryGrid = document.getElementById('gallery-grid');
   var galleryEmptyNote = document.getElementById('gallery-empty-note');
   var galleryRefreshButton = document.getElementById('gallery-refresh-button');
+  var galleryLightbox = document.getElementById('gallery-lightbox');
+  var galleryLightboxImg = document.getElementById('gallery-lightbox-img');
+  var galleryLightboxClose = document.getElementById('gallery-lightbox-close');
+
+  // Expand-on-click: delegated on the grid rather than wired per-image,
+  // since loadGallery() rebuilds the whole grid (innerHTML reset) on
+  // every load/refresh -- a per-image listener would need re-attaching
+  // each time, this doesn't. Only fires for the <img> itself, so it
+  // doesn't fight with the download link/icon sitting on top of it.
+  if (galleryGrid && galleryLightbox && galleryLightbox.showModal) {
+    galleryGrid.addEventListener('click', function (event) {
+      if (event.target.tagName !== 'IMG') return;
+      galleryLightboxImg.src = event.target.src;
+      galleryLightboxImg.alt = event.target.alt;
+      galleryLightbox.showModal();
+    });
+    galleryLightboxClose.addEventListener('click', function () {
+      galleryLightbox.close();
+    });
+    // A click that lands on the <dialog> element itself (not the image
+    // or close button) is a click on the ::backdrop -- dialogs don't
+    // close on backdrop click by default, so this adds that behavior.
+    galleryLightbox.addEventListener('click', function (event) {
+      if (event.target === galleryLightbox) galleryLightbox.close();
+    });
+  }
 
   function loadGallery() {
     if (!galleryGrid) return;
