@@ -70,7 +70,7 @@ const PROJECTS: ProjectMapping[] = [
     stages: ['beta'],
     homepageCardFile: 'projects/workflow-visualizer/homepage-card.html',
     navLinkHtml: '<a href="/project/workflow/project4.html">Workflow Visualizer</a>',
-    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>',
   },
   {
     key: 'moderatedImageGallery',
@@ -81,7 +81,7 @@ const PROJECTS: ProjectMapping[] = [
     stages: ['beta'],
     homepageCardFile: 'projects/moderated-image-gallery/homepage-card.html',
     navLinkHtml: '<a href="/project/gallery/project5.html">Moderated Image Gallery</a>',
-    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>',
   },
   {
     key: 'habitTracker',
@@ -92,7 +92,7 @@ const PROJECTS: ProjectMapping[] = [
     stages: ['beta'],
     homepageCardFile: 'projects/habit-tracker/homepage-card.html',
     navLinkHtml: '<a href="/project/habits/project6.html">Habit Tracker</a>',
-    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/habits/project6.html">Habit Tracker</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>',
   },
   {
     key: 'novaSummarizer',
@@ -103,7 +103,7 @@ const PROJECTS: ProjectMapping[] = [
     stages: ['beta'],
     homepageCardFile: 'projects/nova-summarizer/homepage-card.html',
     navLinkHtml: '<a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>',
-    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>',
   },
   {
     key: 'orderProcessing',
@@ -114,7 +114,7 @@ const PROJECTS: ProjectMapping[] = [
     stages: ['beta'],
     homepageCardFile: 'projects/order-processing/homepage-card.html',
     navLinkHtml: '<a href="/project/orders/project8.html">Order Processing</a>',
-    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/orders/project8.html">Order Processing</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>',
   },
   {
     key: 'websiteChatbot',
@@ -125,7 +125,7 @@ const PROJECTS: ProjectMapping[] = [
     stages: ['beta'],
     homepageCardFile: 'projects/website-chatbot/homepage-card.html',
     navLinkHtml: '<a href="/project/chatbot/project9.html">Website Chatbot</a>',
-    mobileNavLinkHtml: '<a class="mobile-menu-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>',
   },
 ];
 
