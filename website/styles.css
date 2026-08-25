@@ -5351,7 +5351,18 @@ footer {
   transition: opacity 0.15s ease;
 }
 
-.gallery-item:hover a.gallery-download,
+/* Guarded to real hover-capable pointers only -- left unguarded, a tap
+   on a touch device latches this :hover state, and mobile browsers
+   spend that first tap "revealing" the hover state instead of firing
+   a click -- the image needed a second tap to actually open the
+   lightbox. :focus-visible (keyboard) is unaffected either way and
+   stays outside the guard. */
+@media (hover: hover) and (pointer: fine) {
+  .gallery-item:hover a.gallery-download {
+    opacity: 1;
+  }
+}
+
 .gallery-item a.gallery-download:focus-visible {
   opacity: 1;
 }
@@ -5364,8 +5375,16 @@ footer {
    same <dialog>/::backdrop pattern as .auth-modal above, just sized to
    the image instead of a fixed card width. */
 .gallery-lightbox {
-  max-width: 90vw;
-  max-height: 90vh;
+  /* dvh, not vh -- vh is pinned to the viewport height with mobile
+     Safari's browser chrome hidden, which is taller than what's
+     actually visible whenever the address bar is showing. That let
+     the image render taller than the real visible area with no way
+     to tell, since this dialog also sets overflow: visible (so a
+     too-tall image spills past its box instead of clipping or
+     scrolling). dvh tracks the actual current viewport, chrome and
+     all, so this caps to what's really on screen in any orientation. */
+  max-width: 85vw;
+  max-height: 85dvh;
   padding: 0;
   border: none;
   border-radius: 16px;
@@ -5380,8 +5399,8 @@ footer {
 
 .gallery-lightbox img {
   display: block;
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 85vw;
+  max-height: 85dvh;
   border-radius: 16px;
   box-shadow: var(--shadow);
 }
