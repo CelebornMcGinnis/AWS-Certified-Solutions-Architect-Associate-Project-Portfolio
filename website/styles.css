@@ -3366,7 +3366,7 @@ footer {
        doesn't apply to -v2 elements at all once this one wins on
        specificity, so this has to carry top/transform too or those
        would silently stop animating. */
-    opacity: 0.5;
+    opacity: 0.25;
     transition: top 0.28s ease, transform 0.28s ease, opacity 0.3s ease;
   }
 
