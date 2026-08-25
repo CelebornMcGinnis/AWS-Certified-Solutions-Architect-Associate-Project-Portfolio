@@ -3357,6 +3357,22 @@ footer {
     box-shadow: var(--shadow);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    /* Very faint at rest so it doesn't compete with whatever's
+       scrolling underneath it; script.js adds "is-scrolling" for as
+       long as a scroll is actively happening (see the rule below) and
+       removes it a beat after motion settles. Redeclaring the full
+       `transition` shorthand here (not just adding an opacity term to
+       Section 20's) is deliberate -- Section 20's own transition value
+       doesn't apply to -v2 elements at all once this one wins on
+       specificity, so this has to carry top/transform too or those
+       would silently stop animating. */
+    opacity: 0.5;
+    transition: top 0.28s ease, transform 0.28s ease, opacity 0.3s ease;
+  }
+
+  .mobile-sidebar-v2 .mobile-sidebar-rail.is-scrolling,
+  .mobile-sidebar-v2.is-open .mobile-sidebar-rail {
+    opacity: 1;
   }
 
   /* Home and dark-mode are reachable inside the open panel itself, so
