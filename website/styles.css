@@ -3107,34 +3107,58 @@ footer {
     pointer-events: auto;
   }
 
-  /* Vertically centered while collapsed — the header logo lives in
-     that top-left corner at scroll position 0, and since the sidebar
-     is visible from first paint (not faded in after scrolling, like
-     the button this replaces was), pinning the rail there would sit
-     right on top of the logo. Once open, the panel's own opaque
-     background covers that corner instead of the transparent page, so
-     the rail relocates to top-left there — same spot a drawer's close
-     control normally lives. */
+  /* Sits well clear of the header (rather than overlapping the logo,
+     which lives in that top-left corner at scroll position 0) since
+     the rail is visible from first paint instead of fading in after
+     scrolling like the button it replaces did. The translucent pill
+     background lets it read as one floating control rather than 3
+     loose buttons, and is very faint at rest so it doesn't compete
+     with whatever's scrolling underneath it -- script.js adds
+     "is-scrolling" for as long as a scroll is actively happening (see
+     the rule below) and removes it a beat after motion settles. */
   .mobile-sidebar-rail {
     position: absolute;
-    top: 50%;
+    top: 5.5rem;
     left: 1rem;
-    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
     z-index: 151;
-    transition: top 0.28s ease, transform 0.28s ease;
+    background: var(--surface-translucent);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.5rem;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.25;
+    transition: top 0.28s ease, opacity 0.3s ease;
+  }
+
+  .mobile-sidebar-rail.is-scrolling,
+  .mobile-sidebar.is-open .mobile-sidebar-rail {
+    opacity: 1;
   }
 
   /* Row instead of column once open — a horizontal strip only needs
      the panel's existing top padding to clear it, instead of the much
-     taller allowance a 3-high stack would need. */
+     taller allowance a 3-high stack would need. Once open, the
+     panel's own opaque background covers the top-left corner instead
+     of the transparent page, so the rail relocates there too — same
+     spot a drawer's close control normally lives. */
   .mobile-sidebar.is-open .mobile-sidebar-rail {
     top: 1rem;
     left: 1rem;
-    transform: none;
     flex-direction: row;
+  }
+
+  /* Home and dark-mode are reachable inside the open panel itself, so
+     the rail keeps only the collapse control once open -- one button
+     instead of three avoids a redundant-looking cluster next to the
+     panel's own Home/Dark mode rows. */
+  .mobile-sidebar.is-open .mobile-sidebar-home,
+  .mobile-sidebar.is-open .mobile-sidebar-rail-theme {
+    display: none;
   }
 
   .mobile-sidebar-toggle,
@@ -3195,7 +3219,7 @@ footer {
     position: absolute;
     inset: 0 auto 0 0;
     width: 0;
-    max-width: 33vw;
+    max-width: 50vw;
     overflow: hidden;
     visibility: hidden;
     background: var(--surface);
@@ -3205,7 +3229,10 @@ footer {
     pointer-events: none;
     display: flex;
     flex-direction: column;
-    padding: 4.6rem 0 0.6rem;
+    /* Clears the translucent pill rail sitting on top of this corner
+       while open -- a touch more than the pill's own ~60px footprint
+       would need, for breathing room. */
+    padding: 5.2rem 0 0.6rem;
     /* Without an explicit z-index, this sits in the z-index:auto
        paint layer, which stacking rules place BELOW any sibling that
        has an explicit z-index -- .mobile-sidebar-backdrop (140) below
@@ -3217,7 +3244,7 @@ footer {
   }
 
   .mobile-sidebar.is-open .mobile-sidebar-panel {
-    width: 33vw;
+    width: 50vw;
     visibility: visible;
     overflow-y: auto;
     pointer-events: auto;
@@ -3330,88 +3357,6 @@ footer {
       color: var(--accent);
       text-decoration: none;
     }
-  }
-}
-
-/* ---------------------------------------------------------------------
-   20b. MOBILE SIDEBAR NAV -- V2 ITERATION (homepage only, temporary)
-   A set of overrides on top of Section 20, scoped to the extra
-   .mobile-sidebar-v2 class that only index.html's sidebar carries
-   right now -- this is a work-in-progress round of feedback being
-   tried on the homepage before it rolls out to every page. Once it's
-   approved, fold these into Section 20 directly, drop the -v2 class
-   from index.html, and delete this section.
-   --------------------------------------------------------------------- */
-@media (max-width: 760px) {
-  /* Much higher than the Section 20 default (vertically centered) --
-     translucent pill background makes it read as a single floating
-     control rather than 3 loose buttons, so it can safely sit closer
-     to the header without looking like it collides with the logo. */
-  .mobile-sidebar-v2 .mobile-sidebar-rail {
-    top: 5.5rem;
-    transform: none;
-    background: var(--surface-translucent);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.5rem;
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    /* Very faint at rest so it doesn't compete with whatever's
-       scrolling underneath it; script.js adds "is-scrolling" for as
-       long as a scroll is actively happening (see the rule below) and
-       removes it a beat after motion settles. Redeclaring the full
-       `transition` shorthand here (not just adding an opacity term to
-       Section 20's) is deliberate -- Section 20's own transition value
-       doesn't apply to -v2 elements at all once this one wins on
-       specificity, so this has to carry top/transform too or those
-       would silently stop animating. */
-    opacity: 0.25;
-    transition: top 0.28s ease, transform 0.28s ease, opacity 0.3s ease;
-  }
-
-  .mobile-sidebar-v2 .mobile-sidebar-rail.is-scrolling,
-  .mobile-sidebar-v2.is-open .mobile-sidebar-rail {
-    opacity: 1;
-  }
-
-  /* Home and dark-mode are reachable inside the open panel itself, so
-     the rail keeps only the collapse control once open -- one button
-     instead of three avoids a redundant-looking cluster next to the
-     panel's own Home/Dark mode rows. */
-  .mobile-sidebar-v2.is-open .mobile-sidebar-home,
-  .mobile-sidebar-v2.is-open .mobile-sidebar-rail-theme {
-    display: none;
-  }
-
-  .mobile-sidebar-v2 .mobile-sidebar-panel {
-    max-width: 50vw;
-  }
-
-  .mobile-sidebar-v2.is-open .mobile-sidebar-panel {
-    width: 50vw;
-    /* A touch more than Section 20's 4.6rem -- the translucent pill
-       adds its own padding around the rail, making it slightly taller
-       than the plain circles Section 20's clearance was measured
-       against. */
-    padding-top: 5.2rem;
-  }
-
-  /* Back-to-top, homepage only: nudged in from the bare corner, and
-     given the same rest/scroll opacity behavior as the sidebar rail
-     above -- script.js adds "is-scrolling" to it on the same scroll
-     listener as the rail. */
-  .page-home .back-to-top {
-    right: 1.75rem;
-    bottom: 1.75rem;
-  }
-
-  .page-home .back-to-top.is-visible {
-    opacity: 0.25;
-  }
-
-  .page-home .back-to-top.is-visible.is-scrolling {
-    opacity: 1;
   }
 }
 
@@ -3877,8 +3822,8 @@ footer {
   }
 
   .back-to-top {
-    right: 1rem;
-    bottom: 1rem;
+    right: 1.75rem;
+    bottom: 1.75rem;
     width: 42px;
     height: 42px;
   }
@@ -3886,6 +3831,18 @@ footer {
   .back-to-top svg {
     width: 19px;
     height: 19px;
+  }
+
+  /* Same rest/scroll opacity behavior as the sidebar rail (Section
+     20): very faint at rest, solid for as long as a scroll is
+     actively happening -- script.js adds "is-scrolling" on the same
+     scroll listener as the rail. */
+  .back-to-top.is-visible {
+    opacity: 0.25;
+  }
+
+  .back-to-top.is-visible.is-scrolling {
+    opacity: 1;
   }
 }
 

@@ -343,6 +343,16 @@ if (backToTop) {
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
   });
+
+  // Same rest/scroll opacity behavior as the sidebar rail below.
+  var backToTopFadeTimer = null;
+  window.addEventListener('scroll', function () {
+    backToTop.classList.add('is-scrolling');
+    if (backToTopFadeTimer) clearTimeout(backToTopFadeTimer);
+    backToTopFadeTimer = setTimeout(function () {
+      backToTop.classList.remove('is-scrolling');
+    }, 400);
+  }, { passive: true });
 }
 
 // Mobile sidebar: present from first paint (unlike the old
@@ -390,6 +400,23 @@ if (mobileSidebar) {
         setSidebarOpen(false);
       });
     });
+  }
+
+  // Rail transparency: very faint at rest so it stays out of the
+  // way of whatever's scrolling underneath it, solid for as long
+  // as a scroll is actually happening, then fades back out a beat
+  // after it stops (the timeout resets on every scroll event, so
+  // it only fires once motion has actually settled).
+  var sidebarRail = mobileSidebar.querySelector('.mobile-sidebar-rail');
+  if (sidebarRail) {
+    var scrollFadeTimer = null;
+    window.addEventListener('scroll', function () {
+      sidebarRail.classList.add('is-scrolling');
+      if (scrollFadeTimer) clearTimeout(scrollFadeTimer);
+      scrollFadeTimer = setTimeout(function () {
+        sidebarRail.classList.remove('is-scrolling');
+      }, 400);
+    }, { passive: true });
   }
 }
 
