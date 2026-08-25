@@ -3273,6 +3273,13 @@ footer {
 
   .mobile-sidebar-group-summary {
     padding: 0.5rem 0.9rem;
+    /* Hanging indent: the chevron (0.5em + 0.55em margin = 1.05em) is
+       pulled back by text-indent on the first line only, so a wrapped
+       second line -- which ignores text-indent -- lands at the same
+       padding-left the first line's *text* sits at (not at the
+       chevron's position, which is what a wrap did without this). */
+    padding-left: calc(0.9rem + 1.05em);
+    text-indent: -1.05em;
     margin: 0 0.6rem;
     font-weight: 700;
     cursor: pointer;
@@ -3319,13 +3326,21 @@ footer {
     display: none;
   }
 
+  /* The current page's own name in the list -- styled to match the
+     sibling project links around it (.mobile-sidebar-sublink) rather
+     than standing out as a small-caps section label, since it's the
+     same kind of thing they are (a project name), just rendered as an
+     expand toggle instead of a plain link because you're already on
+     that page. Same hanging-indent trick as .mobile-sidebar-group-
+     summary above, sized to this chevron (0.45em + 0.45em = 0.9em). */
   .mobile-sidebar-group-label {
-    padding: 0.4rem 0.7rem 0.15rem 1.7rem;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
+    padding: 0.5rem 0.9rem;
+    padding-left: calc(1.7rem + 0.9em);
+    text-indent: -0.9em;
+    font-weight: 500;
+    font-size: 0.92rem;
+    color: var(--text);
+    border-radius: 10px;
   }
 
   .mobile-sidebar-subgroup summary.mobile-sidebar-group-label::before {
@@ -3352,7 +3367,8 @@ footer {
   @media (hover: hover) and (pointer: fine) {
     .mobile-sidebar-panel a:hover,
     .mobile-sidebar-panel button.mobile-sidebar-link:hover,
-    .mobile-sidebar-group-summary:hover {
+    .mobile-sidebar-group-summary:hover,
+    .mobile-sidebar-subgroup summary.mobile-sidebar-group-label:hover {
       background: var(--info-bg);
       color: var(--accent);
       text-decoration: none;
