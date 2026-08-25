@@ -3206,6 +3206,14 @@ footer {
     display: flex;
     flex-direction: column;
     padding: 4.6rem 0 0.6rem;
+    /* Without an explicit z-index, this sits in the z-index:auto
+       paint layer, which stacking rules place BELOW any sibling that
+       has an explicit z-index -- .mobile-sidebar-backdrop (140) below
+       -- regardless of DOM order. That silently put the backdrop on
+       top of the panel, tinting it gray and eating every click before
+       it reached a link. 145 keeps it under the rail (151) but above
+       the backdrop. */
+    z-index: 145;
   }
 
   .mobile-sidebar.is-open .mobile-sidebar-panel {
@@ -3322,6 +3330,55 @@ footer {
       color: var(--accent);
       text-decoration: none;
     }
+  }
+}
+
+/* ---------------------------------------------------------------------
+   20b. MOBILE SIDEBAR NAV -- V2 ITERATION (homepage only, temporary)
+   A set of overrides on top of Section 20, scoped to the extra
+   .mobile-sidebar-v2 class that only index.html's sidebar carries
+   right now -- this is a work-in-progress round of feedback being
+   tried on the homepage before it rolls out to every page. Once it's
+   approved, fold these into Section 20 directly, drop the -v2 class
+   from index.html, and delete this section.
+   --------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  /* Much higher than the Section 20 default (vertically centered) --
+     translucent pill background makes it read as a single floating
+     control rather than 3 loose buttons, so it can safely sit closer
+     to the header without looking like it collides with the logo. */
+  .mobile-sidebar-v2 .mobile-sidebar-rail {
+    top: 5.5rem;
+    transform: none;
+    background: var(--surface-translucent);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.5rem;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Home and dark-mode are reachable inside the open panel itself, so
+     the rail keeps only the collapse control once open -- one button
+     instead of three avoids a redundant-looking cluster next to the
+     panel's own Home/Dark mode rows. */
+  .mobile-sidebar-v2.is-open .mobile-sidebar-home,
+  .mobile-sidebar-v2.is-open .mobile-sidebar-rail-theme {
+    display: none;
+  }
+
+  .mobile-sidebar-v2 .mobile-sidebar-panel {
+    max-width: 50vw;
+  }
+
+  .mobile-sidebar-v2.is-open .mobile-sidebar-panel {
+    width: 50vw;
+    /* A touch more than Section 20's 4.6rem -- the translucent pill
+       adds its own padding around the rail, making it slightly taller
+       than the plain circles Section 20's clearance was measured
+       against. */
+    padding-top: 5.2rem;
   }
 }
 
