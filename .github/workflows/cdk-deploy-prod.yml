@@ -16,13 +16,12 @@ name: CDK deploy (prod)
 # on purpose). Same explicit allow-list reasoning as
 # cdk-deploy-beta.yml: a new project's prod stack has to be added here
 # on purpose, one line at a time, never picked up automatically.
-# workflow-visualizer is deliberately held back for now (its prod
-# backend stack already exists but isn't auto re-deployed until that's
-# revisited), and moderated-image-gallery, habit-tracker,
-# nova-summarizer, order-processing, and website-chatbot are still
-# under beta review. portfolio-github-oidc is excluded here too --
-# deploy it manually with `cdk deploy portfolio-github-oidc` on the
-# rare occasion it needs to change.
+# workflow-visualizer, moderated-image-gallery, habit-tracker,
+# nova-summarizer, order-processing, and website-chatbot were promoted
+# out of beta review together -- see website-content.ts's stages
+# arrays. portfolio-github-oidc is excluded here too -- deploy it
+# manually with `cdk deploy portfolio-github-oidc` on the rare
+# occasion it needs to change.
 
 on:
   workflow_dispatch:
@@ -79,7 +78,7 @@ jobs:
               echo "No default stack list for destroy -- name the stack(s) explicitly." >&2
               exit 1
             fi
-            echo "list=fanning-sns live-poll contact-form-api portfolio-website-prod" >> "$GITHUB_OUTPUT"
+            echo "list=fanning-sns live-poll contact-form-api workflow-visualizer moderated-image-gallery habit-tracker nova-summarizer order-processing website-chatbot portfolio-website-prod" >> "$GITHUB_OUTPUT"
           else
             echo "list=$REQUESTED" >> "$GITHUB_OUTPUT"
           fi

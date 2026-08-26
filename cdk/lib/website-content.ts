@@ -63,11 +63,8 @@ const PROJECTS: ProjectMapping[] = [
     frontendDir: 'projects/workflow-visualizer/frontend',
     destPrefix: 'project/workflow',
     rename: { 'index.html': 'project4.html' },
-    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
-    // (Its backend now exists on both stages regardless -- see
-    // workflow-visualizer-stack.ts -- this only gates the frontend page
-    // and homepage/nav visibility.)
-    stages: ['beta'],
+    // Promoted to prod.
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/workflow-visualizer/homepage-card.html',
     navLinkHtml: '<a href="/project/workflow/project4.html">Workflow Visualizer</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>',
@@ -77,8 +74,8 @@ const PROJECTS: ProjectMapping[] = [
     frontendDir: 'projects/moderated-image-gallery/frontend',
     destPrefix: 'project/gallery',
     rename: { 'index.html': 'project5.html' },
-    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
-    stages: ['beta'],
+    // Promoted to prod.
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/moderated-image-gallery/homepage-card.html',
     navLinkHtml: '<a href="/project/gallery/project5.html">Moderated Image Gallery</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>',
@@ -88,8 +85,8 @@ const PROJECTS: ProjectMapping[] = [
     frontendDir: 'projects/habit-tracker/frontend',
     destPrefix: 'project/habits',
     rename: { 'index.html': 'project6.html' },
-    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
-    stages: ['beta'],
+    // Promoted to prod.
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/habit-tracker/homepage-card.html',
     navLinkHtml: '<a href="/project/habits/project6.html">Habit Tracker</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>',
@@ -99,8 +96,8 @@ const PROJECTS: ProjectMapping[] = [
     frontendDir: 'projects/nova-summarizer/frontend',
     destPrefix: 'project/summarizer',
     rename: { 'index.html': 'project7.html' },
-    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
-    stages: ['beta'],
+    // Promoted to prod.
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/nova-summarizer/homepage-card.html',
     navLinkHtml: '<a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>',
@@ -110,8 +107,8 @@ const PROJECTS: ProjectMapping[] = [
     frontendDir: 'projects/order-processing/frontend',
     destPrefix: 'project/orders',
     rename: { 'index.html': 'project8.html' },
-    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
-    stages: ['beta'],
+    // Promoted to prod.
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/order-processing/homepage-card.html',
     navLinkHtml: '<a href="/project/orders/project8.html">Order Processing</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>',
@@ -121,8 +118,8 @@ const PROJECTS: ProjectMapping[] = [
     frontendDir: 'projects/website-chatbot/frontend',
     destPrefix: 'project/chatbot',
     rename: { 'index.html': 'project9.html' },
-    // Beta only, pending review -- flip to ['beta', 'prod'] to promote.
-    stages: ['beta'],
+    // Promoted to prod.
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/website-chatbot/homepage-card.html',
     navLinkHtml: '<a href="/project/chatbot/project9.html">Website Chatbot</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>',
