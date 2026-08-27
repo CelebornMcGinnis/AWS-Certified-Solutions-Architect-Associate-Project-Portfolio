@@ -45,7 +45,7 @@
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
-            <details class="nav-dropdown-subsection">
+            <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Moderated Image Gallery</summary>
               <a class="nav-dropdown-sublink" href="#guidelines">Guidelines</a>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
@@ -522,43 +522,48 @@
         AWS list pricing, not a guarantee.
       </p>
       </div>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <p class="pricing-tier">Low volume</p>
-          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            A handful of uploads and account sign-ins a month —
-            comfortably inside Rekognition's 5,000-image free tier
-            (first 12 months) plus Cognito's 50,000 MAU free tier.
-          </p>
+      <div class="pricing-layout">
+        <div class="pricing-slider">
+          <div class="pricing-card pricing-slider-card">
+            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="muted" id="pricing-slider-desc">
+              A handful of uploads and account sign-ins a month —
+              comfortably inside Rekognition's 5,000-image free tier
+              (first 12 months) plus Cognito's 50,000 MAU free tier.
+            </p>
+          </div>
+          <div class="pricing-slider-control">
+            <input
+              type="range"
+              class="pricing-slider-input"
+              id="pricing-slider-input"
+              min="0"
+              max="4"
+              step="1"
+              value="0"
+              aria-label="Monthly upload volume"
+              aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
+            />
+            <div class="pricing-slider-ticks" aria-hidden="true">
+              <span>50</span>
+              <span>500</span>
+              <span>5K</span>
+              <span>20K</span>
+              <span>50K+</span>
+            </div>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">Images uploaded per month</p>
+          </div>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">Moderate volume</p>
-          <p class="pricing-amount">~$1–3<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            A few thousand uploads a month — Rekognition's moderation
-            check, billed at $1.00 per 1,000 images, becomes the main
-            driver once the free tier is used up.
-          </p>
+        <div class="pricing-breakdown">
+          <h3>What drives the cost</h3>
+          <ul>
+            <li><strong>Rekognition</strong> — one <code>DetectModerationLabels</code> call per upload, billed per image after a 5,000-image/month free tier for the first year.</li>
+            <li><strong>Cognito</strong> — free for up to 50,000 monthly active users; this demo will never come close.</li>
+            <li><strong>S3</strong> — negligible storage cost for approved images; quarantine objects never persist past a single moderation check.</li>
+            <li><strong>Lambda, DynamoDB, API Gateway</strong> — all billed per request/read/write; effectively free at this scale.</li>
+          </ul>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">High volume</p>
-          <p class="pricing-amount">~$10–20<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Tens of thousands of uploads a month — still dominated by
-            Rekognition's per-image cost; Lambda, S3, DynamoDB, and API
-            Gateway together add only a small fraction on top.
-          </p>
-        </div>
-      </div>
-      <div class="pricing-breakdown">
-        <h3>What drives the cost</h3>
-        <ul>
-          <li><strong>Rekognition</strong> — one <code>DetectModerationLabels</code> call per upload, billed per image after a 5,000-image/month free tier for the first year.</li>
-          <li><strong>Cognito</strong> — free for up to 50,000 monthly active users; this demo will never come close.</li>
-          <li><strong>S3</strong> — negligible storage cost for approved images; quarantine objects never persist past a single moderation check.</li>
-          <li><strong>Lambda, DynamoDB, API Gateway</strong> — all billed per request/read/write; effectively free at this scale.</li>
-        </ul>
       </div>
     </section>
 

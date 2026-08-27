@@ -45,7 +45,7 @@
             <a href="/project/habits/project6.html">Habit Tracker</a>
             <a href="/project/orders/project8.html">Order Processing</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
-            <details class="nav-dropdown-subsection">
+            <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Nova Lite Summarizer</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
@@ -303,42 +303,47 @@
         AWS list pricing, not a guarantee.
       </p>
       </div>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <p class="pricing-tier">Low volume</p>
-          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            A handful of summaries a day — Nova Lite is one of Bedrock's
-            cheapest models per token, so casual use costs a fraction of
-            a cent.
-          </p>
+      <div class="pricing-layout">
+        <div class="pricing-slider">
+          <div class="pricing-card pricing-slider-card">
+            <p class="pricing-tier" id="pricing-slider-tier">Light volume</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="muted" id="pricing-slider-desc">
+              A handful of summaries a day, a small fraction of the daily
+              cap — Nova Lite is one of Bedrock's cheapest models per
+              token, so casual use costs a fraction of a cent.
+            </p>
+          </div>
+          <div class="pricing-slider-control">
+            <input
+              type="range"
+              class="pricing-slider-input"
+              id="pricing-slider-input"
+              min="0"
+              max="4"
+              step="1"
+              value="0"
+              aria-label="% of daily request cap reached"
+              aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
+            />
+            <div class="pricing-slider-ticks" aria-hidden="true">
+              <span>20%</span>
+              <span>40%</span>
+              <span>60%</span>
+              <span>80%</span>
+              <span>100%+</span>
+            </div>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">% of daily request cap reached</p>
+          </div>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">Moderate volume</p>
-          <p class="pricing-amount">~$1–2<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            This demo's own daily request cap fully engaged every day of
-            the month — still a small, predictable ceiling rather than
-            an open-ended bill.
-          </p>
+        <div class="pricing-breakdown">
+          <h3>What drives the cost</h3>
+          <ul>
+            <li><strong>Bedrock (Nova Lite)</strong> — billed per input/output token; Nova Lite is priced well below most other Bedrock models, which is exactly why it fits a public demo.</li>
+            <li><strong>DynamoDB</strong> — a single tiny item per day for the usage counter; effectively free.</li>
+            <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
+          </ul>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">High volume</p>
-          <p class="pricing-amount">Capped by design<span class="pricing-period"></span></p>
-          <p class="muted">
-            The whole point of the daily request limit — traffic beyond
-            it is rejected with a 429 rather than ever reaching Bedrock,
-            so cost can't run away regardless of how much traffic shows up.
-          </p>
-        </div>
-      </div>
-      <div class="pricing-breakdown">
-        <h3>What drives the cost</h3>
-        <ul>
-          <li><strong>Bedrock (Nova Lite)</strong> — billed per input/output token; Nova Lite is priced well below most other Bedrock models, which is exactly why it fits a public demo.</li>
-          <li><strong>DynamoDB</strong> — a single tiny item per day for the usage counter; effectively free.</li>
-          <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
-        </ul>
       </div>
     </section>
 

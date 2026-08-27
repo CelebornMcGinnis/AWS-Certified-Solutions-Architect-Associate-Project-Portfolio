@@ -739,3 +739,38 @@ if (mobileSidebar) {
     });
   });
 })();
+
+// Pricing slider: drag through 5 volume steps instead of scanning 3
+// fixed cards. Not a live formula -- these are the same estimates the
+// old cards used at the low/moderate/high anchor points, plus two
+// extra steps in between for a smoother feel.
+(function () {
+  var input = document.getElementById('pricing-slider-input');
+  var tierEl = document.getElementById('pricing-slider-tier');
+  var amountEl = document.getElementById('pricing-slider-amount');
+  var descEl = document.getElementById('pricing-slider-desc');
+  if (!input || !tierEl || !amountEl || !descEl) return;
+
+  var steps = [
+    { tier: "Low volume", amount: "~$0", period: "/mo", desc: "A few hundred orders a month \u2014 comfortably inside Step Functions' free tier of 4,000 state transitions (each order uses 2-4 depending on which path it takes), plus Lambda and DynamoDB's free tiers." },
+    { tier: "Light volume", amount: "~$0", period: "/mo", desc: "A few thousand orders a month \u2014 still inside the free tier." },
+    { tier: "Moderate volume", amount: "~$1", period: "/mo", desc: "Tens of thousands of orders a month \u2014 Step Functions state transitions become the main cost, still a fraction of a cent per order either way." },
+    { tier: "Elevated volume", amount: "~$2\u20135", period: "/mo", desc: "Around a hundred thousand orders a month \u2014 Step Functions and Lambda invocations both start to add up." },
+    { tier: "High volume", amount: "~$5\u201310", period: "/mo", desc: "Hundreds of thousands of orders a month \u2014 Step Functions and Lambda invocations both keep climbing, though DynamoDB on-demand billing stays cheap either way." },
+  ];
+
+  function render() {
+    var step = steps[Number(input.value)];
+    tierEl.textContent = step.tier;
+    amountEl.textContent = step.amount;
+    amountEl.appendChild(Object.assign(document.createElement('span'), { className: 'pricing-period', textContent: step.period }));
+    descEl.textContent = step.desc;
+
+    var percent = (Number(input.value) / (steps.length - 1)) * 100;
+    input.style.background =
+      'linear-gradient(to right, var(--accent) ' + percent + '%, var(--border) ' + percent + '%)';
+  }
+
+  input.addEventListener('input', render);
+  render();
+})();

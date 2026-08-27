@@ -45,7 +45,7 @@
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
-            <details class="nav-dropdown-subsection">
+            <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">SNS Notifications</summary>
               <a class="nav-dropdown-sublink" href="#demo">Trigger demo</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
@@ -413,42 +413,48 @@
         estimates based on public AWS list pricing, not a guarantee.
       </p>
       </div>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <p class="pricing-tier">Low volume</p>
-          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Up to a few thousand triggers a month — comfortably inside the
-            free tiers for SNS, SQS, Lambda, and DynamoDB on-demand.
-          </p>
+      <div class="pricing-layout">
+        <div class="pricing-slider">
+          <div class="pricing-card pricing-slider-card">
+            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="muted" id="pricing-slider-desc">
+              A few hundred triggers a month — comfortably inside the
+              free tiers for SNS, SQS, Lambda, and DynamoDB on-demand.
+            </p>
+          </div>
+          <div class="pricing-slider-control">
+            <input
+              type="range"
+              class="pricing-slider-input"
+              id="pricing-slider-input"
+              min="0"
+              max="4"
+              step="1"
+              value="0"
+              aria-label="Triggers per month"
+              aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
+            />
+            <div class="pricing-slider-ticks" aria-hidden="true">
+              <span>500</span>
+              <span>5K</span>
+              <span>20K</span>
+              <span>100K</span>
+              <span>500K+</span>
+            </div>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">Triggers per month</p>
+          </div>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">Moderate volume</p>
-          <p class="pricing-amount">~$1<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Tens of thousands of triggers a month — mostly SES sending
-            costs once its free tier is used up; SNS/SQS/Lambda stay near
-            free.
-          </p>
+        <div class="pricing-breakdown">
+          <h3>What drives the cost</h3>
+          <ul>
+            <li><strong>SNS</strong> — billed per publish and per delivery to each subscriber; the free tier covers 1M publishes and 100K HTTP/S deliveries a month, and Lambda/SQS deliveries are free entirely.</li>
+            <li><strong>SQS</strong> — billed per million requests; the free tier covers the first 1M every month.</li>
+            <li><strong>Lambda</strong> — billed per request and per millisecond; four small functions here, each running in well under 200ms.</li>
+            <li><strong>DynamoDB</strong> — on-demand billing, and rows expire automatically after 24 hours via TTL, so storage never grows.</li>
+            <li><strong>SES</strong> — billed per 1,000 emails sent, after the free tier.</li>
+          </ul>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">High volume</p>
-          <p class="pricing-amount">~$5–10<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Hundreds of thousands of triggers a month — Lambda invocations
-            and SES sends start to add up across both fan-out branches.
-          </p>
-        </div>
-      </div>
-      <div class="pricing-breakdown">
-        <h3>What drives the cost</h3>
-        <ul>
-          <li><strong>SNS</strong> — billed per publish and per delivery to each subscriber; the free tier covers 1M publishes and 100K HTTP/S deliveries a month, and Lambda/SQS deliveries are free entirely.</li>
-          <li><strong>SQS</strong> — billed per million requests; the free tier covers the first 1M every month.</li>
-          <li><strong>Lambda</strong> — billed per request and per millisecond; four small functions here, each running in well under 200ms.</li>
-          <li><strong>DynamoDB</strong> — on-demand billing, and rows expire automatically after 24 hours via TTL, so storage never grows.</li>
-          <li><strong>SES</strong> — billed per 1,000 emails sent, after the free tier.</li>
-        </ul>
       </div>
     </section>
 
@@ -497,19 +503,16 @@
           </p>
         </div>
         <div class="decision-item">
-          <h3>A Scan seemed fine, until it wasn't</h3>
+          <h3>A GSI instead of a Scan for "recent deliveries"</h3>
           <p class="muted">
-            The first version read "recent" rows back with a plain table
-            Scan, reasoning that daily TTL cleanup would keep the table
-            small enough for it not to matter. That held up during early
-            testing, then quietly stopped being true — a Scan reads items
-            in whatever order they happen to sit in on disk, not by
-            recency, and once the table had grown past a couple hundred
-            rows a Scan could genuinely miss the newest ones. Fixed by
-            adding a GSI (a constant partition key + <code>triggeredAt</code>
-            as the sort key) so reads are an actual sorted Query instead of
-            a guess. TTL still handles cleanup — it just never was the
-            thing keeping reads correct.
+            A plain table Scan reads items in whatever order they
+            happen to sit on disk, not by recency — once the table
+            holds more than a couple hundred rows, a Scan can genuinely
+            miss the newest ones. A GSI (a constant partition key +
+            <code>triggeredAt</code> as the sort key) turns "recent
+            deliveries" into an actual sorted Query instead of a guess.
+            TTL still handles cleanup, but correctness of the read never
+            depends on the table staying small.
           </p>
         </div>
         <div class="decision-item">

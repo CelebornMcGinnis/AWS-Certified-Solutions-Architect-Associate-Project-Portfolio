@@ -45,7 +45,7 @@
             <a href="/project/habits/project6.html">Habit Tracker</a>
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
-            <details class="nav-dropdown-subsection">
+            <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Website Chatbot</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
@@ -374,43 +374,49 @@
         AWS list pricing, not a guarantee.
       </p>
       </div>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <p class="pricing-tier">Low volume</p>
-          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            A handful of conversations a month, mostly answered by the
-            free FAQ layer — comfortably inside Cognito's 50,000 MAU
-            free tier plus Lambda/DynamoDB/API Gateway free tiers.
-          </p>
+      <div class="pricing-layout">
+        <div class="pricing-slider">
+          <div class="pricing-card pricing-slider-card">
+            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="muted" id="pricing-slider-desc">
+              A handful of AI-fallback questions a month, most
+              conversations answered by the free FAQ layer — comfortably
+              inside Cognito's 50,000 MAU free tier plus
+              Lambda/DynamoDB/API Gateway free tiers.
+            </p>
+          </div>
+          <div class="pricing-slider-control">
+            <input
+              type="range"
+              class="pricing-slider-input"
+              id="pricing-slider-input"
+              min="0"
+              max="4"
+              step="1"
+              value="0"
+              aria-label="AI-fallback questions per month"
+              aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
+            />
+            <div class="pricing-slider-ticks" aria-hidden="true">
+              <span>10</span>
+              <span>100</span>
+              <span>500</span>
+              <span>2K</span>
+              <span>5K+</span>
+            </div>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">AI-fallback questions per month</p>
+          </div>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">Moderate volume</p>
-          <p class="pricing-amount">~$0.50–2<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Hundreds of AI-fallback questions a month — cost scales
-            with how often visitors ask something the FAQ layer
-            doesn't cover, not with total message volume.
-          </p>
+        <div class="pricing-breakdown">
+          <h3>What drives the cost</h3>
+          <ul>
+            <li><strong>Bedrock (Nova Lite + Guardrails)</strong> — only invoked for questions the FAQ layer can't answer; billed per token, plus the guardrail's own per-request evaluation cost.</li>
+            <li><strong>Cognito</strong> — free for up to 50,000 monthly active users.</li>
+            <li><strong>DynamoDB</strong> — on-demand billing for conversation history; TTL keeps the table small automatically.</li>
+            <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
+          </ul>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">High volume</p>
-          <p class="pricing-amount">~$3–8<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Thousands of AI-fallback questions a month — still
-            dominated by Nova Lite's low per-token cost; the FAQ layer
-            keeps this from scaling with total traffic.
-          </p>
-        </div>
-      </div>
-      <div class="pricing-breakdown">
-        <h3>What drives the cost</h3>
-        <ul>
-          <li><strong>Bedrock (Nova Lite + Guardrails)</strong> — only invoked for questions the FAQ layer can't answer; billed per token, plus the guardrail's own per-request evaluation cost.</li>
-          <li><strong>Cognito</strong> — free for up to 50,000 monthly active users.</li>
-          <li><strong>DynamoDB</strong> — on-demand billing for conversation history; TTL keeps the table small automatically.</li>
-          <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
-        </ul>
       </div>
     </section>
 

@@ -45,7 +45,7 @@
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
-            <details class="nav-dropdown-subsection">
+            <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Movie Poll</summary>
               <a class="nav-dropdown-sublink" href="#poll">Live poll</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
@@ -338,41 +338,49 @@
           estimates based on public AWS list pricing, not a guarantee.
         </p>
       </div>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <p class="pricing-tier">Low volume</p>
-          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Casual portfolio traffic — a handful of visitors keeping a tab
-            open here and there. Comfortably inside free-tier-level cost
-            for Lambda and DynamoDB, with negligible WebSocket charges.
-          </p>
+      <div class="pricing-layout">
+        <div class="pricing-slider">
+          <div class="pricing-card pricing-slider-card">
+            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="muted" id="pricing-slider-desc">
+              Casual portfolio traffic — a handful of visitors keeping a
+              tab open here and there. Comfortably inside free-tier-level
+              cost for Lambda and DynamoDB, with negligible WebSocket
+              charges.
+            </p>
+          </div>
+          <div class="pricing-slider-control">
+            <input
+              type="range"
+              class="pricing-slider-input"
+              id="pricing-slider-input"
+              min="0"
+              max="4"
+              step="1"
+              value="0"
+              aria-label="Concurrent connections"
+              aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
+            />
+            <div class="pricing-slider-ticks" aria-hidden="true">
+              <span>5</span>
+              <span>50</span>
+              <span>500</span>
+              <span>2K</span>
+              <span>5K+</span>
+            </div>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">Concurrent connections</p>
+          </div>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">Moderate volume</p>
-          <p class="pricing-amount">~$1–3<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            A steady trickle of visitors, or a short burst — a few hundred
-            connection-minutes and a few thousand messages a month.
-          </p>
+        <div class="pricing-breakdown">
+          <h3>What drives the cost</h3>
+          <ul>
+            <li><strong>API Gateway (WebSocket)</strong> — billed per million messages sent, plus per million connection-minutes for every second a socket stays open, even idle.</li>
+            <li><strong>Lambda</strong> — three functions (connect, disconnect, vote), each billed per request and per millisecond of compute time.</li>
+            <li><strong>DynamoDB</strong> — on-demand pricing per read/write; the vote broadcast currently scans the full connections table on every vote, which is fine at demo scale but is the first thing that'd need to change at real scale.</li>
+            <li><strong>S3 + CloudFront</strong> — a few cents a month at most, same as the rest of this static site.</li>
+          </ul>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">High volume</p>
-          <p class="pricing-amount">~$10–25<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            A viral moment with thousands of concurrent connections —
-            connection-minutes and broadcast costs both start to add up.
-          </p>
-        </div>
-      </div>
-      <div class="pricing-breakdown">
-        <h3>What drives the cost</h3>
-        <ul>
-          <li><strong>API Gateway (WebSocket)</strong> — billed per million messages sent, plus per million connection-minutes for every second a socket stays open, even idle.</li>
-          <li><strong>Lambda</strong> — three functions (connect, disconnect, vote), each billed per request and per millisecond of compute time.</li>
-          <li><strong>DynamoDB</strong> — on-demand pricing per read/write; the vote broadcast currently scans the full connections table on every vote, which is fine at demo scale but is the first thing that'd need to change at real scale.</li>
-          <li><strong>S3 + CloudFront</strong> — a few cents a month at most, same as the rest of this static site.</li>
-        </ul>
       </div>
     </section>
 
@@ -381,10 +389,8 @@
         <p class="eyebrow">Design decisions</p>
         <h2 id="decisions-heading">Why I built it this way</h2>
         <p class="muted section-intro">
-          Every architecture involves tradeoffs. Here's the reasoning
-          behind some of the choices in this project — including a couple
-          I only landed on after real deployment testing proved the
-          original plan wrong.
+          A few choices here aren't the only way to build this — here's the
+          reasoning behind them.
         </p>
       </div>
       <div class="decision-list">
@@ -425,15 +431,12 @@
         <div class="decision-item">
           <h3>Sync-after-connect, not push-from-connect</h3>
           <p class="muted">
-            The first version tried to push initial results to a
-            client from inside its own <code>$connect</code>
-            invocation — and it turned out that's an unreliable
-            pattern in API Gateway's WebSocket API; a connection isn't
-            always immediately postable during its own connect event.
-            Real deployment testing caught this, not local reasoning
-            alone. The fix: the client asks for results in a separate
-            message right after opening, which sidesteps the race
-            entirely.
+            Pushing initial results to a client from inside its own
+            <code>$connect</code> invocation is an unreliable pattern in
+            API Gateway's WebSocket API — a connection isn't always
+            immediately postable during its own connect event. Instead,
+            the client asks for results in a separate message right
+            after opening, which sidesteps that race entirely.
           </p>
         </div>
         <div class="decision-item">
@@ -452,12 +455,12 @@
         <div class="decision-item">
           <h3>Connect always emails; disconnect carries the stats</h3>
           <p class="muted">
-            Early on, every single vote sent me an email — useful
-            while debugging, but far too noisy for something people
-            would actually vote on. Connect events stay lightweight
-            (just confirming someone showed up), and the full results
-            snapshot moved to disconnect, so I get one meaningful
-            summary per visit instead of one email per click.
+            Emailing on every single vote would be far too noisy for
+            something people actually vote on repeatedly. Connect
+            events stay lightweight (just confirming someone showed
+            up), and the full results snapshot goes out on disconnect
+            instead — one meaningful summary per visit rather than one
+            email per click.
           </p>
         </div>
         <div class="decision-item">
@@ -1177,6 +1180,41 @@
           reflectState();
         });
       });
+    })();
+
+    // Pricing slider: drag through 5 volume steps instead of scanning 3
+    // fixed cards. Not a live formula -- these are the same estimates the
+    // old cards used at the low/moderate/high anchor points, plus two
+    // extra steps in between for a smoother feel.
+    (function () {
+      var input = document.getElementById('pricing-slider-input');
+      var tierEl = document.getElementById('pricing-slider-tier');
+      var amountEl = document.getElementById('pricing-slider-amount');
+      var descEl = document.getElementById('pricing-slider-desc');
+      if (!input || !tierEl || !amountEl || !descEl) return;
+
+      var steps = [
+        { tier: "Low volume", amount: "~$0", period: "/mo", desc: "Casual portfolio traffic — a handful of visitors keeping a tab open here and there. Comfortably inside free-tier-level cost for Lambda and DynamoDB, with negligible WebSocket charges." },
+        { tier: "Light volume", amount: "~$0", period: "/mo", desc: "A small cluster of visitors browsing at once — still negligible connection-minute cost." },
+        { tier: "Moderate volume", amount: "~$1–3", period: "/mo", desc: "A steady trickle of visitors, or a short burst — a few hundred connection-minutes and a few thousand messages a month." },
+        { tier: "Elevated volume", amount: "~$5–10", period: "/mo", desc: "A busier burst of traffic — connection-minutes and broadcast messages both start adding up." },
+        { tier: "High volume", amount: "~$10–25", period: "/mo", desc: "A viral moment with thousands of concurrent connections — connection-minutes and broadcast costs both climb together." },
+      ];
+
+      function render() {
+        var step = steps[Number(input.value)];
+        tierEl.textContent = step.tier;
+        amountEl.textContent = step.amount;
+        amountEl.appendChild(Object.assign(document.createElement('span'), { className: 'pricing-period', textContent: step.period }));
+        descEl.textContent = step.desc;
+
+        var percent = (Number(input.value) / (steps.length - 1)) * 100;
+        input.style.background =
+          'linear-gradient(to right, var(--accent) ' + percent + '%, var(--border) ' + percent + '%)';
+      }
+
+      input.addEventListener('input', render);
+      render();
     })();
   </script>
 </body>

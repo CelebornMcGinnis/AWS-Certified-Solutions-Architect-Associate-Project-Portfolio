@@ -45,7 +45,7 @@
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
-            <details class="nav-dropdown-subsection">
+            <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Workflow Visualizer</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
@@ -344,43 +344,48 @@
         AWS list pricing, not a guarantee.
       </p>
       </div>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <p class="pricing-tier">Low volume</p>
-          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Up to a few thousand job submissions a month — comfortably
-            inside Step Functions' free tier of 4,000 state transitions
-            (each job uses 3), plus Lambda and DynamoDB's free tiers.
-          </p>
+      <div class="pricing-layout">
+        <div class="pricing-slider">
+          <div class="pricing-card pricing-slider-card">
+            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="muted" id="pricing-slider-desc">
+              A few hundred job submissions a month — comfortably inside
+              Step Functions' free tier of 4,000 state transitions (each
+              job uses 3), plus Lambda and DynamoDB's free tiers.
+            </p>
+          </div>
+          <div class="pricing-slider-control">
+            <input
+              type="range"
+              class="pricing-slider-input"
+              id="pricing-slider-input"
+              min="0"
+              max="4"
+              step="1"
+              value="0"
+              aria-label="Jobs submitted per month"
+              aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
+            />
+            <div class="pricing-slider-ticks" aria-hidden="true">
+              <span>500</span>
+              <span>5K</span>
+              <span>20K</span>
+              <span>100K</span>
+              <span>500K+</span>
+            </div>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">Jobs submitted per month</p>
+          </div>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">Moderate volume</p>
-          <p class="pricing-amount">~$1<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Tens of thousands of jobs a month — Step Functions state
-            transitions become the main cost, still a fraction of a cent
-            per job.
-          </p>
+        <div class="pricing-breakdown">
+          <h3>What drives the cost</h3>
+          <ul>
+            <li><strong>Step Functions</strong> — Standard workflows are billed per state transition; this workflow uses 3 (Validating, Processing, Complete) per job, after a 4,000/month free tier.</li>
+            <li><strong>Lambda</strong> — one small function on the create-job path, billed per request and per millisecond.</li>
+            <li><strong>DynamoDB</strong> — on-demand billing for the job table and its recency index; no idle capacity to pay for.</li>
+            <li><strong>API Gateway</strong> — billed per request across the create/read/list routes.</li>
+          </ul>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">High volume</p>
-          <p class="pricing-amount">~$5–10<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Hundreds of thousands of jobs a month — Step Functions and
-            Lambda invocations both start to add up, though DynamoDB
-            on-demand billing stays cheap either way.
-          </p>
-        </div>
-      </div>
-      <div class="pricing-breakdown">
-        <h3>What drives the cost</h3>
-        <ul>
-          <li><strong>Step Functions</strong> — Standard workflows are billed per state transition; this workflow uses 3 (Validating, Processing, Complete) per job, after a 4,000/month free tier.</li>
-          <li><strong>Lambda</strong> — one small function on the create-job path, billed per request and per millisecond.</li>
-          <li><strong>DynamoDB</strong> — on-demand billing for the job table and its recency index; no idle capacity to pay for.</li>
-          <li><strong>API Gateway</strong> — billed per request across the create/read/list routes.</li>
-        </ul>
       </div>
     </section>
 
@@ -410,14 +415,13 @@
         <div class="decision-item">
           <h3>The trigger Lambda writes SUBMITTED, not VALIDATING</h3>
           <p class="muted">
-            An earlier version had the API Lambda create the job with
-            status <code>VALIDATING</code> directly, since that's the
-            state machine's first real step anyway. That meant two
-            different pieces of code could each claim to be the source of
-            a status change. Splitting <code>SUBMITTED</code> (written by
-            the API Lambda) from <code>VALIDATING</code> (the state
-            machine's own first transition) means every real status
-            change has exactly one origin.
+            Having the API Lambda create the job with status
+            <code>VALIDATING</code> directly would let two different
+            pieces of code each claim to be the source of a status
+            change. Splitting <code>SUBMITTED</code> (written by the API
+            Lambda) from <code>VALIDATING</code> (the state machine's
+            own first transition) means every real status change has
+            exactly one origin.
           </p>
         </div>
         <div class="decision-item">

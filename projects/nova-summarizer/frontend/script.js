@@ -446,3 +446,38 @@ if (mobileSidebar) {
     });
   });
 })();
+
+// Pricing slider: drag through 5 volume steps instead of scanning 3
+// fixed cards. Not a live formula -- these are the same estimates the
+// old cards used at the low/moderate/high anchor points, plus two
+// extra steps in between for a smoother feel.
+(function () {
+  var input = document.getElementById('pricing-slider-input');
+  var tierEl = document.getElementById('pricing-slider-tier');
+  var amountEl = document.getElementById('pricing-slider-amount');
+  var descEl = document.getElementById('pricing-slider-desc');
+  if (!input || !tierEl || !amountEl || !descEl) return;
+
+  var steps = [
+    { tier: "Light volume", amount: "~$0", period: "/mo", desc: "A handful of summaries a day, a small fraction of the daily cap \u2014 Nova Lite is one of Bedrock's cheapest models per token, so casual use costs a fraction of a cent." },
+    { tier: "Moderate volume", amount: "~$0", period: "/mo", desc: "Around half the daily cap reached most days \u2014 still comfortably cheap thanks to Nova Lite's low per-token pricing." },
+    { tier: "Regular volume", amount: "~$0.50\u20131", period: "/mo", desc: "The daily cap reached on most days \u2014 a small, predictable ceiling rather than an open-ended bill." },
+    { tier: "Heavy volume", amount: "~$1\u20132", period: "/mo", desc: "The daily cap fully engaged every day of the month \u2014 this demo's own request limit, not Bedrock pricing, is what's setting the ceiling here." },
+    { tier: "Capped by design", amount: "Capped by design", period: "", desc: "The whole point of the daily request limit \u2014 traffic beyond it is rejected with a 429 rather than ever reaching Bedrock, so cost can't run away regardless of how much traffic shows up." },
+  ];
+
+  function render() {
+    var step = steps[Number(input.value)];
+    tierEl.textContent = step.tier;
+    amountEl.textContent = step.amount;
+    amountEl.appendChild(Object.assign(document.createElement('span'), { className: 'pricing-period', textContent: step.period }));
+    descEl.textContent = step.desc;
+
+    var percent = (Number(input.value) / (steps.length - 1)) * 100;
+    input.style.background =
+      'linear-gradient(to right, var(--accent) ' + percent + '%, var(--border) ' + percent + '%)';
+  }
+
+  input.addEventListener('input', render);
+  render();
+})();

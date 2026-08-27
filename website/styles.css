@@ -851,13 +851,21 @@ footer {
   color: var(--accent) !important;
 }
 
+/* The current page's own name in the list -- styled to match the
+   sibling project links above it (.nav-dropdown-menu a) rather than
+   standing out as a small-caps section label, since it's the same
+   kind of thing they are (a project name), just rendered as an
+   expand toggle instead of a plain link because you're already on
+   that page. Hanging indent (padding-left + negative text-indent
+   sized to the chevron) keeps a wrapped second line flush with the
+   first line's text instead of falling back under the chevron. */
 .nav-dropdown-group-label {
-  padding: 0.3rem 0.7rem 0.1rem;
-  font-size: 0.68rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
+  padding: 0.45rem 0.7rem;
+  padding-left: calc(0.7rem + 0.9em);
+  text-indent: -0.9em;
+  font-weight: 600;
+  color: var(--text);
+  border-radius: 10px;
 }
 
 .nav-dropdown-menu a.nav-dropdown-sublink {
@@ -1019,6 +1027,16 @@ footer {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Shifted right of center (not the mobile circular avatar's crop,
+   which uses a separate closer-cropped source image) -- centered
+   was cropping too much of the jacket/shoulder on the right side of
+   the frame. */
+@media (min-width: 761px) {
+  .home-hero-photo img {
+    object-position: 65% center;
+  }
 }
 
 .hero-actions {
@@ -2981,10 +2999,10 @@ footer {
 }
 
 .pricing-breakdown {
-  margin-top: 2rem;
   padding: 1.5rem clamp(1.25rem, 4vw, 2rem);
   background: var(--info-bg);
   border-radius: 20px;
+  align-self: start;
 }
 
 .pricing-breakdown h3 {
@@ -3013,9 +3031,24 @@ footer {
 
 /* Interactive alternative to the old 3-card grid: one card whose
    figures update live as a range input is dragged across 5 volume
-   steps (script.js), instead of 3 fixed cards sitting side by side. */
-.pricing-slider {
+   steps (script.js), instead of 3 fixed cards sitting side by side.
+   .pricing-layout puts this beside .pricing-breakdown on desktop
+   (single column, stacked, on mobile -- see Section 21). */
+.pricing-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
   margin-top: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 761px) {
+  .pricing-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.pricing-slider {
   max-width: 480px;
 }
 
@@ -3089,6 +3122,20 @@ footer {
   margin-top: 0.6rem;
   font-size: 0.78rem;
   font-weight: 700;
+  color: var(--muted);
+}
+
+/* States what the tick numbers above actually count -- submissions,
+   votes, images, whatever unit this project's volume slider scales
+   by -- since that's specific to each project and isn't otherwise
+   labeled anywhere near the slider itself. */
+.pricing-slider-unit {
+  margin: 0.6rem 0 0;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--muted);
 }
 

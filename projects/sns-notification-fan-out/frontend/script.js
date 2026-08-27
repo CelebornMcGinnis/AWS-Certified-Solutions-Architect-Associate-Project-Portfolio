@@ -729,3 +729,38 @@ if (mobileSidebar) {
   // not just window — 'scroll' doesn't bubble the way click does.
   window.addEventListener('scroll', function () { closeAll(null); }, { passive: true, capture: true });
 })();
+
+// Pricing slider: drag through 5 volume steps instead of scanning 3
+// fixed cards. Not a live formula -- these are the same estimates the
+// old cards used at the low/moderate/high anchor points, plus two
+// extra steps in between for a smoother feel.
+(function () {
+  var input = document.getElementById('pricing-slider-input');
+  var tierEl = document.getElementById('pricing-slider-tier');
+  var amountEl = document.getElementById('pricing-slider-amount');
+  var descEl = document.getElementById('pricing-slider-desc');
+  if (!input || !tierEl || !amountEl || !descEl) return;
+
+  var steps = [
+    { tier: "Low volume", amount: "~$0", period: "/mo", desc: "A few hundred triggers a month \u2014 comfortably inside the free tiers for SNS, SQS, Lambda, and DynamoDB on-demand." },
+    { tier: "Light volume", amount: "~$0", period: "/mo", desc: "A few thousand triggers a month \u2014 still inside the free tiers." },
+    { tier: "Moderate volume", amount: "~$1", period: "/mo", desc: "Tens of thousands of triggers a month \u2014 mostly SES sending costs once its free tier is used up; SNS/SQS/Lambda stay near free." },
+    { tier: "Elevated volume", amount: "~$2\u20135", period: "/mo", desc: "Tens of thousands more triggers a month \u2014 SES sends and Lambda invocations both keep climbing across both fan-out branches." },
+    { tier: "High volume", amount: "~$5\u201310", period: "/mo", desc: "Hundreds of thousands of triggers a month \u2014 Lambda invocations and SES sends both add up across both fan-out branches." },
+  ];
+
+  function render() {
+    var step = steps[Number(input.value)];
+    tierEl.textContent = step.tier;
+    amountEl.textContent = step.amount;
+    amountEl.appendChild(Object.assign(document.createElement('span'), { className: 'pricing-period', textContent: step.period }));
+    descEl.textContent = step.desc;
+
+    var percent = (Number(input.value) / (steps.length - 1)) * 100;
+    input.style.background =
+      'linear-gradient(to right, var(--accent) ' + percent + '%, var(--border) ' + percent + '%)';
+  }
+
+  input.addEventListener('input', render);
+  render();
+})();

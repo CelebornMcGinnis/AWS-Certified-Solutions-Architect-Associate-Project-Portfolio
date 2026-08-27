@@ -45,7 +45,7 @@
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
-            <details class="nav-dropdown-subsection">
+            <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Habit Tracker</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
@@ -285,43 +285,48 @@
         AWS list pricing, not a guarantee.
       </p>
       </div>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <p class="pricing-tier">Low volume</p>
-          <p class="pricing-amount">~$0<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            A handful of habits and daily check-ins — comfortably inside
-            Lambda, DynamoDB, and API Gateway's free tiers. EventBridge
-            Scheduler's free tier alone covers 14 million invocations a
-            month, far more than one job a day will ever use.
-          </p>
+      <div class="pricing-layout">
+        <div class="pricing-slider">
+          <div class="pricing-card pricing-slider-card">
+            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="muted" id="pricing-slider-desc">
+              A handful of habits and daily check-ins — comfortably inside
+              Lambda, DynamoDB, and API Gateway's free tiers. EventBridge
+              Scheduler's free tier alone covers 14 million invocations a
+              month, far more than one job a day will ever use.
+            </p>
+          </div>
+          <div class="pricing-slider-control">
+            <input
+              type="range"
+              class="pricing-slider-input"
+              id="pricing-slider-input"
+              min="0"
+              max="4"
+              step="1"
+              value="0"
+              aria-label="Daily check-in volume"
+              aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
+            />
+            <div class="pricing-slider-ticks" aria-hidden="true">
+              <span>100</span>
+              <span>1K</span>
+              <span>10K</span>
+              <span>50K</span>
+              <span>100K+</span>
+            </div>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">Check-ins per day</p>
+          </div>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">Moderate volume</p>
-          <p class="pricing-amount">~$0–1<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Thousands of habits being checked in on daily — still
-            dominated by free-tier usage; the nightly reset job scans
-            the whole table once a day regardless of how many rows exist.
-          </p>
+        <div class="pricing-breakdown">
+          <h3>What drives the cost</h3>
+          <ul>
+            <li><strong>EventBridge Scheduler</strong> — one invocation per day, effectively free at any realistic scale for this project.</li>
+            <li><strong>DynamoDB</strong> — on-demand billing for two tables (habits, check-ins); the nightly reset job's table Scan is the only recurring read cost that grows with total habit count rather than traffic.</li>
+            <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
+          </ul>
         </div>
-        <div class="pricing-card">
-          <p class="pricing-tier">High volume</p>
-          <p class="pricing-amount">~$2–5<span class="pricing-period">/mo</span></p>
-          <p class="muted">
-            Tens of thousands of habits — DynamoDB's on-demand write cost
-            from daily check-ins becomes the main driver, with the
-            nightly Scan job's read cost growing alongside table size.
-          </p>
-        </div>
-      </div>
-      <div class="pricing-breakdown">
-        <h3>What drives the cost</h3>
-        <ul>
-          <li><strong>EventBridge Scheduler</strong> — one invocation per day, effectively free at any realistic scale for this project.</li>
-          <li><strong>DynamoDB</strong> — on-demand billing for two tables (habits, check-ins); the nightly reset job's table Scan is the only recurring read cost that grows with total habit count rather than traffic.</li>
-          <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
-        </ul>
       </div>
     </section>
 

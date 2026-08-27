@@ -45,7 +45,7 @@
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
-            <details class="nav-dropdown-subsection">
+            <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Contact Form</summary>
               <a class="nav-dropdown-sublink" href="#contact">Contact form</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
@@ -343,44 +343,47 @@
           your usage and configuration.
         </p>
       </div>
-      <div class="pricing-slider">
-        <div class="pricing-card pricing-slider-card">
-          <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
-          <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
-          <p class="muted" id="pricing-slider-desc">
-            Up to around 1,000 submissions a month — comfortably inside the
-            AWS Free Tier for Lambda, API Gateway, and SES.
-          </p>
-        </div>
-        <div class="pricing-slider-control">
-          <input
-            type="range"
-            class="pricing-slider-input"
-            id="pricing-slider-input"
-            min="0"
-            max="4"
-            step="1"
-            value="0"
-            aria-label="Monthly submission volume"
-            aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc"
-          />
-          <div class="pricing-slider-ticks" aria-hidden="true">
-            <span>1K</span>
-            <span>10K</span>
-            <span>50K</span>
-            <span>200K</span>
-            <span>500K+</span>
+      <div class="pricing-layout">
+        <div class="pricing-slider">
+          <div class="pricing-card pricing-slider-card">
+            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="muted" id="pricing-slider-desc">
+              Up to around 1,000 submissions a month — comfortably inside the
+              AWS Free Tier for Lambda, API Gateway, and SES.
+            </p>
+          </div>
+          <div class="pricing-slider-control">
+            <input
+              type="range"
+              class="pricing-slider-input"
+              id="pricing-slider-input"
+              min="0"
+              max="4"
+              step="1"
+              value="0"
+              aria-label="Monthly submission volume"
+              aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
+            />
+            <div class="pricing-slider-ticks" aria-hidden="true">
+              <span>1K</span>
+              <span>10K</span>
+              <span>50K</span>
+              <span>200K</span>
+              <span>500K+</span>
+            </div>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">Form submissions per month</p>
           </div>
         </div>
-      </div>
-      <div class="pricing-breakdown">
-        <h3>What drives the cost</h3>
-        <ul>
-          <li><strong>Lambda</strong> — billed per request and per millisecond of compute time; this function runs in well under 100ms.</li>
-          <li><strong>API Gateway</strong> — billed per million requests, using the cheaper HTTP API type rather than REST API.</li>
-          <li><strong>SES</strong> — billed per 1,000 emails sent; two go out per submission, an admin notice and a visitor confirmation.</li>
-          <li><strong>S3</strong> — a few cents a month at most; static hosting for a small site is close to free.</li>
-        </ul>
+        <div class="pricing-breakdown">
+          <h3>What drives the cost</h3>
+          <ul>
+            <li><strong>Lambda</strong> — billed per request and per millisecond of compute time; this function runs in well under 100ms.</li>
+            <li><strong>API Gateway</strong> — billed per million requests, using the cheaper HTTP API type rather than REST API.</li>
+            <li><strong>SES</strong> — billed per 1,000 emails sent; two go out per submission, an admin notice and a visitor confirmation.</li>
+            <li><strong>S3</strong> — a few cents a month at most; static hosting for a small site is close to free.</li>
+          </ul>
+        </div>
       </div>
     </section>
     <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
@@ -388,33 +391,30 @@
         <p class="eyebrow">Design decisions</p>
         <h2 id="decisions-heading">Why I built it this way</h2>
         <p class="muted section-intro">
-          Every architecture involves tradeoffs. Here's the reasoning behind
-          some of the choices in this project — including a couple I only
-          landed on after real deployment testing proved the original plan
-          wrong.
+          A few choices here aren't the only way to build this — here's the
+          reasoning behind them.
         </p>
       </div>
       <div class="decision-list">
         <div class="decision-item">
           <h3>A one-field "smoke test" instead of a full contact form</h3>
           <p class="muted">
-            Early versions collected a name, subject, and message.
             Stripped down to just an email address on purpose — a demo
-            visitor would just be typing placeholder text into those
-            fields anyway. The point of this project is proving the
-            architecture actually works end to end, not collecting real
-            inquiries.
+            visitor would just be typing placeholder text into name,
+            subject, and message fields anyway. The point of this
+            project is proving the architecture actually works end to
+            end, not collecting real inquiries.
           </p>
         </div>
         <div class="decision-item">
           <h3>Two separate emails instead of one</h3>
           <p class="muted">
-            The first working version sent a single email to me, with
-            the visitor's address set as reply-to. That only proves
-            half the point — a visitor should see their own confirmation
-            too, not just trust that something happened on my end. Now
-            SES sends two: a notification to me, and a separate
-            confirmation back to whoever submitted the form.
+            A single email to me with the visitor's address set as
+            reply-to would only prove half the point — a visitor should
+            see their own confirmation too, not just trust that
+            something happened on my end. SES sends two: a notification
+            to me, and a separate confirmation back to whoever submitted
+            the form.
           </p>
         </div>
         <div class="decision-item">
@@ -439,16 +439,15 @@
           </p>
         </div>
         <div class="decision-item">
-          <h3>CORS enforced at two layers, learned the hard way</h3>
+          <h3>CORS enforced at two layers, not one</h3>
           <p class="muted">
             Both API Gateway's own CORS configuration and the Lambda's
             own response headers check the request's origin — belt and
-            suspenders. That redundancy isn't theoretical: getting this
-            project working end to end surfaced a misconfigured
-            function handler, a missing environment variable, and a
-            failing preflight check, each one hidden behind the last.
-            Real deployment testing found all three; none of them would
-            have shown up from reading the code alone.
+            suspenders. A misconfigured function handler, a missing
+            environment variable, or a failing preflight check can each
+            independently break a browser request; checking origin at
+            both layers means one misconfiguration doesn't silently
+            open the API to any site that asks.
           </p>
         </div>
         <div class="decision-item">

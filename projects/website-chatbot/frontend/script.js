@@ -844,3 +844,38 @@ if (mobileSidebar) {
     });
   });
 })();
+
+// Pricing slider: drag through 5 volume steps instead of scanning 3
+// fixed cards. Not a live formula -- these are the same estimates the
+// old cards used at the low/moderate/high anchor points, plus two
+// extra steps in between for a smoother feel.
+(function () {
+  var input = document.getElementById('pricing-slider-input');
+  var tierEl = document.getElementById('pricing-slider-tier');
+  var amountEl = document.getElementById('pricing-slider-amount');
+  var descEl = document.getElementById('pricing-slider-desc');
+  if (!input || !tierEl || !amountEl || !descEl) return;
+
+  var steps = [
+    { tier: "Low volume", amount: "~$0", period: "/mo", desc: "A handful of AI-fallback questions a month, most conversations answered by the free FAQ layer \u2014 comfortably inside Cognito's 50,000 MAU free tier plus Lambda/DynamoDB/API Gateway free tiers." },
+    { tier: "Light volume", amount: "~$0", period: "/mo", desc: "Dozens of AI-fallback questions a month \u2014 still effectively free." },
+    { tier: "Moderate volume", amount: "~$0.50\u20132", period: "/mo", desc: "Hundreds of AI-fallback questions a month \u2014 cost scales with how often visitors ask something the FAQ layer doesn't cover, not with total message volume." },
+    { tier: "Elevated volume", amount: "~$1\u20134", period: "/mo", desc: "A thousand or so AI-fallback questions a month \u2014 still dominated by Nova Lite's low per-token cost." },
+    { tier: "High volume", amount: "~$3\u20138", period: "/mo", desc: "Thousands of AI-fallback questions a month \u2014 still dominated by Nova Lite's low per-token cost; the FAQ layer keeps this from scaling with total traffic." },
+  ];
+
+  function render() {
+    var step = steps[Number(input.value)];
+    tierEl.textContent = step.tier;
+    amountEl.textContent = step.amount;
+    amountEl.appendChild(Object.assign(document.createElement('span'), { className: 'pricing-period', textContent: step.period }));
+    descEl.textContent = step.desc;
+
+    var percent = (Number(input.value) / (steps.length - 1)) * 100;
+    input.style.background =
+      'linear-gradient(to right, var(--accent) ' + percent + '%, var(--border) ' + percent + '%)';
+  }
+
+  input.addEventListener('input', render);
+  render();
+})();
