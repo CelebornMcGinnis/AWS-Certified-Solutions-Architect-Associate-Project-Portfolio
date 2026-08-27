@@ -298,7 +298,7 @@
       <p class="eyebrow">Pricing</p>
       <h2 id="pricing-heading">What this actually costs</h2>
       <p class="muted section-intro">
-        Same pay-per-use model as the rest of this site's projects — an
+        Pay-per-use the whole way through — an
         unused demo costs nothing. These are estimates based on public
         AWS list pricing, not a guarantee.
       </p>
@@ -337,7 +337,7 @@
         <ul>
           <li><strong>Bedrock (Nova Lite)</strong> — billed per input/output token; Nova Lite is priced well below most other Bedrock models, which is exactly why it fits a public demo.</li>
           <li><strong>DynamoDB</strong> — a single tiny item per day for the usage counter; effectively free.</li>
-          <li><strong>Lambda &amp; API Gateway</strong> — same pay-per-request pattern as every other project on this site.</li>
+          <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
         </ul>
       </div>
     </section>
@@ -366,10 +366,9 @@
           <h3>Pasted text only, no URL fetching or file upload</h3>
           <p class="muted">
             Fetching an arbitrary URL server-side turns this Lambda into
-            an open proxy, and file upload duplicates the presigned-POST
-            pattern the <a href="/project/gallery/project5.html">moderated image gallery</a>
-            already demonstrates. Pasted text keeps this project's scope
-            entirely about the Bedrock call itself.
+            an open proxy, and file upload adds a whole presigned-POST
+            upload flow that's out of scope here. Pasted text keeps this
+            project's scope entirely about the Bedrock call itself.
           </p>
         </div>
         <div class="decision-item">

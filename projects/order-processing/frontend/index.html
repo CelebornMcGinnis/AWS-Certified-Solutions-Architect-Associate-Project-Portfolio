@@ -343,7 +343,7 @@
       <p class="eyebrow">Pricing</p>
       <h2 id="pricing-heading">What this actually costs</h2>
       <p class="muted section-intro">
-        Same pay-per-use model as the rest of this site's projects — an
+        Pay-per-use the whole way through — an
         unclicked demo costs nothing. These are estimates based on public
         AWS list pricing, not a guarantee.
       </p>
@@ -426,14 +426,13 @@
           </p>
         </div>
         <div class="decision-item">
-          <h3>Reused the workflow visualizer's timeline component</h3>
+          <h3>A generic timeline component, not a one-off widget</h3>
           <p class="muted">
-            The step-by-step timeline UI is the same generic
-            <code>.job-timeline</code> component from the
-            <a href="/project/workflow/project4.html">workflow visualizer</a>,
-            extended with one new "failed" visual state — no reason to
-            build a second timeline widget for what's fundamentally the
-            same "watch discrete stages advance" idea.
+            The step-by-step timeline UI is a generic
+            <code>.job-timeline</code> component with one "failed" visual
+            state added on top — built to render whatever stage list and
+            status it's handed, rather than being hardcoded to this
+            order flow specifically.
           </p>
         </div>
         <div class="decision-item">

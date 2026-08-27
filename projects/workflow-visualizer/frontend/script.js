@@ -449,7 +449,7 @@ if (siteHeader) {
   var headerRafId = null;
   var updateHeaderState = function () {
     headerRafId = null;
-    var threshold = wasScrolled ? 8 : 24;
+    var threshold = wasScrolled ? 4 : 48;
     var scrolled = window.scrollY > threshold;
     if (scrolled !== wasScrolled) {
       siteHeader.classList.toggle('is-scrolled', scrolled);

@@ -517,7 +517,7 @@
       <p class="eyebrow">Pricing</p>
       <h2 id="pricing-heading">What this actually costs</h2>
       <p class="muted section-intro">
-        Same pay-per-use model as the rest of this site's projects — an
+        Pay-per-use the whole way through — an
         unused demo costs nothing. These are estimates based on public
         AWS list pricing, not a guarantee.
       </p>
@@ -557,7 +557,7 @@
           <li><strong>Rekognition</strong> — one <code>DetectModerationLabels</code> call per upload, billed per image after a 5,000-image/month free tier for the first year.</li>
           <li><strong>Cognito</strong> — free for up to 50,000 monthly active users; this demo will never come close.</li>
           <li><strong>S3</strong> — negligible storage cost for approved images; quarantine objects never persist past a single moderation check.</li>
-          <li><strong>Lambda, DynamoDB, API Gateway</strong> — same pay-per-request, effectively-free-at-this-scale pattern as every other project on this site.</li>
+          <li><strong>Lambda, DynamoDB, API Gateway</strong> — all billed per request/read/write; effectively free at this scale.</li>
         </ul>
       </div>
     </section>
@@ -615,13 +615,12 @@
           </p>
         </div>
         <div class="decision-item">
-          <h3>The public gallery reuses the sparse-GSI pattern</h3>
+          <h3>A sparse GSI instead of read-time filtering</h3>
           <p class="muted">
-            Same idea as the <a href="/project/workflow/project4.html">workflow visualizer</a>'s
-            recent-jobs list: <code>galleryPk</code> is only ever set on an
-            item once it's approved, so the gallery's GSI naturally
-            contains exactly the public gallery's contents — no read-time
-            filtering needed to keep pending or rejected uploads out.
+            <code>galleryPk</code> is only ever set on an item once it's
+            approved, so the gallery's GSI naturally contains exactly the
+            public gallery's contents — no read-time filtering needed to
+            keep pending or rejected uploads out.
           </p>
         </div>
       </div>

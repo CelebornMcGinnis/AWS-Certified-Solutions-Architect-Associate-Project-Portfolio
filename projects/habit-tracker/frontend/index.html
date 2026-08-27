@@ -280,7 +280,7 @@
       <p class="eyebrow">Pricing</p>
       <h2 id="pricing-heading">What this actually costs</h2>
       <p class="muted section-intro">
-        Same pay-per-use model as the rest of this site's projects — an
+        Pay-per-use the whole way through — an
         unused demo costs nothing. These are estimates based on public
         AWS list pricing, not a guarantee.
       </p>
@@ -320,7 +320,7 @@
         <ul>
           <li><strong>EventBridge Scheduler</strong> — one invocation per day, effectively free at any realistic scale for this project.</li>
           <li><strong>DynamoDB</strong> — on-demand billing for two tables (habits, check-ins); the nightly reset job's table Scan is the only recurring read cost that grows with total habit count rather than traffic.</li>
-          <li><strong>Lambda &amp; API Gateway</strong> — same pay-per-request pattern as every other project on this site.</li>
+          <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
         </ul>
       </div>
     </section>
@@ -338,13 +338,11 @@
         <div class="decision-item">
           <h3>Anonymous device id instead of an account</h3>
           <p class="muted">
-            The <a href="/project/gallery/project5.html">moderated image gallery</a>
-            already demonstrates real Cognito authentication on this
-            site. A habit tracker's core idea — check in, watch a
-            streak, see a scheduled job act on it — doesn't need a
-            second copy of that same auth code to demonstrate; a
-            disclosed, no-account identity keeps the demo's friction at
-            zero without pretending it's something it isn't.
+            A habit tracker's core idea — check in, watch a streak, see
+            a scheduled job act on it — doesn't need real Cognito
+            authentication to demonstrate; a disclosed, no-account
+            identity keeps the demo's friction at zero without
+            pretending it's something it isn't.
           </p>
         </div>
         <div class="decision-item">

@@ -203,7 +203,7 @@
         // if scrollY hovers right around a single boundary — which can
         // happen right after load while images/sections are still
         // settling into their final layout position.
-        var threshold = wasScrolled ? 8 : 24;
+        var threshold = wasScrolled ? 4 : 48;
         var scrolled = window.scrollY > threshold;
         if (scrolled !== wasScrolled) {
           siteHeader.classList.toggle('is-scrolled', scrolled);

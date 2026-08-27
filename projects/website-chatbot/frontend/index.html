@@ -291,7 +291,7 @@
           <span class="flow-step-num">1</span>
           <div class="flow-step-body">
             <h3>Visitor signs in via Cognito</h3>
-            <p>The browser talks directly to a Cognito user pool's public API to sign up, confirm, log in, or reset a password — no server in the middle, same pattern as the <a href="/project/gallery/project5.html">moderated image gallery</a>.</p>
+            <p>The browser talks directly to a Cognito user pool's public API to sign up, confirm, log in, or reset a password — no server sits in the middle of authentication.</p>
           </div>
         </li>
 
@@ -369,7 +369,7 @@
       <p class="eyebrow">Pricing</p>
       <h2 id="pricing-heading">What this actually costs</h2>
       <p class="muted section-intro">
-        Same pay-per-use model as the rest of this site's projects — an
+        Pay-per-use the whole way through — an
         unused demo costs nothing. These are estimates based on public
         AWS list pricing, not a guarantee.
       </p>
@@ -409,7 +409,7 @@
           <li><strong>Bedrock (Nova Lite + Guardrails)</strong> — only invoked for questions the FAQ layer can't answer; billed per token, plus the guardrail's own per-request evaluation cost.</li>
           <li><strong>Cognito</strong> — free for up to 50,000 monthly active users.</li>
           <li><strong>DynamoDB</strong> — on-demand billing for conversation history; TTL keeps the table small automatically.</li>
-          <li><strong>Lambda &amp; API Gateway</strong> — same pay-per-request pattern as every other project on this site.</li>
+          <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
         </ul>
       </div>
     </section>
@@ -458,12 +458,10 @@
         <div class="decision-item">
           <h3>DynamoDB TTL instead of a scheduled cleanup job</h3>
           <p class="muted">
-            The <a href="/project/habits/project6.html">habit tracker</a>
-            already shows a scheduled Lambda job on this site. Expiring
-            conversation history is a better fit for TTL specifically
-            — each item already knows its own expiration the moment
-            it's written, so there's no separate job to schedule,
-            monitor, or fail.
+            Expiring conversation history is a better fit for TTL than
+            for a scheduled Lambda job — each item already knows its own
+            expiration the moment it's written, so there's no separate
+            job to schedule, monitor, or fail.
           </p>
         </div>
       </div>
