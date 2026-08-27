@@ -3006,6 +3006,87 @@ footer {
   color: var(--text);
 }
 
+/* Interactive alternative to the old 3-card grid: one card whose
+   figures update live as a range input is dragged across 5 volume
+   steps (script.js), instead of 3 fixed cards sitting side by side. */
+.pricing-slider {
+  margin-top: 1.5rem;
+  max-width: 480px;
+}
+
+.pricing-slider-card {
+  text-align: center;
+}
+
+.pricing-slider-control {
+  margin-top: 1.75rem;
+  padding: 0 0.2rem;
+}
+
+/* Both the -webkit and -moz thumb rules below need to stay in separate
+   rulesets, each with only its own pseudo-element -- a browser drops
+   an entire selector list the instant it hits one pseudo-element it
+   doesn't recognize, so combining them with a comma would make both
+   browsers ignore the whole rule. */
+.pricing-slider-input {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.pricing-slider-input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--surface);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.pricing-slider-input::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--surface);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.pricing-slider-input:focus-visible {
+  outline: 3px solid rgba(52, 84, 209, 0.35);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pricing-slider-input:hover::-webkit-slider-thumb {
+    transform: scale(1.12);
+  }
+
+  .pricing-slider-input:hover::-moz-range-thumb {
+    transform: scale(1.12);
+  }
+}
+
+.pricing-slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
 /* ---------------------------------------------------------------------
    19. BACK-TO-TOP BUTTON (both pages)
    The floating circular arrow button in the bottom-right corner.
