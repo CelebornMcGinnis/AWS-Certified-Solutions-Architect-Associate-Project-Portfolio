@@ -3,8 +3,6 @@
     apiEndpoint: "",
     apiKey: "",
     headers: {},
-    redirectOnSuccess: true,
-    successUrl: "success.html",
     requestTimeoutMs: 10000
   };
 
@@ -149,12 +147,6 @@
 
       const successMessage = responseBody.message || "Thanks! Your message was received.";
       setStatus(successMessage, "success");
-
-      if (config.redirectOnSuccess) {
-        window.setTimeout(function () {
-          window.location.assign(config.successUrl);
-        }, 1000);
-      }
     } catch (error) {
       const message = error.name === "AbortError"
         ? "The request timed out. Please try again."

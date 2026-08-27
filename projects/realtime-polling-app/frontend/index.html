@@ -38,13 +38,8 @@
           <summary>Projects</summary>
           <div class="nav-dropdown-menu">
             <a href="/project/contactform/project1.html">Contact Form</a>
-            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
-            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
             <a href="/project/habits/project6.html">Habit Tracker</a>
-            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-            <a href="/project/orders/project8.html">Order Processing</a>
-            <a href="/project/chatbot/project9.html">Website Chatbot</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Movie Poll</summary>
               <a class="nav-dropdown-sublink" href="#poll">Live poll</a>
@@ -53,6 +48,11 @@
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
             </details>
+            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+            <a href="/project/orders/project8.html">Order Processing</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <a href="/project/chatbot/project9.html">Website Chatbot</a>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
             <a class="nav-dropdown-all" href="/#projects">View all projects</a>
           </div>
         </details>
@@ -452,38 +452,6 @@
             as a silent shortcut.
           </p>
         </div>
-        <div class="decision-item">
-          <h3>Connect always emails; disconnect carries the stats</h3>
-          <p class="muted">
-            Emailing on every single vote would be far too noisy for
-            something people actually vote on repeatedly. Connect
-            events stay lightweight (just confirming someone showed
-            up), and the full results snapshot goes out on disconnect
-            instead — one meaningful summary per visit rather than one
-            email per click.
-          </p>
-        </div>
-        <div class="decision-item">
-          <h3>A movie poll instead of a dry sample dataset</h3>
-          <p class="muted">
-            The architecture didn't need a fun topic to work, but a
-            portfolio piece does more work when people actually want
-            to interact with it. A quick, low-stakes, slightly funny
-            question gets more real votes than a generic "Option A vs
-            Option B" would — and that matters when the whole point is
-            demonstrating the system live.
-          </p>
-        </div>
-        <div class="decision-item">
-          <h3>A config.js scoped to this project alone</h3>
-          <p class="muted">
-            Rather than one shared config file for the whole site,
-            this project keeps its own, holding only what it needs. As
-            more projects get added here, a single growing config file
-            would start implying a coupling between unrelated backends
-            that doesn't actually exist.
-          </p>
-        </div>
       </div>
     </section>
   </main>
@@ -540,13 +508,8 @@
         <summary class="mobile-sidebar-group-summary">Projects</summary>
         <div class="mobile-sidebar-group-content">
         <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
-        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
-        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
         <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
-        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
-        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">Movie Poll</summary>
           <a class="mobile-sidebar-sublink" href="#poll">Live poll</a>
@@ -555,6 +518,11 @@
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
         </details>
+        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
+        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
+        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
         <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
         </div>
       </details>
@@ -1109,9 +1077,20 @@
       };
 
       if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function () {
+        var toggleSidebar = function () {
           setSidebarOpen(!mobileSidebar.classList.contains('is-open'));
+        };
+        // A tap that lands while the page still has scroll momentum can
+        // get consumed by the browser purely to stop that momentum,
+        // without ever synthesizing a click event afterward -- touchend
+        // fires regardless, so the menu opens from there directly, with
+        // preventDefault to stop the browser from also firing a
+        // redundant synthetic click right after.
+        sidebarToggle.addEventListener('touchend', function (event) {
+          event.preventDefault();
+          toggleSidebar();
         });
+        sidebarToggle.addEventListener('click', toggleSidebar);
       }
 
       if (sidebarBackdrop) {

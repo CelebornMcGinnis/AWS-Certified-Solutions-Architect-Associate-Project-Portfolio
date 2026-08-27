@@ -6,6 +6,7 @@ import { LivePollStack } from '../lib/live-poll-stack';
 import { ContactFormStack } from '../lib/contact-form-stack';
 import { WorkflowVisualizerStack } from '../lib/workflow-visualizer-stack';
 import { ModeratedImageGalleryStack } from '../lib/moderated-image-gallery-stack';
+import { SharedAuthStack } from '../lib/shared-auth-stack';
 import { HabitTrackerStack } from '../lib/habit-tracker-stack';
 import { NovaSummarizerStack } from '../lib/nova-summarizer-stack';
 import { OrderProcessingStack } from '../lib/order-processing-stack';
@@ -54,8 +55,14 @@ const workflowVisualizerBeta = new WorkflowVisualizerStack(app, 'workflow-visual
 // Backend-first, like workflow-visualizer's initial rollout. The frontend
 // now exists too (see website-content.ts's PROJECTS entry), gated to
 // stages: ['beta'] there until it's reviewed and promoted to prod.
-const moderatedImageGalleryProd = new ModeratedImageGalleryStack(app, 'moderated-image-gallery', { env, stage: 'prod' });
-const moderatedImageGalleryBeta = new ModeratedImageGalleryStack(app, 'moderated-image-gallery-beta', { env, stage: 'beta' });
+// Shared login for moderated-image-gallery and website-chatbot -- one
+// Cognito user pool per stage, imported by both stacks below instead of
+// each provisioning its own. Must be created before either consumer.
+const sharedAuthProd = new SharedAuthStack(app, 'shared-auth', { env, stage: 'prod' });
+const sharedAuthBeta = new SharedAuthStack(app, 'shared-auth-beta', { env, stage: 'beta' });
+
+const moderatedImageGalleryProd = new ModeratedImageGalleryStack(app, 'moderated-image-gallery', { env, stage: 'prod', userPool: sharedAuthProd.userPool, userPoolClient: sharedAuthProd.userPoolClient });
+const moderatedImageGalleryBeta = new ModeratedImageGalleryStack(app, 'moderated-image-gallery-beta', { env, stage: 'beta', userPool: sharedAuthBeta.userPool, userPoolClient: sharedAuthBeta.userPoolClient });
 
 // Same backend-first rollout again -- frontend gated to stages: ['beta']
 // in website-content.ts until reviewed.
@@ -74,13 +81,13 @@ const orderProcessingBeta = new OrderProcessingStack(app, 'order-processing-beta
 
 // Same backend-first rollout again -- frontend gated to stages: ['beta']
 // in website-content.ts until reviewed.
-const websiteChatbotProd = new WebsiteChatbotStack(app, 'website-chatbot', { env, stage: 'prod' });
-const websiteChatbotBeta = new WebsiteChatbotStack(app, 'website-chatbot-beta', { env, stage: 'beta' });
+const websiteChatbotProd = new WebsiteChatbotStack(app, 'website-chatbot', { env, stage: 'prod', userPool: sharedAuthProd.userPool, userPoolClient: sharedAuthProd.userPoolClient });
+const websiteChatbotBeta = new WebsiteChatbotStack(app, 'website-chatbot-beta', { env, stage: 'beta', userPool: sharedAuthBeta.userPool, userPoolClient: sharedAuthBeta.userPoolClient });
 
-for (const stack of [fanningSnsProd, livePollProd, contactFormProd, workflowVisualizerProd, moderatedImageGalleryProd, habitTrackerProd, novaSummarizerProd, orderProcessingProd, websiteChatbotProd]) {
+for (const stack of [fanningSnsProd, livePollProd, contactFormProd, workflowVisualizerProd, sharedAuthProd, moderatedImageGalleryProd, habitTrackerProd, novaSummarizerProd, orderProcessingProd, websiteChatbotProd]) {
   cdk.Tags.of(stack).add('Stage', 'prod');
 }
-for (const stack of [fanningSnsBeta, livePollBeta, contactFormBeta, workflowVisualizerBeta, moderatedImageGalleryBeta, habitTrackerBeta, novaSummarizerBeta, orderProcessingBeta, websiteChatbotBeta]) {
+for (const stack of [fanningSnsBeta, livePollBeta, contactFormBeta, workflowVisualizerBeta, sharedAuthBeta, moderatedImageGalleryBeta, habitTrackerBeta, novaSummarizerBeta, orderProcessingBeta, websiteChatbotBeta]) {
   cdk.Tags.of(stack).add('Stage', 'beta');
 }
 

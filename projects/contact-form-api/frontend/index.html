@@ -37,14 +37,6 @@
         <details class="nav-dropdown">
           <summary>Projects</summary>
           <div class="nav-dropdown-menu">
-            <a href="/project/polling/project2.html">Movie Poll</a>
-            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
-            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
-            <a href="/project/habits/project6.html">Habit Tracker</a>
-            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-            <a href="/project/orders/project8.html">Order Processing</a>
-            <a href="/project/chatbot/project9.html">Website Chatbot</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Contact Form</summary>
               <a class="nav-dropdown-sublink" href="#contact">Contact form</a>
@@ -53,6 +45,14 @@
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
             </details>
+            <a href="/project/habits/project6.html">Habit Tracker</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+            <a href="/project/orders/project8.html">Order Processing</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <a href="/project/chatbot/project9.html">Website Chatbot</a>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
             <a class="nav-dropdown-all" href="/#projects">View all projects</a>
           </div>
         </details>
@@ -450,27 +450,6 @@
             open the API to any site that asks.
           </p>
         </div>
-        <div class="decision-item">
-          <h3>HTML-formatted emails instead of plain text</h3>
-          <p class="muted">
-            It would have been faster to leave both emails as plain
-            text. A poorly formatted confirmation email undercuts the
-            whole point of the site, though — if the goal is showing
-            this is real, working infrastructure, the email a visitor
-            actually receives should look like it came from something
-            real.
-          </p>
-        </div>
-        <div class="decision-item">
-          <h3>A config.js scoped to this project alone</h3>
-          <p class="muted">
-            Rather than one shared config file for the whole site, this
-            project keeps its own, holding only what it needs. As more
-            projects get added here, a single growing config file would
-            start implying a coupling between unrelated backends that
-            doesn't actually exist.
-          </p>
-        </div>
       </div>
     </section>
   </main>
@@ -526,14 +505,6 @@
       <details class="mobile-sidebar-group" open>
         <summary class="mobile-sidebar-group-summary">Projects</summary>
         <div class="mobile-sidebar-group-content">
-        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
-        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
-        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
-        <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
-        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
-        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">Contact Form</summary>
           <a class="mobile-sidebar-sublink" href="#contact">Contact form</a>
@@ -542,6 +513,14 @@
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
         </details>
+        <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
+        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
+        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
+        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
         <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
         </div>
       </details>
@@ -840,9 +819,20 @@
       };
 
       if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function () {
+        var toggleSidebar = function () {
           setSidebarOpen(!mobileSidebar.classList.contains('is-open'));
+        };
+        // A tap that lands while the page still has scroll momentum can
+        // get consumed by the browser purely to stop that momentum,
+        // without ever synthesizing a click event afterward -- touchend
+        // fires regardless, so the menu opens from there directly, with
+        // preventDefault to stop the browser from also firing a
+        // redundant synthetic click right after.
+        sidebarToggle.addEventListener('touchend', function (event) {
+          event.preventDefault();
+          toggleSidebar();
         });
+        sidebarToggle.addEventListener('click', toggleSidebar);
       }
 
       if (sidebarBackdrop) {

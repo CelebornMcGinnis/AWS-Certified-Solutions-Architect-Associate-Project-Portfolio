@@ -18,11 +18,6 @@ window.APP_CONFIG = {
   // Add extra request headers only when your API Gateway CORS config allows them.
   headers: {},
 
-  // After a successful submission, redirect to success.html.
-  // Set to false to show an inline success message instead.
-  redirectOnSuccess: true,
-  successUrl: "success.html",
-
   // Abort the browser request after this many milliseconds.
   requestTimeoutMs: 10000
 };

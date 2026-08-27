@@ -38,13 +38,9 @@
           <summary>Projects</summary>
           <div class="nav-dropdown-menu">
             <a href="/project/contactform/project1.html">Contact Form</a>
-            <a href="/project/polling/project2.html">Movie Poll</a>
-            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
-            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
             <a href="/project/habits/project6.html">Habit Tracker</a>
-            <a href="/project/orders/project8.html">Order Processing</a>
-            <a href="/project/chatbot/project9.html">Website Chatbot</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Nova Lite Summarizer</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
@@ -53,6 +49,10 @@
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
             </details>
+            <a href="/project/orders/project8.html">Order Processing</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <a href="/project/chatbot/project9.html">Website Chatbot</a>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
             <a class="nav-dropdown-all" href="/#projects">View all projects</a>
           </div>
         </details>
@@ -83,42 +83,44 @@
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
-      <div>
-        <p class="eyebrow">Demo</p>
-        <h2 id="demo-heading">Summarize some text</h2>
-        <p class="muted">
-          This runs against a real AWS backend — no mock data, no
-          pre-written responses.
-        </p>
-        <p class="muted small-note">
-          <strong>Privacy notice:</strong> pasted text is sent to Bedrock
-          for summarization only and is not stored anywhere afterward.
-        </p>
-        <p class="muted small-note">
-          <strong>Fair use:</strong> this is a public demo with a shared
-          daily request budget — if it says the limit's been reached,
-          please check back tomorrow.
-        </p>
-      </div>
-
-      <form class="contact-form" id="summarize-form">
-        <label>
-          Text to summarize
-          <textarea id="summarize-text" rows="8" maxlength="6000" placeholder="Paste an article, an email thread, meeting notes — anything." required></textarea>
-        </label>
-        <p class="char-count" id="char-count">0 / 6000 characters</p>
-
-        <div class="length-toggle" role="radiogroup" aria-label="Summary length">
-          <input type="radio" name="length" id="length-short" value="short" checked />
-          <label for="length-short">Short</label>
-          <input type="radio" name="length" id="length-detailed" value="detailed" />
-          <label for="length-detailed">Detailed</label>
+      <div class="card-primary-col">
+        <div>
+          <p class="eyebrow">Demo</p>
+          <h2 id="demo-heading">Summarize some text</h2>
+          <p class="muted">
+            This runs against a real AWS backend — no mock data, no
+            pre-written responses.
+          </p>
+          <p class="muted small-note">
+            <strong>Privacy notice:</strong> pasted text is sent to Bedrock
+            for summarization only and is not stored anywhere afterward.
+          </p>
+          <p class="muted small-note">
+            <strong>Fair use:</strong> this is a public demo with a shared
+            daily request budget — if it says the limit's been reached,
+            please check back tomorrow.
+          </p>
         </div>
 
-        <div class="form-status" id="summarize-status" role="status" aria-live="polite" hidden></div>
+        <form class="contact-form" id="summarize-form">
+          <label>
+            Text to summarize
+            <textarea id="summarize-text" rows="8" maxlength="6000" placeholder="Paste an article, an email thread, meeting notes — anything." required></textarea>
+          </label>
+          <p class="char-count" id="char-count">0 / 6000 characters</p>
 
-        <button type="submit" id="summarize-submit">Summarize</button>
-      </form>
+          <div class="length-toggle" role="radiogroup" aria-label="Summary length">
+            <input type="radio" name="length" id="length-short" value="short" checked />
+            <label for="length-short">Short</label>
+            <input type="radio" name="length" id="length-detailed" value="detailed" />
+            <label for="length-detailed">Detailed</label>
+          </div>
+
+          <div class="form-status" id="summarize-status" role="status" aria-live="polite" hidden></div>
+
+          <button type="submit" id="summarize-submit">Summarize</button>
+        </form>
+      </div>
 
       <div class="summarize-result" id="summarize-result" hidden>
         <h3 id="summarize-result-title"></h3>
@@ -453,13 +455,9 @@
         <summary class="mobile-sidebar-group-summary">Projects</summary>
         <div class="mobile-sidebar-group-content">
         <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
-        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
-        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
-        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
         <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
-        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
-        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">Nova Lite Summarizer</summary>
           <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
@@ -468,6 +466,10 @@
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
         </details>
+        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
+        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
+        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
         <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
         </div>
       </details>

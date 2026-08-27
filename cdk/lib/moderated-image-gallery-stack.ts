@@ -16,13 +16,17 @@ const BACKEND_DIR = path.join(__dirname, '../../projects/moderated-image-gallery
 
 export interface ModeratedImageGalleryStackProps extends cdk.StackProps {
   stage: 'prod' | 'beta';
+  userPool: cognito.IUserPool;
+  userPoolClient: cognito.IUserPoolClient;
 }
 
 /**
  * Authenticated upload -> Rekognition moderation -> public gallery demo.
  * Greenfield stack, no imported resource on either stage -- prod and beta
- * are entirely separate Cognito user pools, S3 buckets, and DynamoDB
- * tables, following the same pattern as every other project in this app.
+ * are entirely separate S3 buckets and DynamoDB tables, following the same
+ * pattern as every other project in this app. Auth, though, is a shared
+ * Cognito user pool with website-chatbot (see shared-auth-stack.ts) rather
+ * than its own -- one account signs in to both projects.
  *
  * The quarantine and gallery buckets are deliberately NOT the website
  * hosting bucket: the website's BucketDeployment prunes anything not in
@@ -37,7 +41,7 @@ export class ModeratedImageGalleryStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ModeratedImageGalleryStackProps) {
     super(scope, id, props);
 
-    const { stage } = props;
+    const { stage, userPool, userPoolClient } = props;
     const origin = stage === 'prod' ? SITE_ORIGIN : BETA_SITE_ORIGIN;
     // Neither stage holds anything a visitor couldn't just re-upload, and
     // beta in particular should tear down completely -- no orphaned
@@ -46,26 +50,6 @@ export class ModeratedImageGalleryStack extends cdk.Stack {
     // never had pre-existing real data to protect in the first place.
     const removalPolicy = cdk.RemovalPolicy.DESTROY;
 
-    // --- Auth ---
-    const userPool = new cognito.UserPool(this, 'UserPool', {
-      selfSignUpEnabled: true,
-      signInAliases: { email: true },
-      autoVerify: { email: true },
-      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
-      passwordPolicy: {
-        minLength: 8,
-        requireLowercase: true,
-        requireUppercase: true,
-        requireDigits: true,
-        requireSymbols: false,
-      },
-      removalPolicy,
-    });
-    const userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
-      userPool,
-      generateSecret: false, // called directly from the browser, no server-side secret to keep
-      authFlows: { userPassword: true },
-    });
     this.userPoolId = userPool.userPoolId;
     this.userPoolClientId = userPoolClient.userPoolClientId;
 

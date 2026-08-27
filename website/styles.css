@@ -344,6 +344,37 @@ main {
   letter-spacing: -0.04em;
 }
 
+/* Bundles a .card's intro copy together with its primary control (a
+   button or a form) into ONE grid item, so the pair stacks in column 1
+   instead of the control auto-placing into column 2 beside the intro
+   text. Whatever comes after this wrapper in the DOM then naturally
+   auto-places into column 2 on its own -- no explicit grid-column
+   needed on it. Used on projects whose demo section shows result/
+   status output beside the trigger instead of below it. */
+.card-primary-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.card-primary-col > .notify-trigger {
+  align-self: flex-start;
+  padding-top: 0;
+}
+
+.card-primary-col > .contact-form,
+.card-full-row > .contact-form {
+  padding-top: 0;
+}
+
+/* Spans both of a .card's columns -- for a block of controls that needs
+   full card width (e.g. product choices that must fit in a single row)
+   rather than being confined to column 1. */
+.card-full-row {
+  grid-column: 1 / -1;
+  margin-top: 0.5rem;
+}
+
 .muted {
   color: var(--muted);
 }
@@ -762,7 +793,15 @@ footer {
   position: relative;
 }
 
-.nav-dropdown summary {
+/* ">" (direct-child) throughout this block on purpose: .nav-dropdown-menu
+   can itself contain a nested <details class="nav-dropdown-subsection">
+   with its own <summary> (the current page's expandable entry), and an
+   unscoped ".nav-dropdown summary" descendant selector would also match
+   that inner summary -- bleeding the outer "Projects" trigger's color,
+   flex layout, and generated chevron onto it (a second, misplaced
+   chevron on the right of that row). Keeping these rules to the
+   immediate child summary avoids that entirely. */
+.nav-dropdown > summary {
   /* the clickable "Projects" trigger text */
   list-style: none;
   cursor: pointer;
@@ -773,11 +812,11 @@ footer {
   gap: 0.35rem;
 }
 
-.nav-dropdown summary::-webkit-details-marker {
+.nav-dropdown > summary::-webkit-details-marker {
   display: none; /* hides the default browser triangle marker */
 }
 
-.nav-dropdown summary::after {
+.nav-dropdown > summary::after {
   /* the custom chevron, drawn from two borders and rotated */
   content: "";
   width: 0.5em;
@@ -788,11 +827,11 @@ footer {
   transition: transform 0.15s ease;
 }
 
-.nav-dropdown[open] summary::after {
+.nav-dropdown[open] > summary::after {
   transform: rotate(-135deg) translateY(2px); /* flips chevron when open */
 }
 
-.nav-dropdown summary:focus-visible {
+.nav-dropdown > summary:focus-visible {
   outline: 3px solid rgba(52, 84, 209, 0.35);
   outline-offset: 4px;
   border-radius: 6px;
@@ -806,7 +845,7 @@ footer {
   transform: translateX(-50%);
   display: grid;
   gap: 0.1rem;
-  min-width: 230px;
+  min-width: 300px;
   max-width: calc(100vw - 2rem);
   padding: 0.6rem;
   background: var(--surface);
@@ -861,8 +900,8 @@ footer {
    first line's text instead of falling back under the chevron. */
 .nav-dropdown-group-label {
   padding: 0.45rem 0.7rem;
-  padding-left: calc(0.7rem + 0.9em);
-  text-indent: -0.9em;
+  padding-left: calc(0.7rem + 1.05em);
+  text-indent: -1.05em;
   font-weight: 600;
   color: var(--text);
   border-radius: 10px;
@@ -5779,6 +5818,16 @@ footer {
   gap: 1rem;
 }
 
+/* Forces the 4 product cards into a single row once there's room for
+   them (paired with .card-full-row, which gives this the full card
+   width to work with) -- auto-fill above stays as the mobile-safe
+   fallback for narrower viewports where .card drops to display:block. */
+@media (min-width: 761px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .reset-inventory-row {
   display: flex;
   align-items: center;
@@ -5859,6 +5908,15 @@ footer {
   border-radius: 16px;
   padding: 1.1rem;
   background: var(--surface);
+}
+
+/* The chat panel sits alone in the .card's second column now (see
+   .card-primary-col in the shared demo-layout section), so it has room
+   to be noticeably taller than the 420px default. */
+@media (min-width: 761px) {
+  .chat-messages {
+    max-height: 620px;
+  }
 }
 
 .chat-message {

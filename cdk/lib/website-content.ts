@@ -25,9 +25,12 @@ interface ProjectMapping {
   rename?: Record<string, string>;
   /**
    * Stages this project's frontend files (and homepage/nav entries below)
-   * should be published to. Omitted entirely for the three already-live
-   * projects, whose homepage card and nav links are permanent, hand-written
-   * markup in website/index.html rather than anything injected here.
+   * should be published to. Every project sets this, including the three
+   * long-since-promoted ones whose homepage *card* is still permanent,
+   * hand-written markup in website/index.html -- only homepageCardFile is
+   * omitted for those three, not stages, since nav-link injection still
+   * needs to know they apply everywhere to interleave them alphabetically
+   * with the rest instead of pinning them first.
    */
   stages?: Stage[];
   /** Path (repo-relative) to an HTML fragment injected at the
@@ -39,35 +42,36 @@ interface ProjectMapping {
   mobileNavLinkHtml?: string;
 }
 
+// Listed alphabetically by display name -- injectStageOnlyContent() below
+// walks this array in order to build the homepage nav dropdown and mobile
+// sidebar project lists, so this array's order *is* that menu's order.
+// Every project participates in nav-link injection (stages + navLinkHtml/
+// mobileNavLinkHtml) even the three long-since-promoted ones that used to
+// be hand-written directly into website/index.html -- keeping them here
+// instead is what lets the menu interleave alphabetically rather than
+// always pinning those three first. homepageCardFile stays omitted for
+// those three since their homepage cards are still permanent, hand-written
+// markup in website/index.html, unrelated to nav ordering.
 const PROJECTS: ProjectMapping[] = [
   {
     key: 'contactForm',
     frontendDir: 'projects/contact-form-api/frontend',
     destPrefix: 'project/contactform',
     rename: { 'index.html': 'project1.html' },
+    stages: ['beta', 'prod'],
+    navLinkHtml: '<a href="/project/contactform/project1.html">Contact Form</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>',
   },
   {
-    key: 'livePoll',
-    frontendDir: 'projects/realtime-polling-app/frontend',
-    destPrefix: 'project/polling',
-    rename: { 'index.html': 'project2.html' },
-  },
-  {
-    key: 'fanningSns',
-    frontendDir: 'projects/sns-notification-fan-out/frontend',
-    destPrefix: 'project/fanningsns',
-    rename: { 'index.html': 'project3.html' },
-  },
-  {
-    key: 'workflowVisualizer',
-    frontendDir: 'projects/workflow-visualizer/frontend',
-    destPrefix: 'project/workflow',
-    rename: { 'index.html': 'project4.html' },
+    key: 'habitTracker',
+    frontendDir: 'projects/habit-tracker/frontend',
+    destPrefix: 'project/habits',
+    rename: { 'index.html': 'project6.html' },
     // Promoted to prod.
     stages: ['beta', 'prod'],
-    homepageCardFile: 'projects/workflow-visualizer/homepage-card.html',
-    navLinkHtml: '<a href="/project/workflow/project4.html">Workflow Visualizer</a>',
-    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>',
+    homepageCardFile: 'projects/habit-tracker/homepage-card.html',
+    navLinkHtml: '<a href="/project/habits/project6.html">Habit Tracker</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>',
   },
   {
     key: 'moderatedImageGallery',
@@ -81,15 +85,13 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>',
   },
   {
-    key: 'habitTracker',
-    frontendDir: 'projects/habit-tracker/frontend',
-    destPrefix: 'project/habits',
-    rename: { 'index.html': 'project6.html' },
-    // Promoted to prod.
+    key: 'livePoll',
+    frontendDir: 'projects/realtime-polling-app/frontend',
+    destPrefix: 'project/polling',
+    rename: { 'index.html': 'project2.html' },
     stages: ['beta', 'prod'],
-    homepageCardFile: 'projects/habit-tracker/homepage-card.html',
-    navLinkHtml: '<a href="/project/habits/project6.html">Habit Tracker</a>',
-    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>',
+    navLinkHtml: '<a href="/project/polling/project2.html">Movie Poll</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>',
   },
   {
     key: 'novaSummarizer',
@@ -114,6 +116,15 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>',
   },
   {
+    key: 'fanningSns',
+    frontendDir: 'projects/sns-notification-fan-out/frontend',
+    destPrefix: 'project/fanningsns',
+    rename: { 'index.html': 'project3.html' },
+    stages: ['beta', 'prod'],
+    navLinkHtml: '<a href="/project/fanningsns/project3.html">SNS Notifications</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>',
+  },
+  {
     key: 'websiteChatbot',
     frontendDir: 'projects/website-chatbot/frontend',
     destPrefix: 'project/chatbot',
@@ -123,6 +134,17 @@ const PROJECTS: ProjectMapping[] = [
     homepageCardFile: 'projects/website-chatbot/homepage-card.html',
     navLinkHtml: '<a href="/project/chatbot/project9.html">Website Chatbot</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>',
+  },
+  {
+    key: 'workflowVisualizer',
+    frontendDir: 'projects/workflow-visualizer/frontend',
+    destPrefix: 'project/workflow',
+    rename: { 'index.html': 'project4.html' },
+    // Promoted to prod.
+    stages: ['beta', 'prod'],
+    homepageCardFile: 'projects/workflow-visualizer/homepage-card.html',
+    navLinkHtml: '<a href="/project/workflow/project4.html">Workflow Visualizer</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>',
   },
 ];
 

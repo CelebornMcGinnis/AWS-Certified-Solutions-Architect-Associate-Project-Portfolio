@@ -4,6 +4,7 @@ import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as cr from 'aws-cdk-lib/custom-resources';
 import { SITE_ORIGIN, SES_FROM_ADDRESS, SES_TO_ADDRESS } from './config';
 
 export interface LivePollStackProps extends cdk.StackProps {
@@ -59,6 +60,51 @@ export class LivePollStack extends cdk.Stack {
       ],
     });
     pollTalliesTable.applyRemovalPolicy(removalPolicy);
+
+    // Beta only: seed a small starting vote count per option so a first
+    // visitor doesn't land on a poll where every option reads "0 votes".
+    // onCreate only (no onUpdate) -- this runs once, the first time this
+    // table is created, and every later `cdk deploy` leaves it alone, so
+    // it can never clobber real demo votes that accumulate afterward. The
+    // attribute_not_exists condition is a second safety net for the same
+    // reason, tolerated via ignoreErrorCodesMatching rather than treated
+    // as a deploy failure.
+    if (stage === 'beta') {
+      const seedCounts: Record<string, number> = {
+        'fury-road': 18,
+        matrix: 24,
+        mission: 9,
+        'la-la-land': 15,
+        'jurassic-park': 21,
+      };
+      const seedPolicy = cr.AwsCustomResourcePolicy.fromStatements([
+        new iam.PolicyStatement({
+          actions: ['dynamodb:PutItem'],
+          resources: [pollTalliesTable.attrArn],
+        }),
+      ]);
+      Object.entries(seedCounts).forEach(([option, count]) => {
+        const seed = new cr.AwsCustomResource(this, `SeedTally-${option}`, {
+          onCreate: {
+            service: 'DynamoDB',
+            action: 'putItem',
+            parameters: {
+              TableName: pollTalliesTable.ref,
+              Item: {
+                pollId: { S: 'movie-poll' },
+                option: { S: option },
+                voteCount: { N: String(count) },
+              },
+              ConditionExpression: 'attribute_not_exists(pollId)',
+            },
+            physicalResourceId: cr.PhysicalResourceId.of(`seed-tally-${option}`),
+            ignoreErrorCodesMatching: 'ConditionalCheckFailedException',
+          },
+          policy: seedPolicy,
+        });
+        seed.node.addDependency(pollTalliesTable);
+      });
+    }
 
     const pollVotesTable = new dynamodb.CfnTable(this, 'PollVotesTable', {
       tableName: `${namePrefix}-votes`,

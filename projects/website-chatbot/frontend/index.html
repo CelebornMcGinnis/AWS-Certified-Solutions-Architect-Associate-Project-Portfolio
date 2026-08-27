@@ -38,13 +38,12 @@
           <summary>Projects</summary>
           <div class="nav-dropdown-menu">
             <a href="/project/contactform/project1.html">Contact Form</a>
-            <a href="/project/polling/project2.html">Movie Poll</a>
-            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
-            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
             <a href="/project/habits/project6.html">Habit Tracker</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Website Chatbot</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
@@ -53,6 +52,7 @@
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
             </details>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
             <a class="nav-dropdown-all" href="/#projects">View all projects</a>
           </div>
         </details>
@@ -85,26 +85,33 @@
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
-      <div>
-        <p class="eyebrow">Demo</p>
-        <h2 id="demo-heading">Ask a question</h2>
-        <p class="muted">
-          This runs against a real AWS backend — no mock data. Try
-          asking about this site's cost, source code, or tech stack to
-          see the FAQ layer answer instantly; ask something else and
-          watch it go to Bedrock instead. Try asking for investment
-          advice to see the guardrail step in.
-        </p>
-        <p class="muted small-note">
-          <strong>Privacy notice:</strong> messages are stored only long
-          enough to redisplay your conversation, and expire
-          automatically after 24 hours via DynamoDB TTL — nothing is
-          kept beyond that.
-        </p>
-      </div>
+      <div class="card-primary-col">
+        <div>
+          <p class="eyebrow">Demo</p>
+          <h2 id="demo-heading">Ask a question</h2>
+          <p class="muted">
+            This runs against a real AWS backend — no mock data. Try
+            asking about this site's cost, source code, or tech stack to
+            see the FAQ layer answer instantly; ask something else and
+            watch it go to Bedrock instead. Try asking for investment
+            advice to see the guardrail step in.
+          </p>
+          <p class="muted small-note">
+            <strong>Privacy notice:</strong> messages are stored only long
+            enough to redisplay your conversation, and expire
+            automatically after 24 hours via DynamoDB TTL — nothing is
+            kept beyond that.
+          </p>
+        </div>
 
-      <div id="auth-section">
-        <button type="button" class="button-link" id="auth-open-button">Log in</button>
+        <div id="auth-section">
+          <button type="button" class="button-link" id="auth-open-button">Log in</button>
+        </div>
+
+        <div class="session-row" id="session-row" hidden>
+          <p class="muted">Signed in as <strong id="session-email"></strong></p>
+          <button type="button" id="logout-button" class="ghost button-link">Log out</button>
+        </div>
       </div>
 
       <dialog class="auth-modal" id="auth-modal" aria-labelledby="auth-modal-heading">
@@ -127,6 +134,10 @@
           <label>
             Password
             <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+          </label>
+          <label>
+            Confirm password
+            <input type="password" name="confirmPassword" autocomplete="new-password" minlength="8" required />
           </label>
           <p class="hint">At least 8 characters, with an uppercase letter, a lowercase letter, and a digit.</p>
           <div class="form-status" id="signup-status" role="status" aria-live="polite" hidden></div>
@@ -186,11 +197,6 @@
           </p>
         </div>
       </dialog>
-
-      <div class="session-row" id="session-row" hidden>
-        <p class="muted">Signed in as <strong id="session-email"></strong></p>
-        <button type="button" id="logout-button" class="ghost button-link">Log out</button>
-      </div>
 
       <div class="chat-window" id="chat-section" hidden>
         <div class="chat-messages" id="chat-messages"></div>
@@ -526,13 +532,12 @@
         <summary class="mobile-sidebar-group-summary">Projects</summary>
         <div class="mobile-sidebar-group-content">
         <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
-        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
-        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
-        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
         <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
         <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
         <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
+        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">Website Chatbot</summary>
           <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
@@ -541,6 +546,7 @@
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
         </details>
+        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
         <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
         </div>
       </details>

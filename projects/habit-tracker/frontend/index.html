@@ -38,13 +38,6 @@
           <summary>Projects</summary>
           <div class="nav-dropdown-menu">
             <a href="/project/contactform/project1.html">Contact Form</a>
-            <a href="/project/polling/project2.html">Movie Poll</a>
-            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
-            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
-            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-            <a href="/project/orders/project8.html">Order Processing</a>
-            <a href="/project/chatbot/project9.html">Website Chatbot</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Habit Tracker</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
@@ -53,6 +46,13 @@
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
             </details>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+            <a href="/project/orders/project8.html">Order Processing</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <a href="/project/chatbot/project9.html">Website Chatbot</a>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
             <a class="nav-dropdown-all" href="/#projects">View all projects</a>
           </div>
         </details>
@@ -84,34 +84,38 @@
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
-      <div>
-        <p class="eyebrow">Demo</p>
-        <h2 id="demo-heading">Track a habit</h2>
-        <p class="muted">
-          This runs against a real AWS backend — no mock data.
-        </p>
+      <div class="card-primary-col">
+        <div>
+          <p class="eyebrow">Demo</p>
+          <h2 id="demo-heading">Track a habit</h2>
+          <p class="muted">
+            This runs against a real AWS backend — no mock data.
+          </p>
+        </div>
+
+        <div class="device-notice">
+          This tracker doesn't use accounts. Your habits are stored
+          against a random id kept in this browser's local storage
+          (<code id="device-id-note"></code>&hellip;) — there's no sign-up
+          and no way to recover them from a different browser or device.
+          Clearing your browser data deletes this id, and with it, access
+          to everything tracked here.
+        </div>
       </div>
 
-      <div class="device-notice">
-        This tracker doesn't use accounts. Your habits are stored
-        against a random id kept in this browser's local storage
-        (<code id="device-id-note"></code>&hellip;) — there's no sign-up
-        and no way to recover them from a different browser or device.
-        Clearing your browser data deletes this id, and with it, access
-        to everything tracked here.
+      <div class="card-full-row">
+        <form class="contact-form habit-form" id="habit-form">
+          <label>
+            New habit
+            <input type="text" id="habit-name" maxlength="80" placeholder="e.g. Read for 20 minutes" required />
+          </label>
+          <div class="form-status" id="habit-form-status" role="status" aria-live="polite" hidden></div>
+          <button type="submit">Add habit</button>
+        </form>
+
+        <div class="habit-list" id="habit-list"></div>
+        <p class="muted small-note habit-list-empty-note" id="habit-list-empty-note">No habits yet — add one above to get started.</p>
       </div>
-
-      <form class="contact-form habit-form" id="habit-form">
-        <label>
-          New habit
-          <input type="text" id="habit-name" maxlength="80" placeholder="e.g. Read for 20 minutes" required />
-        </label>
-        <div class="form-status" id="habit-form-status" role="status" aria-live="polite" hidden></div>
-        <button type="submit">Add habit</button>
-      </form>
-
-      <div class="habit-list" id="habit-list"></div>
-      <p class="muted small-note habit-list-empty-note" id="habit-list-empty-note">No habits yet — add one above to get started.</p>
     </section>
 
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
@@ -437,13 +441,6 @@
         <summary class="mobile-sidebar-group-summary">Projects</summary>
         <div class="mobile-sidebar-group-content">
         <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
-        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
-        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
-        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
-        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
-        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">Habit Tracker</summary>
           <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
@@ -452,6 +449,13 @@
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
         </details>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
+        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
+        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
+        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
         <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
         </div>
       </details>

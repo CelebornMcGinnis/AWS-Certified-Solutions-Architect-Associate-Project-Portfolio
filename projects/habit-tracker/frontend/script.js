@@ -521,9 +521,20 @@ if (mobileSidebar) {
   };
 
   if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function () {
+    var toggleSidebar = function () {
       setSidebarOpen(!mobileSidebar.classList.contains('is-open'));
+    };
+    // A tap that lands while the page still has scroll momentum can
+    // get consumed by the browser purely to stop that momentum,
+    // without ever synthesizing a click event afterward -- touchend
+    // fires regardless, so the menu opens from there directly, with
+    // preventDefault to stop the browser from also firing a
+    // redundant synthetic click right after.
+    sidebarToggle.addEventListener('touchend', function (event) {
+      event.preventDefault();
+      toggleSidebar();
     });
+    sidebarToggle.addEventListener('click', toggleSidebar);
   }
 
   if (sidebarBackdrop) {

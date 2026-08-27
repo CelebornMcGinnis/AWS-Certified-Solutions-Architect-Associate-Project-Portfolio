@@ -15,6 +15,8 @@ const BACKEND_DIR = path.join(__dirname, '../../projects/website-chatbot/backend
 
 export interface WebsiteChatbotStackProps extends cdk.StackProps {
   stage: 'prod' | 'beta';
+  userPool: cognito.IUserPool;
+  userPoolClient: cognito.IUserPoolClient;
 }
 
 /**
@@ -30,8 +32,9 @@ export interface WebsiteChatbotStackProps extends cdk.StackProps {
  * Conversation history is genuinely short-lived: every message carries
  * a DynamoDB TTL (24 hours), not a manual cleanup job.
  *
- * Same isolated-per-project auth pattern as moderated-image-gallery --
- * its own Cognito user pool, not shared with that project's.
+ * Auth is a shared Cognito user pool with moderated-image-gallery (see
+ * shared-auth-stack.ts) rather than its own -- one account signs in to
+ * both projects.
  */
 export class WebsiteChatbotStack extends cdk.Stack {
   public readonly apiEndpoint: string;
@@ -41,33 +44,13 @@ export class WebsiteChatbotStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WebsiteChatbotStackProps) {
     super(scope, id, props);
 
-    const { stage } = props;
+    const { stage, userPool, userPoolClient } = props;
     const origin = stage === 'prod' ? SITE_ORIGIN : BETA_SITE_ORIGIN;
     // Neither stage holds anything a visitor couldn't just re-ask --
     // both tear down completely, same as this site's other projects
     // that never had pre-existing real data to protect.
     const removalPolicy = cdk.RemovalPolicy.DESTROY;
 
-    // --- Auth ---
-    const userPool = new cognito.UserPool(this, 'UserPool', {
-      selfSignUpEnabled: true,
-      signInAliases: { email: true },
-      autoVerify: { email: true },
-      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
-      passwordPolicy: {
-        minLength: 8,
-        requireLowercase: true,
-        requireUppercase: true,
-        requireDigits: true,
-        requireSymbols: false,
-      },
-      removalPolicy,
-    });
-    const userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
-      userPool,
-      generateSecret: false,
-      authFlows: { userPassword: true },
-    });
     this.userPoolId = userPool.userPoolId;
     this.userPoolClientId = userPoolClient.userPoolClientId;
 

@@ -38,13 +38,10 @@
           <summary>Projects</summary>
           <div class="nav-dropdown-menu">
             <a href="/project/contactform/project1.html">Contact Form</a>
-            <a href="/project/polling/project2.html">Movie Poll</a>
-            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
-            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
             <a href="/project/habits/project6.html">Habit Tracker</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-            <a href="/project/chatbot/project9.html">Website Chatbot</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Order Processing</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
@@ -53,6 +50,9 @@
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
             </details>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <a href="/project/chatbot/project9.html">Website Chatbot</a>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
             <a class="nav-dropdown-all" href="/#projects">View all projects</a>
           </div>
         </details>
@@ -106,54 +106,56 @@
         browser data or switching devices starts you over.
       </div>
 
-      <form class="contact-form" id="order-form">
-        <div class="product-grid" id="product-grid"></div>
+      <div class="card-full-row">
+        <form class="contact-form" id="order-form">
+          <div class="product-grid" id="product-grid"></div>
 
-        <div class="reset-inventory-row">
-          <button type="button" class="button-link ghost small" id="reset-inventory-button">Reset inventory</button>
-          <span class="muted small-note" id="reset-inventory-status" role="status" aria-live="polite"></span>
+          <div class="reset-inventory-row">
+            <button type="button" class="button-link ghost small" id="reset-inventory-button">Reset inventory</button>
+            <span class="muted small-note" id="reset-inventory-status" role="status" aria-live="polite"></span>
+          </div>
+
+          <label>
+            Quantity
+            <input type="number" id="order-quantity" min="1" max="10" value="1" required />
+          </label>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="simulate-failure" />
+            <span>Simulate a payment failure, to see the inventory-release rollback happen</span>
+          </label>
+
+          <div class="form-status" id="order-status" role="status" aria-live="polite"></div>
+
+          <button type="submit" id="order-submit">Place order</button>
+        </form>
+
+        <div class="job-timeline-wrap" id="order-timeline-wrap" hidden>
+          <h3>Your order</h3>
+          <ol class="job-timeline" id="order-timeline">
+            <li class="job-timeline-step" data-status="PENDING">
+              <span class="job-timeline-line" aria-hidden="true"></span>
+              <span class="job-timeline-dot" aria-hidden="true">1</span>
+              <span class="job-timeline-label">Submitted</span>
+            </li>
+            <li class="job-timeline-step" data-status="INVENTORY_RESERVED">
+              <span class="job-timeline-line" aria-hidden="true"></span>
+              <span class="job-timeline-dot" aria-hidden="true">2</span>
+              <span class="job-timeline-label">Inventory reserved</span>
+            </li>
+            <li class="job-timeline-step" data-status="PAYMENT_CHARGED">
+              <span class="job-timeline-line" aria-hidden="true"></span>
+              <span class="job-timeline-dot" aria-hidden="true">3</span>
+              <span class="job-timeline-label">Payment charged</span>
+            </li>
+            <li class="job-timeline-step" data-status="SHIPPED">
+              <span class="job-timeline-dot" aria-hidden="true">4</span>
+              <span class="job-timeline-label">Shipped</span>
+            </li>
+          </ol>
+          <p class="rejection-note" id="order-failure-note" hidden></p>
+          <p class="muted small-note job-id-note" id="order-id-note"></p>
         </div>
-
-        <label>
-          Quantity
-          <input type="number" id="order-quantity" min="1" max="10" value="1" required />
-        </label>
-
-        <label class="checkbox-row">
-          <input type="checkbox" id="simulate-failure" />
-          <span>Simulate a payment failure, to see the inventory-release rollback happen</span>
-        </label>
-
-        <div class="form-status" id="order-status" role="status" aria-live="polite"></div>
-
-        <button type="submit" id="order-submit">Place order</button>
-      </form>
-
-      <div class="job-timeline-wrap" id="order-timeline-wrap" hidden>
-        <h3>Your order</h3>
-        <ol class="job-timeline" id="order-timeline">
-          <li class="job-timeline-step" data-status="PENDING">
-            <span class="job-timeline-line" aria-hidden="true"></span>
-            <span class="job-timeline-dot" aria-hidden="true">1</span>
-            <span class="job-timeline-label">Submitted</span>
-          </li>
-          <li class="job-timeline-step" data-status="INVENTORY_RESERVED">
-            <span class="job-timeline-line" aria-hidden="true"></span>
-            <span class="job-timeline-dot" aria-hidden="true">2</span>
-            <span class="job-timeline-label">Inventory reserved</span>
-          </li>
-          <li class="job-timeline-step" data-status="PAYMENT_CHARGED">
-            <span class="job-timeline-line" aria-hidden="true"></span>
-            <span class="job-timeline-dot" aria-hidden="true">3</span>
-            <span class="job-timeline-label">Payment charged</span>
-          </li>
-          <li class="job-timeline-step" data-status="SHIPPED">
-            <span class="job-timeline-dot" aria-hidden="true">4</span>
-            <span class="job-timeline-label">Shipped</span>
-          </li>
-        </ol>
-        <p class="rejection-note" id="order-failure-note" hidden></p>
-        <p class="muted small-note job-id-note" id="order-id-note"></p>
       </div>
 
       <div class="notify-log-wrap">
@@ -508,13 +510,10 @@
         <summary class="mobile-sidebar-group-summary">Projects</summary>
         <div class="mobile-sidebar-group-content">
         <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
-        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
-        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
-        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
         <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
         <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">Order Processing</summary>
           <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
@@ -523,6 +522,9 @@
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
         </details>
+        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
+        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
         <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
         </div>
       </details>

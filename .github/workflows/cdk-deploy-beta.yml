@@ -76,7 +76,7 @@ jobs:
         run: |
           REQUESTED="${{ github.event.inputs.stacks }}"
           if [ -z "$REQUESTED" ] || [ "$REQUESTED" = "all" ]; then
-            echo "list=fanning-sns-beta live-poll-beta contact-form-api-beta workflow-visualizer-beta moderated-image-gallery-beta habit-tracker-beta nova-summarizer-beta order-processing-beta website-chatbot-beta portfolio-website-beta" >> "$GITHUB_OUTPUT"
+            echo "list=fanning-sns-beta live-poll-beta contact-form-api-beta workflow-visualizer-beta shared-auth-beta moderated-image-gallery-beta habit-tracker-beta nova-summarizer-beta order-processing-beta website-chatbot-beta portfolio-website-beta" >> "$GITHUB_OUTPUT"
           else
             echo "list=$REQUESTED" >> "$GITHUB_OUTPUT"
           fi

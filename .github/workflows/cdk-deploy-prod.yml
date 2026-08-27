@@ -78,7 +78,7 @@ jobs:
               echo "No default stack list for destroy -- name the stack(s) explicitly." >&2
               exit 1
             fi
-            echo "list=fanning-sns live-poll contact-form-api workflow-visualizer moderated-image-gallery habit-tracker nova-summarizer order-processing website-chatbot portfolio-website-prod" >> "$GITHUB_OUTPUT"
+            echo "list=fanning-sns live-poll contact-form-api workflow-visualizer shared-auth moderated-image-gallery habit-tracker nova-summarizer order-processing website-chatbot portfolio-website-prod" >> "$GITHUB_OUTPUT"
           else
             echo "list=$REQUESTED" >> "$GITHUB_OUTPUT"
           fi
