@@ -3385,6 +3385,13 @@ footer {
     cursor: pointer;
     box-shadow: 0 12px 30px rgba(52, 84, 209, 0.32);
     pointer-events: auto;
+    /* Without this, a tap here while the page is still mid-scroll is
+       ambiguous to the browser (could be the start of a pan) and gets
+       held for gesture disambiguation instead of registering as a tap
+       right away -- this button doesn't pan, so telling the browser
+       that up front lets a tap commit immediately even during active
+       scroll momentum. */
+    touch-action: manipulation;
     transition: background 0.2s ease;
   }
 
@@ -3547,6 +3554,7 @@ footer {
     gap: 0.5rem;
     padding: 0.5rem 0.9rem;
     padding-left: 1.7rem;
+    margin: 0 0.6rem;
     font-weight: 500;
     font-size: 0.92rem;
     color: var(--text);

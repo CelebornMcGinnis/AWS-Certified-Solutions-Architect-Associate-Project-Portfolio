@@ -831,27 +831,26 @@
         var toggleSidebar = function () {
           setSidebarOpen(!mobileSidebar.classList.contains('is-open'));
         };
-        // A tap that lands while the page still has scroll momentum needs
-        // to register on first contact: touchstart always fires, even for
-        // a touch that's also stopping the scroll, but the touchend/click
-        // that would normally follow can get silently dropped by the
-        // browser for that same touch on some mobile browsers -- which is
-        // what required a second, separate tap before this. openedByTouch
-        // guards against the click event a real tap still fires afterward
-        // from toggling the menu a second time right back closed.
-        var openedByTouch = false;
-        sidebarToggle.addEventListener('touchstart', function (event) {
-          event.preventDefault();
-          openedByTouch = true;
+        // touch-action: manipulation (see styles.css) is the primary fix
+        // for a tap during active scroll momentum needing a second tap to
+        // register -- it tells the browser this element doesn't pan, so a
+        // tap can commit immediately instead of waiting to see if it's the
+        // start of a scroll gesture. touchstart is a second layer on top of
+        // that (some browsers still delay/drop the click that follows a
+        // touch that also stopped momentum scrolling), with a short
+        // time-based guard so the touchstart and the click that can still
+        // follow it for the same physical tap don't toggle the menu open
+        // and immediately back closed.
+        var lastToggleAt = 0;
+        var guardedToggle = function (event) {
+          var now = Date.now();
+          if (now - lastToggleAt < 500) return;
+          lastToggleAt = now;
+          if (event.cancelable) event.preventDefault();
           toggleSidebar();
-        }, { passive: false });
-        sidebarToggle.addEventListener('click', function () {
-          if (openedByTouch) {
-            openedByTouch = false;
-            return;
-          }
-          toggleSidebar();
-        });
+        };
+        sidebarToggle.addEventListener('touchstart', guardedToggle, { passive: false });
+        sidebarToggle.addEventListener('click', guardedToggle);
       }
 
       if (sidebarBackdrop) {
