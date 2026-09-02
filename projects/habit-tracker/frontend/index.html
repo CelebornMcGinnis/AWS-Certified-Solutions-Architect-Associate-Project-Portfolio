@@ -84,12 +84,21 @@
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
-      <div class="card-primary-col">
+      <div class="card-full-row">
         <div>
           <p class="eyebrow">Demo</p>
           <h2 id="demo-heading">Track a habit</h2>
           <p class="muted">
-            This runs against a real AWS backend — no mock data.
+            This runs against a real AWS backend — no mock data. Add a
+            habit below and check in once a day to build a streak; each
+            card tracks a running streak and a personal best, calculated
+            from real check-in timestamps in DynamoDB, not just a total
+            check-in count.
+          </p>
+          <p class="muted">
+            Miss a day and the current streak resets to zero, but your
+            best streak stays on the card — so you can always see how
+            today's run compares to your best run so far.
           </p>
         </div>
 
@@ -101,9 +110,7 @@
           Clearing your browser data deletes this id, and with it, access
           to everything tracked here.
         </div>
-      </div>
 
-      <div class="card-full-row">
         <form class="contact-form habit-form" id="habit-form">
           <label>
             New habit

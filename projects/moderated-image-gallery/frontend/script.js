@@ -866,13 +866,22 @@ var siteHeader = document.querySelector('.site-header');
 if (siteHeader) {
   var wasScrolled = false;
   var headerRafId = null;
+  var headerLockedUntil = 0;
+  // A short lock after every flip -- not a lock on updating in
+  // general, just on flipping back again right away -- stops the
+  // header from chattering between states at scroll positions
+  // where scrollY jitters back and forth across the threshold
+  // (rubber-band bounce, sub-pixel rounding, etc.), while still
+  // reacting immediately to a normal, deliberate scroll.
   var updateHeaderState = function () {
     headerRafId = null;
+    if (window.performance.now() < headerLockedUntil) return;
     var threshold = wasScrolled ? 4 : 48;
     var scrolled = window.scrollY > threshold;
     if (scrolled !== wasScrolled) {
       siteHeader.classList.toggle('is-scrolled', scrolled);
       wasScrolled = scrolled;
+      headerLockedUntil = window.performance.now() + 200;
     }
   };
   var scheduleHeaderUpdate = function () {
@@ -933,17 +942,27 @@ if (mobileSidebar) {
     var toggleSidebar = function () {
       setSidebarOpen(!mobileSidebar.classList.contains('is-open'));
     };
-    // A tap that lands while the page still has scroll momentum can
-    // get consumed by the browser purely to stop that momentum,
-    // without ever synthesizing a click event afterward -- touchend
-    // fires regardless, so the menu opens from there directly, with
-    // preventDefault to stop the browser from also firing a
-    // redundant synthetic click right after.
-    sidebarToggle.addEventListener('touchend', function (event) {
+    // A tap that lands while the page still has scroll momentum needs
+    // to register on first contact: touchstart always fires, even for
+    // a touch that's also stopping the scroll, but the touchend/click
+    // that would normally follow can get silently dropped by the
+    // browser for that same touch on some mobile browsers -- which is
+    // what required a second, separate tap before this. openedByTouch
+    // guards against the click event a real tap still fires afterward
+    // from toggling the menu a second time right back closed.
+    var openedByTouch = false;
+    sidebarToggle.addEventListener('touchstart', function (event) {
       event.preventDefault();
+      openedByTouch = true;
+      toggleSidebar();
+    }, { passive: false });
+    sidebarToggle.addEventListener('click', function () {
+      if (openedByTouch) {
+        openedByTouch = false;
+        return;
+      }
       toggleSidebar();
     });
-    sidebarToggle.addEventListener('click', toggleSidebar);
   }
 
   if (sidebarBackdrop) {

@@ -85,28 +85,30 @@
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
-      <div>
-        <p class="eyebrow">Demo</p>
-        <h2 id="demo-heading">Trigger a Test Notification</h2>
-        <p class="muted">
-          This button sends a real request to API Gateway, which publishes
-          one message to an SNS topic. The table below polls a second
-          endpoint and fills in as each subscriber finishes its own work.
-        </p>
-        <p class="muted small-note">
-          <strong>Privacy notice:</strong> no personal information is
-          collected here — not even an email address. The email branch of
-          this demo always notifies my own inbox, purely to prove that
-          branch of the fan-out fired.
-        </p>
-      </div>
-
-      <div class="notify-trigger">
-        <div class="trigger-button-row">
-          <button type="button" id="trigger-button">Trigger test notification</button>
-          <span class="cooldown-counter" id="cooldown-counter" aria-hidden="true"></span>
+      <div class="card-full-row">
+        <div>
+          <p class="eyebrow">Demo</p>
+          <h2 id="demo-heading">Trigger a Test Notification</h2>
+          <p class="muted">
+            This button sends a real request to API Gateway, which publishes
+            one message to an SNS topic. The table below polls a second
+            endpoint and fills in as each subscriber finishes its own work.
+          </p>
+          <p class="muted small-note">
+            <strong>Privacy notice:</strong> no personal information is
+            collected here — not even an email address. The email branch of
+            this demo always notifies my own inbox, purely to prove that
+            branch of the fan-out fired.
+          </p>
         </div>
-        <div class="form-status" id="trigger-status" role="status" aria-live="polite"></div>
+
+        <div class="notify-trigger">
+          <div class="trigger-button-row">
+            <button type="button" id="trigger-button">Trigger test notification</button>
+            <span class="cooldown-counter" id="cooldown-counter" aria-hidden="true"></span>
+          </div>
+          <div class="form-status" id="trigger-status" role="status" aria-live="polite"></div>
+        </div>
       </div>
 
       <div class="notify-log-wrap">

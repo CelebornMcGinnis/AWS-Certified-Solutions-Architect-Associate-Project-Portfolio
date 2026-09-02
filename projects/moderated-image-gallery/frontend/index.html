@@ -146,21 +146,28 @@
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
-      <div>
-        <p class="eyebrow">Demo</p>
-        <h2 id="demo-heading">Try it yourself</h2>
-        <p class="muted">
-          Create an account (or sign in) to upload an image. Everything
-          below runs against real AWS infrastructure — no mock data.
-        </p>
-        <p class="muted small-note">
-          <strong>Privacy notice:</strong> only an email address and
-          password are collected, used solely for Cognito authentication.
-        </p>
-      </div>
+      <div class="card-full-row">
+        <div>
+          <p class="eyebrow">Demo</p>
+          <h2 id="demo-heading">Try it yourself</h2>
+          <p class="muted">
+            Create an account (or sign in) to upload an image. Everything
+            below runs against real AWS infrastructure — no mock data.
+          </p>
+          <p class="muted small-note">
+            <strong>Privacy notice:</strong> only an email address and
+            password are collected, used solely for Cognito authentication.
+          </p>
+        </div>
 
-      <div id="auth-section">
-        <button type="button" class="button-link" id="auth-open-button">Log in</button>
+        <div id="auth-section">
+          <button type="button" class="button-link" id="auth-open-button">Log in</button>
+        </div>
+
+        <div class="session-row" id="session-row" hidden>
+          <p class="muted">Signed in as <strong id="session-email"></strong></p>
+          <button type="button" id="logout-button" class="ghost button-link">Log out</button>
+        </div>
       </div>
 
       <dialog class="auth-modal" id="auth-modal" aria-labelledby="auth-modal-heading">
@@ -247,12 +254,7 @@
         </div>
       </dialog>
 
-      <div class="session-row" id="session-row" hidden>
-        <p class="muted">Signed in as <strong id="session-email"></strong></p>
-        <button type="button" id="logout-button" class="ghost button-link">Log out</button>
-      </div>
-
-      <div id="upload-section" hidden>
+      <div class="card-full-row" id="upload-section" hidden>
         <form class="contact-form" id="upload-form">
           <label>
             Image (JPEG, PNG, or WebP — up to 5MB)
@@ -292,20 +294,24 @@
     </section>
 
     <section class="card" id="gallery" aria-labelledby="gallery-heading">
-      <div class="notify-log-head">
-        <div>
-          <p class="eyebrow">Public gallery</p>
-          <h2 id="gallery-heading">Approved uploads</h2>
+      <div class="card-full-row">
+        <div class="notify-log-head">
+          <div>
+            <p class="eyebrow">Public gallery</p>
+            <h2 id="gallery-heading">Approved uploads</h2>
+          </div>
+          <button type="button" class="button-link ghost" id="gallery-refresh-button">Refresh</button>
         </div>
-        <button type="button" class="button-link ghost" id="gallery-refresh-button">Refresh</button>
+        <p class="muted">
+          Anyone can view this gallery — it only shows images that already
+          passed moderation. Click an image to expand it. New uploads show
+          up here as soon as they clear Rekognition's check; tap Refresh
+          to pull the latest without reloading the page.
+        </p>
+
+        <div class="gallery-grid" id="gallery-grid"></div>
+        <p class="muted small-note gallery-empty-note" id="gallery-empty-note">No approved images yet — be the first to upload one above.</p>
       </div>
-      <p class="muted">
-        Anyone can view this gallery — it only shows images that already
-        passed moderation. Click an image to expand it — on desktop,
-        hover one for a download button too.
-      </p>
-      <div class="gallery-grid" id="gallery-grid"></div>
-      <p class="muted small-note gallery-empty-note" id="gallery-empty-note">No approved images yet — be the first to upload one above.</p>
 
       <dialog class="gallery-lightbox" id="gallery-lightbox" aria-label="Expanded gallery image">
         <button type="button" class="gallery-lightbox-close" id="gallery-lightbox-close" aria-label="Close">

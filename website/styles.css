@@ -895,13 +895,17 @@ footer {
    standing out as a small-caps section label, since it's the same
    kind of thing they are (a project name), just rendered as an
    expand toggle instead of a plain link because you're already on
-   that page. Hanging indent (padding-left + negative text-indent
-   sized to the chevron) keeps a wrapped second line flush with the
-   first line's text instead of falling back under the chevron. */
+   that page. Flex + space-between puts the chevron (added via
+   .nav-dropdown-subsection summary::after below) at the right edge of
+   the row, with the text left-aligned and wrapping normally -- no
+   indent trick needed since the chevron no longer competes with the
+   text for the row's leading space. */
 .nav-dropdown-group-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   padding: 0.45rem 0.7rem;
-  padding-left: calc(0.7rem + 1.05em);
-  text-indent: -1.05em;
   font-weight: 600;
   color: var(--text);
   border-radius: 10px;
@@ -933,19 +937,18 @@ footer {
   display: none;
 }
 
-.nav-dropdown-subsection summary::before {
+.nav-dropdown-subsection summary::after {
   content: "";
-  display: inline-block;
+  flex: none;
   width: 0.45em;
   height: 0.45em;
-  margin-right: 0.45em;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(45deg);
   transition: transform 0.15s ease;
 }
 
-.nav-dropdown-subsection[open] summary::before {
+.nav-dropdown-subsection[open] summary::after {
   transform: rotate(-135deg) translate(1px, 1px);
 }
 
@@ -2949,11 +2952,14 @@ footer {
 
 /* Collapses the restricted-content list (moderated-image-gallery only)
    behind a one-line disclosure instead of always showing all four
-   cards -- most visitors just need to know a list exists, not read it
-   up front. */
+   cards on mobile -- most visitors just need to know a list exists,
+   not read it up front. Desktop has room to just show it, so the
+   toggle affordance is removed there entirely (see the min-width
+   override below) rather than defaulting to collapsed either way. */
 .guidelines-disclosure summary {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
   cursor: pointer;
   font-weight: 700;
@@ -2965,7 +2971,7 @@ footer {
   display: none;
 }
 
-.guidelines-disclosure summary::before {
+.guidelines-disclosure summary::after {
   /* chevron, matches the one used on .nav-dropdown summary */
   content: "";
   width: 0.5em;
@@ -2977,7 +2983,7 @@ footer {
   transition: transform 0.15s ease;
 }
 
-.guidelines-disclosure[open] summary::before {
+.guidelines-disclosure[open] summary::after {
   transform: rotate(-135deg) translate(1px, 1px);
 }
 
@@ -2985,6 +2991,38 @@ footer {
   outline: 3px solid rgba(52, 84, 209, 0.35);
   outline-offset: 4px;
   border-radius: 6px;
+}
+
+/* Desktop: always show the restricted-content list and drop the
+   disclosure control -- there's room for it, so nothing needs to stay
+   hidden behind a click. The content shows regardless of the [open]
+   attribute; the summary becomes inert (no chevron, no pointer,
+   plain-text look) rather than a non-functional-looking button. */
+@media (min-width: 761px) {
+  /* Chrome wraps a <details>'s non-summary content in an internal
+     ::details-content box that itself carries content-visibility:
+     hidden and height:0 while closed -- overriding display on the
+     .usecase-grid child alone doesn't reach that ancestor box, so it
+     needs its own override too, or the grid stays collapsed to 0
+     height regardless. */
+  .guidelines-disclosure::details-content {
+    content-visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .guidelines-disclosure .usecase-grid {
+    display: grid !important;
+  }
+
+  .guidelines-disclosure summary {
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .guidelines-disclosure summary::after {
+    display: none;
+  }
 }
 
 .guidelines-disclosure .usecase-grid {
@@ -3444,14 +3482,11 @@ footer {
   }
 
   .mobile-sidebar-group-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
     padding: 0.5rem 0.9rem;
-    /* Hanging indent: the chevron (0.5em + 0.55em margin = 1.05em) is
-       pulled back by text-indent on the first line only, so a wrapped
-       second line -- which ignores text-indent -- lands at the same
-       padding-left the first line's *text* sits at (not at the
-       chevron's position, which is what a wrap did without this). */
-    padding-left: calc(0.9rem + 1.05em);
-    text-indent: -1.05em;
     margin: 0 0.6rem;
     font-weight: 700;
     cursor: pointer;
@@ -3463,19 +3498,18 @@ footer {
     display: none;
   }
 
-  .mobile-sidebar-group-summary::before {
+  .mobile-sidebar-group-summary::after {
     content: "";
-    display: inline-block;
+    flex: none;
     width: 0.5em;
     height: 0.5em;
-    margin-right: 0.55em;
     border-right: 2px solid currentColor;
     border-bottom: 2px solid currentColor;
     transform: rotate(45deg);
     transition: transform 0.15s ease;
   }
 
-  .mobile-sidebar-group[open] > .mobile-sidebar-group-summary::before {
+  .mobile-sidebar-group[open] > .mobile-sidebar-group-summary::after {
     transform: rotate(-135deg) translate(1px, 1px);
   }
 
@@ -3503,31 +3537,34 @@ footer {
      than standing out as a small-caps section label, since it's the
      same kind of thing they are (a project name), just rendered as an
      expand toggle instead of a plain link because you're already on
-     that page. Same hanging-indent trick as .mobile-sidebar-group-
-     summary above, sized to this chevron (0.45em + 0.45em = 0.9em). */
+     that page. padding-left 1.7rem matches the sibling sublinks'
+     left edge (no indent trick needed -- the chevron sits at the row's
+     right edge via flex, not competing with the text). */
   .mobile-sidebar-group-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
     padding: 0.5rem 0.9rem;
-    padding-left: calc(1.7rem + 0.9em);
-    text-indent: -0.9em;
+    padding-left: 1.7rem;
     font-weight: 500;
     font-size: 0.92rem;
     color: var(--text);
     border-radius: 10px;
   }
 
-  .mobile-sidebar-subgroup summary.mobile-sidebar-group-label::before {
+  .mobile-sidebar-subgroup summary.mobile-sidebar-group-label::after {
     content: "";
-    display: inline-block;
+    flex: none;
     width: 0.45em;
     height: 0.45em;
-    margin-right: 0.45em;
     border-right: 2px solid currentColor;
     border-bottom: 2px solid currentColor;
     transform: rotate(45deg);
     transition: transform 0.15s ease;
   }
 
-  .mobile-sidebar-subgroup[open] summary.mobile-sidebar-group-label::before {
+  .mobile-sidebar-subgroup[open] summary.mobile-sidebar-group-label::after {
     transform: rotate(-135deg) translate(1px, 1px);
   }
 
@@ -5122,6 +5159,24 @@ footer {
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--bg);
+}
+
+/* Sits in the same grid cell as the result it precedes (.job-timeline-
+   wrap or .summarize-result), swapped out the moment that real content
+   appears -- a dashed outline so the empty space on first load reads
+   as "something will render here" instead of a blank gap. */
+.result-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 180px;
+  margin: 1.75rem 0;
+  padding: 1.5rem;
+  border: 1.5px dashed var(--border);
+  border-radius: 16px;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 .job-timeline-wrap h3 {
