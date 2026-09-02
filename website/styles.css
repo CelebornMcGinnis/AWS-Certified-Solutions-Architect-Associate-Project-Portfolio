@@ -1009,6 +1009,14 @@ footer {
 
 .home-hero-copy h1 {
   color: #fff;
+  /* Smaller than the shared .hero h1 clamp on purpose -- "Built to
+     Deliver" needs to fit on one line inside this column, which is
+     roughly half the (full-bleed) hero's width minus the scaling
+     right padding and the diagonal clip-path's narrowing, so the
+     general hero heading size (tuned for a max-width:760px column)
+     is too large here. */
+  font-size: clamp(1.9rem, 3.6vw, 3.4rem);
+  white-space: nowrap;
 }
 
 .home-hero-copy .hero-arrow {
@@ -3733,6 +3741,11 @@ footer {
 
   .home-hero-copy h1 {
     color: inherit;
+    /* The desktop column's nowrap sizing assumes a wide column that
+       doesn't exist once the layout stacks to full-width, centered
+       copy here -- allow it to wrap again so it doesn't overflow a
+       narrow phone screen. */
+    white-space: normal;
   }
 
   .home-hero-copy .hero-arrow {

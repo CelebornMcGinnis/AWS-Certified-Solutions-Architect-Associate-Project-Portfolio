@@ -522,29 +522,17 @@ if (mobileSidebar) {
   };
 
   if (sidebarToggle) {
-    var toggleSidebar = function () {
+    // A tap that also stops active momentum scrolling on iOS Safari
+    // never reaches the page as a touch/click event at all -- that's
+    // decided natively before it's dispatched, so no JS here can
+    // detect or override it (confirmed: touch-action: manipulation in
+    // styles.css and a touchstart listener were both tried and neither
+    // helped, since the touch simply never arrives). touch-action:
+    // manipulation stays in styles.css since it's still correct to
+    // have; a plain click is all that's needed here.
+    sidebarToggle.addEventListener('click', function () {
       setSidebarOpen(!mobileSidebar.classList.contains('is-open'));
-    };
-    // touch-action: manipulation (see styles.css) is the primary fix
-    // for a tap during active scroll momentum needing a second tap to
-    // register -- it tells the browser this element doesn't pan, so a
-    // tap can commit immediately instead of waiting to see if it's the
-    // start of a scroll gesture. touchstart is a second layer on top of
-    // that (some browsers still delay/drop the click that follows a
-    // touch that also stopped momentum scrolling), with a short
-    // time-based guard so the touchstart and the click that can still
-    // follow it for the same physical tap don't toggle the menu open
-    // and immediately back closed.
-    var lastToggleAt = 0;
-    var guardedToggle = function (event) {
-      var now = Date.now();
-      if (now - lastToggleAt < 500) return;
-      lastToggleAt = now;
-      if (event.cancelable) event.preventDefault();
-      toggleSidebar();
-    };
-    sidebarToggle.addEventListener('touchstart', guardedToggle, { passive: false });
-    sidebarToggle.addEventListener('click', guardedToggle);
+    });
   }
 
   if (sidebarBackdrop) {
