@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>
+    // Applied before first paint to avoid a flash of the wrong theme.
+    // A toggle in the nav can override the system preference; that
+    // choice is remembered in localStorage from then on.
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VPC Network Design — McGinnis Architecture</title>
+  <meta name="description" content="A multi-tier VPC reference architecture — public, private, and isolated subnets across two AZs. Click any subnet or resource to inspect its route table and security group rules." />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f7fb" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body id="top">
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand-row">
+        <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
+          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
+          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+        </a>
+      </div>
+      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <nav aria-label="Main navigation">
+        <a href="/">Home</a>
+        <details class="nav-dropdown">
+          <summary>Projects</summary>
+          <div class="nav-dropdown-menu">
+            <a href="/project/contactform/project1.html">Contact Form</a>
+            <a href="/project/containers/index.html">Container Orchestration</a>
+            <a href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
+            <a href="/project/habits/project6.html">Habit Tracker</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
+            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+            <a href="/project/orders/project8.html">Order Processing</a>
+            <a href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <details class="nav-dropdown-subsection" open>
+              <summary class="nav-dropdown-group-label">VPC Network Design</summary>
+              <a class="nav-dropdown-sublink" href="#demo">Try it</a>
+              <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
+              <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
+              <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
+              <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
+            </details>
+            <a href="/project/chatbot/project9.html">Website Chatbot</a>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
+            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+          </div>
+        </details>
+        <a href="/#about">About</a>
+              <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Project</p>
+      <h1 class="hero-title-compact">VPC Network Design</h1>
+      <div class="reference-build-notice">
+        This AWS architecture is fully designed and documented below, but intentionally not deployed — a NAT Gateway alone runs ~$35–90/month even fully idle, which isn't justified for a portfolio demo. Click any subnet or resource below to inspect its actual route table and security group rules.
+      </div>
+      <p>
+        A multi-tier <strong>VPC</strong> spanning two Availability Zones —
+        public, private, and isolated subnets, a NAT Gateway per AZ, and
+        security groups scoped tier-to-tier. Nothing here is live traffic;
+        every route table and security group rule below is the actual
+        design this CDK stack would provision.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href="#how-it-works">See how it works</a>
+        <a class="button-link" href="#use-cases">Use cases</a>
+        <a class="button-link" href="#pricing">Pricing</a>
+        <a class="button-link" href="#design-decisions">Design decisions</a>
+      </div>
+    </section>
+
+    <section class="card" id="demo" aria-labelledby="demo-heading">
+      <div>
+        <p class="eyebrow">Demo</p>
+        <h2 id="demo-heading">Click to inspect the network</h2>
+        <p class="muted">
+          This diagram is the real topology <code>cdk/lib/vpc-network-design-stack.ts</code>
+          would provision. Click any subnet or resource icon to see its
+          route table or security group rules on the right. Nothing here
+          calls a live AWS API — every rule shown is static, baked into
+          this page.
+        </p>
+      </div>
+
+      <div class="vpc-demo-layout">
+        <div class="vpc-diagram" id="vpc-diagram" aria-label="VPC topology diagram">
+          <svg viewBox="0 0 720 460" class="vpc-diagram-svg" role="img" aria-labelledby="vpc-diagram-title">
+            <title id="vpc-diagram-title">Two-AZ VPC with public, private, and isolated subnet tiers</title>
+
+            <!-- Internet Gateway, outside the VPC boundary -->
+            <g class="vpc-node vpc-node-igw" data-node="igw" role="button" tabindex="0" aria-label="Internet Gateway — click to inspect its route">
+              <rect x="310" y="8" width="100" height="40" rx="10" />
+              <text x="360" y="33" text-anchor="middle">Internet Gateway</text>
+            </g>
+            <line x1="360" y1="48" x2="180" y2="78" class="vpc-connector" />
+            <line x1="360" y1="48" x2="540" y2="78" class="vpc-connector" />
+
+            <!-- VPC boundary -->
+            <rect x="20" y="70" width="680" height="380" rx="16" class="vpc-boundary" />
+            <text x="36" y="94" class="vpc-boundary-label">VPC · 10.0.0.0/16</text>
+
+            <!-- AZ-a column -->
+            <rect x="40" y="105" width="310" height="330" rx="12" class="vpc-az-box" />
+            <text x="56" y="125" class="vpc-az-label">us-east-1a</text>
+
+            <g class="vpc-node vpc-subnet-node" data-node="subnet-public-a" role="button" tabindex="0" aria-label="Public subnet, AZ a — click to inspect its route table">
+              <rect x="56" y="136" width="278" height="86" rx="10" class="vpc-subnet vpc-subnet-public" />
+              <text x="70" y="156" class="vpc-subnet-label">Public · 10.0.0.0/24</text>
+              <g class="vpc-node vpc-resource-node" data-node="res-web" role="button" tabindex="0" aria-label="Web tier resource, public subnet — click to inspect its security group">
+                <rect x="70" y="166" width="90" height="44" rx="8" class="vpc-resource" />
+                <text x="115" y="192" text-anchor="middle">web</text>
+              </g>
+              <g class="vpc-node vpc-nat-node" data-node="nat-a" role="button" tabindex="0" aria-label="NAT Gateway, AZ a — click to inspect its route">
+                <rect x="250" y="166" width="70" height="44" rx="8" class="vpc-nat" />
+                <text x="285" y="192" text-anchor="middle">NAT GW</text>
+              </g>
+            </g>
+
+            <g class="vpc-node vpc-subnet-node" data-node="subnet-private-a" role="button" tabindex="0" aria-label="Private subnet, AZ a — click to inspect its route table">
+              <rect x="56" y="234" width="278" height="86" rx="10" class="vpc-subnet vpc-subnet-private" />
+              <text x="70" y="254" class="vpc-subnet-label">Private · 10.0.10.0/24</text>
+              <g class="vpc-node vpc-resource-node" data-node="res-app" role="button" tabindex="0" aria-label="App tier resource, private subnet — click to inspect its security group">
+                <rect x="70" y="264" width="90" height="44" rx="8" class="vpc-resource" />
+                <text x="115" y="290" text-anchor="middle">app</text>
+              </g>
+            </g>
+
+            <g class="vpc-node vpc-subnet-node" data-node="subnet-isolated-a" role="button" tabindex="0" aria-label="Isolated subnet, AZ a — click to inspect its route table">
+              <rect x="56" y="332" width="278" height="86" rx="10" class="vpc-subnet vpc-subnet-isolated" />
+              <text x="70" y="352" class="vpc-subnet-label">Isolated · 10.0.20.0/24</text>
+              <g class="vpc-node vpc-resource-node" data-node="res-db" role="button" tabindex="0" aria-label="Database tier resource, isolated subnet — click to inspect its security group">
+                <rect x="70" y="362" width="90" height="44" rx="8" class="vpc-resource" />
+                <text x="115" y="388" text-anchor="middle">db</text>
+              </g>
+            </g>
+
+            <!-- AZ-b column -->
+            <rect x="370" y="105" width="310" height="330" rx="12" class="vpc-az-box" />
+            <text x="386" y="125" class="vpc-az-label">us-east-1b</text>
+
+            <g class="vpc-node vpc-subnet-node" data-node="subnet-public-b" role="button" tabindex="0" aria-label="Public subnet, AZ b — click to inspect its route table">
+              <rect x="386" y="136" width="278" height="86" rx="10" class="vpc-subnet vpc-subnet-public" />
+              <text x="400" y="156" class="vpc-subnet-label">Public · 10.0.1.0/24</text>
+              <g class="vpc-node vpc-nat-node" data-node="nat-b" role="button" tabindex="0" aria-label="NAT Gateway, AZ b — click to inspect its route">
+                <rect x="400" y="166" width="70" height="44" rx="8" class="vpc-nat" />
+                <text x="435" y="192" text-anchor="middle">NAT GW</text>
+              </g>
+            </g>
+
+            <g class="vpc-node vpc-subnet-node" data-node="subnet-private-b" role="button" tabindex="0" aria-label="Private subnet, AZ b — click to inspect its route table">
+              <rect x="386" y="234" width="278" height="86" rx="10" class="vpc-subnet vpc-subnet-private" />
+              <text x="400" y="254" class="vpc-subnet-label">Private · 10.0.11.0/24</text>
+            </g>
+
+            <g class="vpc-node vpc-subnet-node" data-node="subnet-isolated-b" role="button" tabindex="0" aria-label="Isolated subnet, AZ b — click to inspect its route table">
+              <rect x="386" y="332" width="278" height="86" rx="10" class="vpc-subnet vpc-subnet-isolated" />
+              <text x="400" y="352" class="vpc-subnet-label">Isolated · 10.0.21.0/24</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="vpc-detail-panel" id="vpc-detail-panel" aria-live="polite">
+          <p class="vpc-detail-placeholder" id="vpc-detail-placeholder">Click any subnet or resource in the diagram to inspect it.</p>
+          <div class="vpc-detail-content" id="vpc-detail-content" hidden>
+            <h3 id="vpc-detail-title"></h3>
+            <p class="muted" id="vpc-detail-subtitle"></p>
+            <table class="vpc-detail-table" id="vpc-detail-table">
+              <thead id="vpc-detail-table-head"></thead>
+              <tbody id="vpc-detail-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture</p>
+        <h2 id="how-it-works-heading">How it works</h2>
+        <p class="muted section-intro">
+          A reference architecture, not a mockup — this is exactly what
+          <code>cdk/lib/vpc-network-design-stack.ts</code> provisions if
+          it were ever instantiated. It never is: see
+          <a href="#design-decisions">Design decisions</a> for why.
+        </p>
+      </div>
+
+      <ol class="flow-steps" id="flow-steps">
+        <li class="flow-step">
+          <span class="flow-step-num">1</span>
+          <div class="flow-step-body">
+            <h3>One VPC, three subnet tiers, two Availability Zones</h3>
+            <p>A single <code>ec2.Vpc</code> with an explicit <code>subnetConfiguration</code>: <code>PUBLIC</code>, <code>PRIVATE_WITH_EGRESS</code>, and <code>PRIVATE_ISOLATED</code> subnet groups, each duplicated across <code>us-east-1a</code> and <code>us-east-1b</code> for availability.</p>
+          </div>
+        </li>
+        <li class="flow-step">
+          <span class="flow-step-num">2</span>
+          <div class="flow-step-body">
+            <h3>Public subnets route outbound through the Internet Gateway</h3>
+            <p>Each public subnet's route table sends <code>0.0.0.0/0</code> traffic straight to the VPC's Internet Gateway — this is the only tier CDK attaches a public IP to by default.</p>
+          </div>
+        </li>
+        <li class="flow-step">
+          <span class="flow-step-num">3</span>
+          <div class="flow-step-body">
+            <h3>Private subnets route outbound through a per-AZ NAT Gateway</h3>
+            <p>CDK provisions one NAT Gateway per AZ by default (not one shared gateway), so a private subnet's outbound traffic never crosses an AZ boundary just to reach the internet — the tradeoff is paying for two NAT Gateways instead of one.</p>
+          </div>
+        </li>
+        <li class="flow-step">
+          <span class="flow-step-num">4</span>
+          <div class="flow-step-body">
+            <h3>Isolated subnets have no route out at all</h3>
+            <p>The database tier's route table has only the local <code>10.0.0.0/16</code> route — no NAT Gateway, no Internet Gateway. It can only be reached from inside the VPC, and it can't reach anything outside it either.</p>
+          </div>
+        </li>
+        <li class="flow-step">
+          <span class="flow-step-num">5</span>
+          <div class="flow-step-body">
+            <h3>Security groups enforce tier-to-tier access, not subnet boundaries</h3>
+            <p>Subnets and route tables control where traffic <em>can</em> go; security groups control what's actually allowed once it's there. The app tier's security group only accepts inbound traffic from the web tier's security group, and the database tier's only accepts inbound from the app tier's — not from an IP range, from another security group by reference.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
+      <div data-reveal>
+      <p class="eyebrow">Use cases</p>
+      <h2 id="use-cases-heading">Where this pattern fits</h2>
+      <p class="muted section-intro">
+        Any workload that needs to separate what's internet-facing from
+        what should never be, without relying on IAM alone to enforce it.
+      </p>
+      </div>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16" stroke-linecap="round"/></svg>
+          </span>
+          <h3>Three-tier web applications</h3>
+          <p class="muted">Load balancer and web tier in public subnets, application servers in private subnets, database in isolated subnets — the classic shape this diagram demonstrates directly.</p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>
+          </span>
+          <h3>Regulated workloads</h3>
+          <p class="muted">Payment or health-data processing that must prove a database has no route to the public internet — an isolated subnet with no NAT and no IGW route is that proof at the network layer, not just a policy document.</p>
+        </div>
+        <div class="usecase-card">
+          <span class="usecase-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M3 12h18" stroke-linecap="round"/><circle cx="12" cy="12" r="9"/></svg>
+          </span>
+          <h3>Multi-AZ high availability</h3>
+          <p class="muted">Duplicating every subnet tier across two AZs, each with its own NAT Gateway, means losing one AZ doesn't take outbound connectivity down with it in the surviving AZ.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
+      <div data-reveal>
+      <p class="eyebrow">Pricing</p>
+      <h2 id="pricing-heading">What deploying this would cost</h2>
+      <p class="muted section-intro">
+        Estimates based on public AWS list pricing for <code>us-east-1</code>,
+        not a guarantee — and not a bill this project has ever
+        actually incurred, since it's never been deployed.
+      </p>
+      </div>
+      <div class="pricing-breakdown">
+        <h3>What drives the cost</h3>
+        <ul>
+          <li><strong>NAT Gateway</strong> — the dominant cost: ~$0.045/hour per gateway (~$32.85/month) plus ~$0.045/GB processed, and this design uses two (one per AZ) for availability — roughly $65–90/month before any data processing charges, even completely idle.</li>
+          <li><strong>Elastic IP addresses</strong> — one per NAT Gateway; free while attached and in use, a small hourly charge if ever left unattached.</li>
+          <li><strong>VPC itself, subnets, route tables, security groups, and the Internet Gateway</strong> — no charge; you only pay for the resources placed inside them and the NAT Gateways' data processing.</li>
+          <li><strong>VPC Flow Logs</strong> (not enabled in this stack, but a common addition) — CloudWatch Logs ingestion/storage charges if turned on.</li>
+        </ul>
+        <p class="muted">Total: roughly <strong>$35–90/month</strong> for the networking layer alone, before adding a single EC2 instance, load balancer, or database — which is why this reference stays undeployed rather than running idle indefinitely.</p>
+      </div>
+    </section>
+
+    <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
+      <div data-reveal>
+        <p class="eyebrow">Design decisions</p>
+        <h2 id="decisions-heading">Why I built it this way</h2>
+        <p class="muted section-intro">
+          A few choices here aren't the only way to build this — here's the
+          reasoning behind them.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Reference-only, deliberately never deployed</h3>
+          <p class="muted">
+            A NAT Gateway bills by the hour whether or not any traffic
+            crosses it, so a portfolio demo that's mostly idle between
+            visits would spend the majority of its runtime paying for
+            infrastructure nobody is looking at. The
+            <code>cdk/lib/vpc-network-design-stack.ts</code> file is real,
+            compilable CDK — it's simply never imported into
+            <code>cdk/bin/portfolio.ts</code>, so <code>cdk deploy</code>
+            can't touch it even by accident. This page's diagram and route
+            tables are the actual design, not a simplified stand-in for it.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Click-to-inspect, not autoplay</h3>
+          <p class="muted">
+            Other reference-only projects in this portfolio animate a
+            sequence over time, because the thing they're demonstrating
+            <em>is</em> a sequence (a failover, a rolling deployment). A
+            VPC's value is its static topology — which subnet can reach
+            what, and through which route — so this page has no timers at
+            all. You inspect it the same way you'd inspect a real VPC in
+            the AWS console: by clicking on things.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>One NAT Gateway per AZ, not one shared gateway</h3>
+          <p class="muted">
+            CDK's default <code>subnetConfiguration</code> behavior
+            provisions a NAT Gateway per AZ automatically, which roughly
+            doubles the NAT cost shown in the pricing section above
+            compared to a single shared gateway. It's kept here because
+            it's the higher-availability, more production-realistic
+            default — a single shared NAT Gateway is a valid cost
+            optimization for a lower-availability workload, but this
+            reference is meant to show the pattern most SAA-level designs
+            actually recommend.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Security groups referenced by group, not by CIDR</h3>
+          <p class="muted">
+            The app and database tiers' inbound rules reference the
+            calling tier's security group id rather than a subnet's CIDR
+            block. A CIDR-based rule stays correct even if a resource
+            moves to a different subnet within the same tier; a
+            group-reference rule stays correct even if the tier's subnet
+            layout changes entirely, which is the more common source of
+            drift in practice.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
+      <div class="footer-right">
+        <nav aria-label="Footer navigation">
+          <a href="/">Home</a>
+          <a href="/#projects">Projects</a>
+          <a href="/#about">About</a>
+        </nav>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+            <img src="/assets/linkedin.png" alt="" />
+          </a>
+          <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <img src="/assets/github.png" alt="" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <div class="mobile-sidebar" id="mobile-sidebar">
+    <div class="mobile-sidebar-backdrop" id="mobile-sidebar-backdrop"></div>
+    <div class="mobile-sidebar-rail">
+      <button type="button" class="mobile-sidebar-toggle" id="mobile-sidebar-toggle" aria-expanded="false" aria-controls="mobile-sidebar-panel" aria-label="Open menu">
+        <svg class="icon-expand" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+        <svg class="icon-collapse" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </button>
+      <a class="mobile-sidebar-home" href="/" aria-label="Home">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9h5v-5h2v5h5v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <button type="button" class="theme-toggle mobile-sidebar-rail-theme" id="theme-toggle-sidebar-rail" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <nav class="mobile-sidebar-panel" id="mobile-sidebar-panel" aria-label="Mobile navigation" aria-hidden="true">
+      <a class="mobile-sidebar-link" href="/">Home</a>
+      <details class="mobile-sidebar-group" open>
+        <summary class="mobile-sidebar-group-summary">Projects</summary>
+        <div class="mobile-sidebar-group-content">
+        <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
+        <a class="mobile-sidebar-sublink" href="/project/containers/index.html">Container Orchestration</a>
+        <a class="mobile-sidebar-sublink" href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
+        <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
+        <a class="mobile-sidebar-sublink" href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
+        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
+        <a class="mobile-sidebar-sublink" href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
+        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+        <details class="mobile-sidebar-subgroup" open>
+          <summary class="mobile-sidebar-group-label">VPC Network Design</summary>
+          <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
+          <a class="mobile-sidebar-sublink" href="#how-it-works">How it works</a>
+          <a class="mobile-sidebar-sublink" href="#use-cases">Use cases</a>
+          <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
+          <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
+        </details>
+        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
+        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
+        <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
+        </div>
+      </details>
+      <a class="mobile-sidebar-link" href="/#about">About</a>
+      <button type="button" class="theme-toggle mobile-sidebar-link mobile-sidebar-theme-toggle" id="theme-toggle-sidebar-panel" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Dark mode</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

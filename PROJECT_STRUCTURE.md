@@ -162,6 +162,34 @@ projects/sns-notification-fan-out/
 
 The repository name is more descriptive than the original working folder name. Existing deployed Lambda function names beginning with `fanningsns-` are retained to avoid unnecessary resource replacement. The infrastructure template uses `CodeUri: ../backend/` for the repository layout.
 
+## Reference-only projects (beta only, never deployed)
+
+Five projects exist purely as documented, compilable architecture and demo code, and are intentionally never deployed to AWS: each has a real `cdk/lib/<name>-stack.ts` that is never imported by `cdk/bin/portfolio.ts`, so `cdk deploy` can never touch it, and a frontend with zero backend calls — no `config.js`, no `fetch()`/XHR anywhere, every "demo" interaction simulated client-side in `script.js`. They ship to the beta site only (`stages: ['beta']` in `cdk/lib/website-content.ts`), never to prod, and are labeled with a distinct "Reference build" badge on the homepage and an in-page disclaimer so the site never implies they're actually running.
+
+Unlike the six newest live projects below (`workflow-visualizer` onward, which have no `README.md`/`docs/` because their real deployed backend is the documentation), these five keep a `README.md` with an embedded Mermaid architecture diagram — a deliberate exception, since there's no live backend to explore in place of it.
+
+```text
+projects/<name>/
+├── README.md
+├── frontend/
+│   ├── index.html
+│   └── script.js
+├── backend/
+│   ├── *.py
+│   └── requirements.txt
+└── homepage-card.html
+```
+
+| Project folder | Production path | Stack file | Purpose |
+| --- | --- | --- | --- |
+| `projects/multi-region-dr` | `/project/dr/index.html` | `cdk/lib/multi-region-dr-stack.ts` | Pilot light / warm standby / active-active failover across two regions |
+| `projects/data-lake-analytics` | `/project/datalake/index.html` | `cdk/lib/data-lake-analytics-stack.ts` | S3 → Glue → Athena → QuickSight analytics pipeline |
+| `projects/container-orchestration` | `/project/containers/index.html` | `cdk/lib/container-orchestration-stack.ts` | ECS Fargate rolling/blue-green deployment pipeline |
+| `projects/vpc-network-design` | `/project/vpc/index.html` | `cdk/lib/vpc-network-design-stack.ts` | Multi-tier VPC: public/private/isolated subnets, NAT, route tables, security groups |
+| `projects/realtime-ops-dashboard` | `/project/opsdash/index.html` | `cdk/lib/realtime-ops-dashboard-stack.ts` | Kinesis Data Streams → Lambda aggregation → DynamoDB rollups → live dashboard |
+
+Note: the six newest CDK-based projects (`workflow-visualizer`, `moderated-image-gallery`, `habit-tracker`, `nova-summarizer`, `order-processing`, `website-chatbot`) don't have a section in this document — that's drift, not a rule, since their infrastructure lives entirely in `cdk/lib/*.ts` rather than a per-project `infrastructure/template.yaml`. These five reference-only projects get a section here because their defining trait — a real stack file that's deliberately never wired into `bin/portfolio.ts` — is exactly the kind of thing a future reader can't discover just by browsing `cdk/lib/`.
+
 ## Architecture documentation
 
 ```text

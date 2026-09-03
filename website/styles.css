@@ -733,6 +733,15 @@ footer {
   }
 }
 
+/* Same dot, no pulse: signals "documented, not deployed" for a
+   reference-only project card, at a glance distinct from the live pulse
+   above -- static and neutral gray instead of animated and accent blue. */
+.status-dot.is-reference-dot {
+  background: var(--muted);
+  animation: none;
+  box-shadow: none;
+}
+
 /* ---------------------------------------------------------------------
    12. NAV MENU + "PROJECTS" DROPDOWN
    .site-header nav holds the top-level links (Home / About / Contact
@@ -1183,11 +1192,13 @@ footer {
   transform: scale(1.04);
 }
 
-/* Placeholder projects (any card WITHOUT class="is-live") get a soft
-   build/deploy shimmer sweep to signal "not live yet". Add
-   class="is-live" to a .project-card to turn the shimmer off once
-   that project has a real page. */
-.project-card:not(.is-live) .project-thumb::after {
+/* Placeholder projects (any card WITHOUT class="is-live" or
+   class="is-reference") get a soft build/deploy shimmer sweep to signal
+   "not live yet". Add class="is-live" to a .project-card to turn the
+   shimmer off once that project has a real page -- class="is-reference"
+   turns it off too, since a reference-only card isn't "coming soon", it's
+   deliberately never deployed (see section 14c below). */
+.project-card:not(.is-live):not(.is-reference) .project-thumb::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -1807,6 +1818,36 @@ footer {
 
 .project-card.is-live:hover .project-hover-cta,
 .project-card.is-live:focus-within .project-hover-cta {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(0);
+}
+
+/* Mirrors .project-card.is-live's hover-tint/hover-CTA behavior above,
+   using --muted instead of --accent for the tint so hovering a
+   reference-only card doesn't read as "live" even for a fraction of a
+   second. */
+.project-card.is-reference {
+  position: relative;
+}
+
+.project-card.is-reference::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(95, 107, 122, 0.08);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.project-card.is-reference:hover::before,
+.project-card.is-reference:focus-within::before {
+  opacity: 1;
+}
+
+.project-card.is-reference:hover .project-hover-cta,
+.project-card.is-reference:focus-within .project-hover-cta {
   opacity: 1;
   transform: translate(-50%, -50%) translateY(0);
 }
@@ -5200,6 +5241,15 @@ footer {
   font-size: 0.92rem;
 }
 
+/* [hidden] and .result-placeholder are equal specificity, and this
+   stylesheet's rule comes after the UA default -- without this override,
+   script.js setting `.hidden = true` on a placeholder has no visible
+   effect at all, since `display: flex` above wins. Confirmed this was
+   silently broken on nova-summarizer's already-live result placeholder. */
+.result-placeholder[hidden] {
+  display: none;
+}
+
 .job-timeline-wrap h3 {
   margin: 0 0 1.25rem;
   font-size: 1.05rem;
@@ -6065,4 +6115,654 @@ footer {
 
 .chat-form button {
   flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------
+   28. REFERENCE-ONLY PROJECT NOTICE
+   Shared by the 5 beta-only "Reference build" projects (Multi-Region DR,
+   Data Lake & Analytics, Container Orchestration, VPC Network Design,
+   Real-Time Operations Dashboard) -- their AWS architecture is designed
+   and documented but intentionally never deployed, to avoid running
+   infrastructure (NAT gateways, EKS control planes, Kinesis shards,
+   QuickSight seats, etc.) nobody needs live 24/7. Placed under each
+   page's <h1>, above .hero-actions.
+   --------------------------------------------------------------------- */
+.reference-build-notice {
+  border-radius: 14px;
+  padding: 0.85rem 1.1rem;
+  background: var(--info-bg);
+  color: var(--info-text);
+  font-weight: 600;
+  margin: 0.75rem 0 1.25rem;
+  max-width: 640px;
+}
+
+/* ---------------------------------------------------------------------
+   29. MULTI-REGION DR (project/dr/index.html only)
+   Posture selector, region map, and homepage-card thumbnail scene.
+   --------------------------------------------------------------------- */
+.dr-mode-select {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.dr-mode-button {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: flex-start;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.dr-mode-button:hover {
+  border-color: var(--accent);
+}
+
+.dr-mode-button.is-active {
+  border-color: var(--accent);
+  background: var(--info-bg);
+}
+
+.dr-mode-name {
+  font-weight: 700;
+}
+
+.dr-mode-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.dr-region-map {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.75rem 0;
+  flex-wrap: wrap;
+}
+
+.dr-region {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  padding: 1.25rem 1.4rem;
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.dr-region-label {
+  margin: 0 0 0.2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.dr-region-role {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.dr-region.is-active {
+  border-color: var(--success-text, #1a7f4e);
+}
+
+.dr-region.is-active .dr-region-role {
+  color: var(--success-text, #1a7f4e);
+}
+
+.dr-region.is-down {
+  border-color: var(--error-text, #b3261e);
+  opacity: 0.6;
+}
+
+.dr-region.is-down .dr-region-role {
+  color: var(--error-text, #b3261e);
+}
+
+.dr-region.is-promoted {
+  border-color: var(--accent);
+}
+
+.dr-region-pulse {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--success-text, #1a7f4e);
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+.dr-region.is-down .dr-region-pulse {
+  animation: none;
+  background: var(--error-text, #b3261e);
+}
+
+.dr-region-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  flex-shrink: 0;
+}
+
+.dr-region-link-line {
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  position: relative;
+}
+
+.dr-region-link-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .dr-region-map {
+    flex-direction: column;
+  }
+  .dr-region-link {
+    width: 2px;
+    height: 32px;
+  }
+}
+
+/* Homepage-card thumbnail scene: two region nodes with a connecting
+   line, the primary one glowing to show "active" -- same house style
+   as the other beta card scenes (simple circles/lines/text). */
+.dr-thumb-scene .dr-thumb-node {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.dr-thumb-scene .dr-thumb-node-primary {
+  stroke: var(--accent);
+  animation: statusPulse 2.4s ease-in-out infinite;
+}
+
+.dr-thumb-scene .dr-thumb-line {
+  stroke: var(--border);
+  stroke-width: 2;
+  stroke-dasharray: 4 5;
+}
+
+/* ---------------------------------------------------------------------
+   30. CONTAINER ORCHESTRATION (project/containers/index.html only)
+   Rolling-deployment task grid and homepage-card thumbnail scene.
+   --------------------------------------------------------------------- */
+.orchestration-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 2rem 1rem;
+  margin-bottom: 1.5rem;
+  background: var(--info-bg);
+  border-radius: 16px;
+}
+
+.orchestration-node {
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.orchestration-task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 0.85rem;
+  width: 100%;
+  max-width: 520px;
+}
+
+.orchestration-task {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--success-bg, #e3f7e9);
+  border: 2px solid var(--success-text, #1a7d3c);
+  transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+.orchestration-task-version {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--success-text, #1a7d3c);
+}
+
+.orchestration-task.is-updating {
+  background: var(--info-bg);
+  border-color: var(--accent);
+  animation: orchestrationPulse 0.9s ease-in-out infinite;
+}
+
+.orchestration-task.is-updating .orchestration-task-version {
+  color: var(--accent);
+}
+
+.orchestration-task.is-updated {
+  transform: scale(1.05);
+}
+
+@keyframes orchestrationPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orchestration-task.is-updating {
+    animation: none;
+  }
+}
+
+.containers-thumb-box {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.containers-thumb-box-3 {
+  animation: containersBoxUpdate 3.6s ease-in-out infinite;
+}
+
+@keyframes containersBoxUpdate {
+  0%, 60%, 100% { fill: var(--surface); stroke: var(--accent); }
+  30% { fill: var(--accent); stroke: var(--accent); opacity: 0.6; }
+}
+
+.containers-thumb-line {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.containers-thumb-dot {
+  fill: var(--accent);
+}
+
+/* ---------------------------------------------------------------------
+   31. VPC NETWORK DESIGN (project/vpc/index.html only)
+   Click-to-inspect subnet/resource diagram, detail panel, and
+   homepage-card thumbnail scene. Reuses --accent/--muted/--border/
+   --surface/--info-bg/--info-text/--text tokens already defined in
+   :root, so it follows the existing dark-mode behavior automatically.
+   --------------------------------------------------------------------- */
+.vpc-demo-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .vpc-demo-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vpc-diagram {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 0.75rem;
+}
+
+.vpc-diagram-svg {
+  width: 100%;
+  height: auto;
+  font-family: inherit;
+}
+
+.vpc-boundary {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+
+.vpc-boundary-label {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vpc-az-box {
+  fill: var(--info-bg);
+  fill-opacity: 0.35;
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.vpc-az-label {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vpc-connector {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.vpc-node {
+  cursor: pointer;
+  outline: none;
+}
+
+.vpc-node rect {
+  transition: stroke 0.2s ease, stroke-width 0.2s ease, fill 0.2s ease;
+}
+
+.vpc-node text {
+  font-size: 11px;
+  fill: var(--text);
+  pointer-events: none;
+}
+
+.vpc-node:focus-visible rect {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.vpc-node-igw rect {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.vpc-node-igw text {
+  font-weight: 700;
+}
+
+.vpc-subnet-label {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--muted);
+}
+
+.vpc-subnet {
+  stroke-width: 1.5;
+}
+
+.vpc-subnet-public {
+  fill: rgba(52, 84, 209, 0.07);
+  stroke: rgba(52, 84, 209, 0.35);
+}
+
+.vpc-subnet-private {
+  fill: rgba(16, 163, 74, 0.07);
+  stroke: rgba(16, 163, 74, 0.35);
+}
+
+.vpc-subnet-isolated {
+  fill: rgba(217, 119, 6, 0.07);
+  stroke: rgba(217, 119, 6, 0.35);
+}
+
+.vpc-subnet-node.is-selected > rect {
+  stroke-width: 3;
+}
+
+.vpc-subnet-node.is-selected .vpc-subnet-public {
+  stroke: var(--accent);
+}
+
+.vpc-subnet-node.is-selected .vpc-subnet-private {
+  stroke: #10a34a;
+}
+
+.vpc-subnet-node.is-selected .vpc-subnet-isolated {
+  stroke: #d97706;
+}
+
+.vpc-resource,
+.vpc-nat {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.vpc-resource-node.is-selected .vpc-resource,
+.vpc-nat-node.is-selected .vpc-nat {
+  stroke: var(--accent);
+  stroke-width: 3;
+  fill: var(--info-bg);
+}
+
+.vpc-detail-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  min-height: 220px;
+}
+
+.vpc-detail-placeholder {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.vpc-detail-content h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+}
+
+.vpc-detail-content .muted {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+}
+
+.vpc-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.vpc-detail-table th,
+.vpc-detail-table td {
+  text-align: left;
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.vpc-detail-table th {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vpc-detail-note {
+  margin-top: 1rem;
+}
+
+.vpc-thumb-scene .vpc-thumb-outer {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.vpc-thumb-scene .vpc-thumb-box {
+  fill: var(--info-bg);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  animation: vpcThumbPulse 3.2s ease-in-out infinite;
+}
+
+.vpc-thumb-scene .vpc-thumb-box-2 {
+  animation-delay: 0.4s;
+}
+
+.vpc-thumb-scene .vpc-thumb-box-3 {
+  animation-delay: 0.8s;
+}
+
+@keyframes vpcThumbPulse {
+  0%, 100% {
+    stroke-opacity: 0.4;
+  }
+  50% {
+    stroke-opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   32. REAL-TIME OPERATIONS DASHBOARD (project/opsdash/index.html only)
+   Stats row, hand-rolled SVG bar/line charts, and homepage-card
+   thumbnail scene.
+   --------------------------------------------------------------------- */
+.opsdash-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.opsdash-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  text-align: center;
+}
+
+.opsdash-stat-value {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+
+.opsdash-stat-label {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.opsdash-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.opsdash-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem 1.5rem;
+}
+
+.opsdash-chart-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.opsdash-bar-chart,
+.opsdash-line-chart {
+  width: 100%;
+  height: auto;
+}
+
+.opsdash-chart-label {
+  font-size: 11px;
+  fill: var(--muted);
+  dominant-baseline: middle;
+}
+
+.opsdash-chart-count {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--text);
+  dominant-baseline: middle;
+}
+
+.opsdash-bar-track {
+  fill: var(--info-bg);
+}
+
+.opsdash-bar-fill {
+  fill: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.opsdash-line-baseline {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.opsdash-line-path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.opsdash-line-dot {
+  fill: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opsdash-bar-fill {
+    transition: none;
+  }
+}
+
+.opsdash-thumb-bar {
+  fill: var(--accent);
+  transform-origin: bottom;
+  animation: opsdashBarPulse 2.4s ease-in-out infinite;
+}
+
+.opsdash-thumb-bar:nth-child(2) {
+  animation-delay: 0.25s;
+}
+
+.opsdash-thumb-bar:nth-child(3) {
+  animation-delay: 0.5s;
+}
+
+@keyframes opsdashBarPulse {
+  0%, 100% {
+    transform: scaleY(0.6);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opsdash-thumb-bar {
+    animation: none;
+  }
 }

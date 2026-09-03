@@ -17,7 +17,17 @@ export type Stage = 'prod' | 'beta';
 export type ProjectKey = 'contactForm' | 'livePoll' | 'fanningSns' | 'workflowVisualizer' | 'moderatedImageGallery' | 'habitTracker' | 'novaSummarizer' | 'orderProcessing' | 'websiteChatbot';
 
 interface ProjectMapping {
-  key: ProjectKey;
+  /**
+   * Omitted for reference-only projects: a real, deployed backend
+   * (config.js's __API_ENDPOINT__ token, CDK stack instantiated in
+   * bin/portfolio.ts) is what a key is for. Some projects ship a full
+   * frontend + homepage card + nav entry with no backend at all -- their
+   * "demo" is entirely simulated client-side, on purpose, to avoid the
+   * cost of running infrastructure nobody needs live. buildConfigJsSources()
+   * below skips any project without a key via hasApiKey() instead of
+   * trying to look up an endpoint that doesn't exist.
+   */
+  key?: ProjectKey;
   frontendDir: string;
   destPrefix: string;
   // repo filename -> production filename, per PROJECT_STRUCTURE.md's
@@ -63,6 +73,27 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>',
   },
   {
+    // Reference-only: no key, no config.js, no CDK stack instantiated in
+    // bin/portfolio.ts. Ships to beta only -- see cdk/lib/container-
+    // orchestration-stack.ts's header comment for why.
+    frontendDir: 'projects/container-orchestration/frontend',
+    destPrefix: 'project/containers',
+    stages: ['beta'],
+    homepageCardFile: 'projects/container-orchestration/homepage-card.html',
+    navLinkHtml: '<a href="/project/containers/index.html">Container Orchestration</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/containers/index.html">Container Orchestration</a>',
+  },
+  {
+    // Reference-only, beta only -- see the note on Container Orchestration
+    // above.
+    frontendDir: 'projects/data-lake-analytics/frontend',
+    destPrefix: 'project/datalake',
+    stages: ['beta'],
+    homepageCardFile: 'projects/data-lake-analytics/homepage-card.html',
+    navLinkHtml: '<a href="/project/datalake/index.html">Data Lake &amp; Analytics</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/datalake/index.html">Data Lake &amp; Analytics</a>',
+  },
+  {
     key: 'habitTracker',
     frontendDir: 'projects/habit-tracker/frontend',
     destPrefix: 'project/habits',
@@ -94,6 +125,16 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>',
   },
   {
+    // Reference-only, beta only -- see the note on Container Orchestration
+    // above.
+    frontendDir: 'projects/multi-region-dr/frontend',
+    destPrefix: 'project/dr',
+    stages: ['beta'],
+    homepageCardFile: 'projects/multi-region-dr/homepage-card.html',
+    navLinkHtml: '<a href="/project/dr/index.html">Multi-Region Disaster Recovery</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/dr/index.html">Multi-Region Disaster Recovery</a>',
+  },
+  {
     key: 'novaSummarizer',
     frontendDir: 'projects/nova-summarizer/frontend',
     destPrefix: 'project/summarizer',
@@ -116,6 +157,16 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>',
   },
   {
+    // Reference-only, beta only -- see the note on Container Orchestration
+    // above.
+    frontendDir: 'projects/realtime-ops-dashboard/frontend',
+    destPrefix: 'project/opsdash',
+    stages: ['beta'],
+    homepageCardFile: 'projects/realtime-ops-dashboard/homepage-card.html',
+    navLinkHtml: '<a href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>',
+  },
+  {
     key: 'fanningSns',
     frontendDir: 'projects/sns-notification-fan-out/frontend',
     destPrefix: 'project/fanningsns',
@@ -123,6 +174,16 @@ const PROJECTS: ProjectMapping[] = [
     stages: ['beta', 'prod'],
     navLinkHtml: '<a href="/project/fanningsns/project3.html">SNS Notifications</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>',
+  },
+  {
+    // Reference-only, beta only -- see the note on Container Orchestration
+    // above.
+    frontendDir: 'projects/vpc-network-design/frontend',
+    destPrefix: 'project/vpc',
+    stages: ['beta'],
+    homepageCardFile: 'projects/vpc-network-design/homepage-card.html',
+    navLinkHtml: '<a href="/project/vpc/index.html">VPC Network Design</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/vpc/index.html">VPC Network Design</a>',
   },
   {
     key: 'websiteChatbot',
@@ -158,6 +219,14 @@ function copyFileRenamed(srcDir: string, destDir: string, file: string, rename?:
 
 function projectAppliesToStage(project: ProjectMapping, stage: Stage): boolean {
   return !project.stages || project.stages.includes(stage);
+}
+
+// Narrows to only the projects that actually have a backend endpoint to
+// resolve, so buildConfigJsSources() below never has to look up
+// endpoints[undefined] for a reference-only project that ships no
+// config.js at all.
+function hasApiKey(project: ProjectMapping): project is ProjectMapping & { key: ProjectKey } {
+  return project.key !== undefined;
 }
 
 /**
@@ -254,13 +323,16 @@ export function buildConfigJsSources(
   endpoints: Record<ProjectKey, string>,
   extraReplacements: Partial<Record<ProjectKey, Record<string, string>>> = {},
 ): { destinationKey: string; content: string }[] {
-  return PROJECTS.filter((project) => projectAppliesToStage(project, stage)).map((project) => {
-    const templatePath = path.join(REPO_ROOT, project.frontendDir, 'config.js');
-    const template = fs.readFileSync(templatePath, 'utf8');
-    let content = template.replaceAll(CONFIG_JS_PLACEHOLDER, endpoints[project.key]);
-    for (const [placeholder, value] of Object.entries(extraReplacements[project.key] ?? {})) {
-      content = content.replaceAll(placeholder, value);
-    }
-    return { destinationKey: `${project.destPrefix}/config.js`, content };
-  });
+  return PROJECTS
+    .filter((project) => projectAppliesToStage(project, stage))
+    .filter(hasApiKey)
+    .map((project) => {
+      const templatePath = path.join(REPO_ROOT, project.frontendDir, 'config.js');
+      const template = fs.readFileSync(templatePath, 'utf8');
+      let content = template.replaceAll(CONFIG_JS_PLACEHOLDER, endpoints[project.key]);
+      for (const [placeholder, value] of Object.entries(extraReplacements[project.key] ?? {})) {
+        content = content.replaceAll(placeholder, value);
+      }
+      return { destinationKey: `${project.destPrefix}/config.js`, content };
+    });
 }

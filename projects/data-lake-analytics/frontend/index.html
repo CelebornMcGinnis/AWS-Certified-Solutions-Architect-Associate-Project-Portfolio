@@ -13,8 +13,8 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Habit Tracker — McGinnis Architecture</title>
-  <meta name="description" content="An anonymous, device-local habit tracker — check in daily and watch a background EventBridge Scheduler job reset any streak you miss." />
+  <title>Data Lake &amp; Analytics — McGinnis Architecture</title>
+  <meta name="description" content="A serverless S3 + Glue + Athena + QuickSight data lake pattern, documented in full — the query demo runs client-side against a sample dataset since the real pipeline isn't deployed." />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
@@ -39,15 +39,15 @@
           <div class="nav-dropdown-menu">
             <a href="/project/contactform/project1.html">Contact Form</a>
             <a href="/project/containers/index.html">Container Orchestration</a>
-            <a href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
             <details class="nav-dropdown-subsection" open>
-              <summary class="nav-dropdown-group-label">Habit Tracker</summary>
+              <summary class="nav-dropdown-group-label">Data Lake &amp; Analytics</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
               <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
             </details>
+            <a href="/project/habits/project6.html">Habit Tracker</a>
             <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
             <a href="/project/polling/project2.html">Movie Poll</a>
             <a href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
@@ -73,13 +73,20 @@
   <main>
     <section class="hero">
       <p class="eyebrow">Project</p>
-      <h1 class="hero-title-compact">Habit Tracker</h1>
+      <h1 class="hero-title-compact">Data Lake &amp; Analytics</h1>
       <p>
-        Add a habit, check in once a day, and watch your streak grow.
-        Miss a day and a background <strong>EventBridge Scheduler</strong>
-        job quietly resets it the next morning — no visitor request has
-        to trigger that, it just happens on a schedule.
+        A serverless analytics pattern: an <strong>S3</strong> raw zone,
+        crawled by <strong>AWS Glue</strong> into a Data Catalog, queried
+        with serverless SQL by <strong>Amazon Athena</strong>, and
+        visualized with <strong>Amazon QuickSight</strong>.
       </p>
+      <div class="reference-build-notice">
+        This AWS architecture is fully designed and documented below, but
+        intentionally not deployed — QuickSight's per-seat licensing
+        (~$9–24/user/month) and ongoing Glue job costs aren't justified
+        for a portfolio demo, so the query demo below runs entirely on a
+        small, static, baked-in dataset with zero AWS calls.
+      </div>
       <div class="hero-actions">
         <a class="button-link" href="#how-it-works">See how it works</a>
         <a class="button-link" href="#use-cases">Use cases</a>
@@ -89,169 +96,135 @@
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
-      <div class="card-full-row">
+      <div class="card-primary-col">
         <div>
           <p class="eyebrow">Demo</p>
-          <h2 id="demo-heading">Track a habit</h2>
+          <h2 id="demo-heading">Run a sample query</h2>
           <p class="muted">
-            This runs against a real AWS backend — no mock data. Add a
-            habit below and check in once a day to build a streak; each
-            card tracks a running streak and a personal best, calculated
-            from real check-in timestamps in DynamoDB, not just a total
-            check-in count.
-          </p>
-          <p class="muted">
-            Miss a day and the current streak resets to zero, but your
-            best streak stays on the card — so you can always see how
-            today's run compares to your best run so far.
+            This runs entirely in your browser against a small, static
+            dataset baked into this page — no AWS backend, no network
+            requests. Pick a preset query below to see the shape the real
+            Athena-backed version would have.
           </p>
         </div>
 
-        <div class="device-notice">
-          This tracker doesn't use accounts. Your habits are stored
-          against a random id kept in this browser's local storage
-          (<code id="device-id-note"></code>&hellip;) — there's no sign-up
-          and no way to recover them from a different browser or device.
-          Clearing your browser data deletes this id, and with it, access
-          to everything tracked here.
-        </div>
+        <form class="contact-form" id="query-form">
+          <div class="length-toggle" id="query-picker" role="radiogroup" aria-label="Preset query">
+            <input type="radio" name="query" id="query-byCategory" value="byCategory" checked />
+            <label for="query-byCategory">Orders by category</label>
+            <input type="radio" name="query" id="query-byRegion" value="byRegion" />
+            <label for="query-byRegion">Revenue by region</label>
+            <input type="radio" name="query" id="query-topProducts" value="topProducts" />
+            <label for="query-topProducts">Top products by units sold</label>
+          </div>
 
-        <form class="contact-form habit-form" id="habit-form">
-          <label>
-            New habit
-            <input type="text" id="habit-name" maxlength="80" placeholder="e.g. Read for 20 minutes" required />
-          </label>
-          <div class="form-status" id="habit-form-status" role="status" aria-live="polite" hidden></div>
-          <button type="submit">Add habit</button>
+          <div class="form-status" id="query-status" role="status" aria-live="polite" hidden></div>
+
+          <button type="submit" id="query-submit">Run query</button>
         </form>
+      </div>
 
-        <div class="habit-list" id="habit-list"></div>
-        <p class="muted small-note habit-list-empty-note" id="habit-list-empty-note">No habits yet — add one above to get started.</p>
+      <p class="result-placeholder" id="query-result-placeholder">Your query results will appear here once you run one.</p>
+
+      <div class="notify-log-wrap" id="query-result" hidden>
+        <div class="notify-log-head">
+          <h3 id="query-result-title"></h3>
+          <span class="muted small-note" id="query-result-meta"></span>
+        </div>
+        <table class="notify-log" id="query-result-table">
+          <thead id="query-result-thead"></thead>
+          <tbody id="query-result-body"></tbody>
+        </table>
       </div>
     </section>
 
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture</p>
-        <h2 id="how-it-works-heading">How it works</h2>
+        <h2 id="how-it-works-heading">How it works (as designed, not as deployed)</h2>
         <p class="muted section-intro">
-          This is a real AWS project, not a mockup. Here's what actually
-          happens both when you check in, and every night in the
-          background whether you visit the site or not — click any step
-          to jump to it, or let it play through on its own.
+          This diagram shows the architecture exactly as documented in
+          this project's <code>cdk/lib/data-lake-analytics-stack.ts</code>
+          and README — since nothing here is actually running, the steps
+          below describe what the real pipeline would do rather than
+          something you can trigger.
         </p>
       </div>
 
-      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
-      <div class="flow-diagram habits-diagram" id="flow-diagram">
+      <div class="flow-diagram" id="flow-diagram">
         <div class="flow-track">
-          <div class="flow-node" data-node="visitor">
+          <div class="flow-node is-done" data-node="raw">
             <span class="flow-node-icon" aria-hidden="true">
-              <svg viewBox="0 0 32 32" fill="none"><circle cx="12" cy="10" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M4 26c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="23" cy="12" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M18.5 26c0-3.6 2.5-6.5 6-7.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <img src="/assets/aws-icons/s3.png" alt="" />
             </span>
-            <span class="flow-node-label">Visitor</span>
+            <span class="flow-node-label">S3 (raw zone)</span>
           </div>
 
-          <div class="flow-connector" data-step="1" aria-hidden="true">
+          <div class="flow-connector is-done" aria-hidden="true">
             <span class="flow-connector-num">1</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="apigateway" data-step="1" role="button" tabindex="0" aria-label="Step 1: Visitor clicks Check in today">
+          <div class="flow-node is-done" data-node="glue">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/apigateway.png" alt="" />
+              <svg viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="24" height="24" rx="3" stroke="currentColor" stroke-width="2"/><path d="M9 22V10M16 22v-8M23 22V14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             </span>
-            <span class="flow-node-label">API Gateway</span>
+            <span class="flow-node-label">Glue Crawler + Catalog</span>
           </div>
 
-          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+          <div class="flow-connector is-done" aria-hidden="true">
             <span class="flow-connector-num">2</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="lambda" data-step="2" role="button" tabindex="0" aria-label="Step 2: Lambda updates the streak in DynamoDB">
+          <div class="flow-node is-done" data-node="athena">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="2"/><path d="M12 20l3-8 2 5 2-3 2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <span class="flow-node-label">Lambda</span>
+            <span class="flow-node-label">Athena (serverless SQL)</span>
           </div>
 
-          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
+          <div class="flow-connector is-done" aria-hidden="true">
             <span class="flow-connector-num">3</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="dynamodb" data-step="3" role="button" tabindex="0" aria-label="Step 3: DynamoDB stores the habit and its check-ins">
+          <div class="flow-node is-done" data-node="quicksight">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/dynamodb.png" alt="" />
+              <svg viewBox="0 0 32 32" fill="none"><rect x="4" y="18" width="5" height="10" fill="currentColor"/><rect x="13.5" y="10" width="5" height="18" fill="currentColor"/><rect x="23" y="4" width="5" height="24" fill="currentColor"/></svg>
             </span>
-            <span class="flow-node-label">DynamoDB</span>
-          </div>
-
-          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
-            <span class="flow-connector-num">4</span>
-            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
-          </div>
-
-          <div class="flow-node" data-node="scheduler" data-step="4" role="button" tabindex="0" aria-label="Step 4: EventBridge Scheduler runs once every night">
-            <span class="flow-node-icon" aria-hidden="true">
-              <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="17" r="11" stroke="currentColor" stroke-width="2"/><path d="M16 10v7l5 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 4h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            </span>
-            <span class="flow-node-label">EventBridge Scheduler</span>
-          </div>
-
-          <div class="flow-connector" data-step="5" aria-hidden="true">
-            <span class="flow-connector-num">5</span>
-            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
-          </div>
-
-          <div class="flow-node" data-node="resetlambda" data-step="5" role="button" tabindex="0" aria-label="Step 5: A Lambda function resets any streak that missed yesterday">
-            <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
-            </span>
-            <span class="flow-node-label">Reset Lambda</span>
+            <span class="flow-node-label">QuickSight</span>
           </div>
         </div>
       </div>
 
       <ol class="flow-steps" id="flow-steps">
-        <li class="flow-step" data-step="1" tabindex="0">
+        <li class="flow-step is-active" data-step="1">
           <span class="flow-step-num">1</span>
           <div class="flow-step-body">
-            <h3>Visitor clicks Check in today</h3>
-            <p>The browser sends its locally-generated device id along with the habit id to <code>POST /habits/{id}/checkins</code> — there's no sign-in step first.</p>
+            <h3>Source data lands in the S3 raw zone</h3>
+            <p>The raw zone is the single source of truth every downstream service reads from — nothing is transformed or deleted in place.</p>
           </div>
         </li>
-
-        <li class="flow-step" data-step="2" tabindex="0">
+        <li class="flow-step is-active" data-step="2">
           <span class="flow-step-num">2</span>
           <div class="flow-step-body">
-            <h3>Lambda updates the streak</h3>
-            <p>Lambda compares today's date against the habit's last check-in date: yesterday means the streak continues, anything else means it restarts at 1.</p>
+            <h3>A Glue crawler updates the Data Catalog</h3>
+            <p>The crawler inspects the raw zone's objects and keeps a Glue database/table schema up to date, so every query engine downstream shares one schema definition.</p>
           </div>
         </li>
-
-        <li class="flow-step" data-step="3" tabindex="0">
+        <li class="flow-step is-active" data-step="3">
           <span class="flow-step-num">3</span>
           <div class="flow-step-body">
-            <h3>DynamoDB stores the habit and its check-ins</h3>
-            <p>One table holds each habit's current/longest streak; a second table holds one row per day checked in, which is what draws the calendar grid on each card.</p>
+            <h3>Athena runs serverless SQL against the catalog</h3>
+            <p>A Lambda-fronted API would call <code>start_query_execution</code> against a dedicated workgroup, then poll for results — no cluster to provision, pay only per query.</p>
           </div>
         </li>
-
-        <li class="flow-step" data-step="4" tabindex="0">
+        <li class="flow-step is-active" data-step="4">
           <span class="flow-step-num">4</span>
           <div class="flow-step-body">
-            <h3>EventBridge Scheduler runs once every night</h3>
-            <p>A cron schedule fires shortly after midnight UTC, every single day, with nobody visiting the site required to trigger it.</p>
-          </div>
-        </li>
-
-        <li class="flow-step" data-step="5" tabindex="0">
-          <span class="flow-step-num">5</span>
-          <div class="flow-step-body">
-            <h3>A Lambda function resets any streak that missed yesterday</h3>
-            <p>The scheduled job scans every habit in the table and zeroes <code>currentStreak</code> for any whose last check-in wasn't yesterday — <code>longestStreak</code> is never touched, so your best run stays on record.</p>
+            <h3>QuickSight visualizes the results</h3>
+            <p>QuickSight reads directly from Athena's result set — it's account-level and per-seat licensed rather than something the CDK stack provisions itself.</p>
           </div>
         </li>
       </ol>
@@ -262,31 +235,32 @@
       <p class="eyebrow">Use cases</p>
       <h2 id="use-cases-heading">Where this pattern fits</h2>
       <p class="muted section-intro">
-        A scheduled background job that acts on data nobody is actively
-        looking at shows up constantly in real systems.
+        A serverless data lake shows up anywhere raw, semi-structured
+        data needs to become queryable without standing up and managing
+        a database or a data warehouse cluster.
       </p>
       </div>
       <div class="usecase-grid">
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 9h10M7 13h10M7 17h6" stroke-linecap="round"/></svg>
           </span>
-          <h3>Subscription &amp; trial expiry</h3>
-          <p class="muted">A nightly job that checks every account for an expired trial or a failed renewal, instead of checking on every single request.</p>
+          <h3>Ad-hoc business reporting</h3>
+          <p class="muted">Answering a one-off question against raw event or transaction logs without waiting on a data engineering ticket to build a pipeline first.</p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
-          <h3>SLA &amp; streak-style metrics</h3>
-          <p class="muted">Any "consecutive days/periods without an incident" counter needs the exact same daily "did this get satisfied yesterday?" check this project runs.</p>
+          <h3>Log &amp; clickstream analytics</h3>
+          <p class="muted">Landing application or clickstream logs straight in S3 and querying them with SQL instead of standing up a dedicated log analytics platform.</p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="8.5" y="14" width="7" height="7" rx="1.5"/></svg>
           </span>
-          <h3>Scheduled reports &amp; digests</h3>
-          <p class="muted">Nightly or weekly summary emails, cleanup jobs, and cache-warming tasks all follow the same "run on a clock, not on a request" shape.</p>
+          <h3>Executive dashboards</h3>
+          <p class="muted">Feeding QuickSight (or any BI tool that can read Athena results) from a single, consistently cataloged source of truth across teams.</p>
         </div>
       </div>
     </section>
@@ -294,23 +268,22 @@
     <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
       <div data-reveal>
       <p class="eyebrow">Pricing</p>
-      <h2 id="pricing-heading">What this actually costs</h2>
+      <h2 id="pricing-heading">What this would actually cost</h2>
       <p class="muted section-intro">
-        Pay-per-use the whole way through — an
-        unused demo costs nothing. These are estimates based on public
-        AWS list pricing, not a guarantee.
+        Nothing here is deployed, so nothing here is billing today — these
+        are estimates based on public AWS list pricing for what the
+        architecture above would cost if it were running.
       </p>
       </div>
       <div class="pricing-layout">
         <div class="pricing-slider">
           <div class="pricing-card pricing-slider-card">
-            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
-            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="pricing-tier" id="pricing-slider-tier">Light volume</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$15<span class="pricing-period">/mo</span></p>
             <p class="muted" id="pricing-slider-desc">
-              A handful of habits and daily check-ins — comfortably inside
-              Lambda, DynamoDB, and API Gateway's free tiers. EventBridge
-              Scheduler's free tier alone covers 14 million invocations a
-              month, far more than one job a day will ever use.
+              A handful of ad-hoc queries a day against a small dataset —
+              Athena's per-TB-scanned pricing is nearly free at this
+              scale, so QuickSight's flat per-seat fee dominates the bill.
             </p>
           </div>
           <div class="pricing-slider-control">
@@ -322,25 +295,26 @@
               max="4"
               step="1"
               value="0"
-              aria-label="Daily check-in volume"
+              aria-label="Query and dashboard volume"
               aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
             />
             <div class="pricing-slider-ticks" aria-hidden="true">
-              <span>100</span>
-              <span>1K</span>
-              <span>10K</span>
-              <span>50K</span>
-              <span>100K+</span>
+              <span>Light</span>
+              <span>Moderate</span>
+              <span>Regular</span>
+              <span>Heavy</span>
+              <span>Multi-seat</span>
             </div>
-            <p class="pricing-slider-unit" id="pricing-slider-unit">Check-ins per day</p>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">Query and dashboard volume</p>
           </div>
         </div>
         <div class="pricing-breakdown">
           <h3>What drives the cost</h3>
           <ul>
-            <li><strong>EventBridge Scheduler</strong> — one invocation per day, effectively free at any realistic scale for this project.</li>
-            <li><strong>DynamoDB</strong> — on-demand billing for two tables (habits, check-ins); the nightly reset job's table Scan is the only recurring read cost that grows with total habit count rather than traffic.</li>
-            <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
+            <li><strong>Amazon QuickSight</strong> — the dominant cost at small scale: ~$9–24 per author/reader seat per month, billed whether or not anyone opens a dashboard that day.</li>
+            <li><strong>Amazon Athena</strong> — billed per TB of data scanned per query (~$5/TB); effectively free at a demo's data volume.</li>
+            <li><strong>AWS Glue</strong> — crawler runs and Data Catalog storage are billed per DPU-hour and per object; small but non-zero if the crawler runs on a schedule.</li>
+            <li><strong>S3, Lambda &amp; API Gateway</strong> — storage and per-request pricing; effectively free at this scale.</li>
           </ul>
         </div>
       </div>
@@ -349,52 +323,40 @@
     <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
       <div data-reveal>
         <p class="eyebrow">Design decisions</p>
-        <h2 id="decisions-heading">Why I built it this way</h2>
+        <h2 id="decisions-heading">Why I designed it this way</h2>
         <p class="muted section-intro">
-          A few choices here aren't the only way to build this — here's the
-          reasoning behind them.
+          A few choices here aren't the only way to build this — here's
+          the reasoning behind them.
         </p>
       </div>
       <div class="decision-list">
         <div class="decision-item">
-          <h3>Anonymous device id instead of an account</h3>
+          <h3>Athena over a provisioned query engine</h3>
           <p class="muted">
-            A habit tracker's core idea — check in, watch a streak, see
-            a scheduled job act on it — doesn't need real Cognito
-            authentication to demonstrate; a disclosed, no-account
-            identity keeps the demo's friction at zero without
-            pretending it's something it isn't.
+            Redshift or EMR would both work here, but both bill for
+            provisioned capacity whether or not a query is running.
+            Athena's per-query pricing matches this project's actual
+            usage pattern — occasional, ad-hoc — far better.
           </p>
         </div>
         <div class="decision-item">
-          <h3>EventBridge Scheduler, not an EventBridge Rule</h3>
+          <h3>QuickSight left out of the CDK stack</h3>
           <p class="muted">
-            A classic EventBridge Rule with a cron expression would work
-            too, but Scheduler is the newer, purpose-built service for
-            exactly this: a single schedule with a first-class target,
-            without needing a whole event bus and rule pattern around it
-            for what is genuinely just "run this Lambda once a day."
+            QuickSight is an account-level subscription with its own
+            per-seat billing rather than a stack-scoped resource — trying
+            to provision it per-project via CDK wouldn't reflect how it's
+            actually adopted in a real organization, so the stack stops
+            at Athena and documents QuickSight as the next layer instead.
           </p>
         </div>
         <div class="decision-item">
-          <h3>The reset job never touches longestStreak</h3>
+          <h3>A static demo dataset, not a live query interface</h3>
           <p class="muted">
-            A missed day should cost you your current streak, not erase
-            the record of your best one. Keeping that as a separate
-            field that only ever increases (in check_in_handler.py) means
-            the nightly job's <code>UpdateExpression</code> only ever
-            needs to write <code>currentStreak</code>.
-          </p>
-        </div>
-        <div class="decision-item">
-          <h3>A full table Scan in the reset job, on purpose</h3>
-          <p class="muted">
-            Every other "list" endpoint on this site avoids Scan because
-            it can't answer "the most recent N" reliably. This job needs
-            the opposite thing — every row, with no ordering requirement
-            at all — which is exactly what Scan is for; reaching for a
-            GSI here would add complexity to solve a problem this job
-            doesn't have.
+            A real SQL-input box over a live Athena connection would cost
+            real money per keystroke from anonymous visitors with no
+            guardrails. Three preset "queries" over a small baked-in
+            dataset show the same request/wait/results shape without that
+            exposure.
           </p>
         </div>
       </div>
@@ -454,15 +416,15 @@
         <div class="mobile-sidebar-group-content">
         <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
         <a class="mobile-sidebar-sublink" href="/project/containers/index.html">Container Orchestration</a>
-        <a class="mobile-sidebar-sublink" href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
         <details class="mobile-sidebar-subgroup" open>
-          <summary class="mobile-sidebar-group-label">Habit Tracker</summary>
+          <summary class="mobile-sidebar-group-label">Data Lake &amp; Analytics</summary>
           <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
           <a class="mobile-sidebar-sublink" href="#how-it-works">How it works</a>
           <a class="mobile-sidebar-sublink" href="#use-cases">Use cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
         </details>
+        <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
         <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
         <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
         <a class="mobile-sidebar-sublink" href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
@@ -485,7 +447,6 @@
     </nav>
   </div>
 
-  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

@@ -13,8 +13,8 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Habit Tracker — McGinnis Architecture</title>
-  <meta name="description" content="An anonymous, device-local habit tracker — check in daily and watch a background EventBridge Scheduler job reset any streak you miss." />
+  <title>Real-Time Operations Dashboard — McGinnis Architecture</title>
+  <meta name="description" content="A reference architecture for a Kinesis-fed operations dashboard — Kinesis Data Streams, Lambda aggregation, DynamoDB rollups. Fully designed, never deployed; the demo below runs entirely in your browser." />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
@@ -40,20 +40,20 @@
             <a href="/project/contactform/project1.html">Contact Form</a>
             <a href="/project/containers/index.html">Container Orchestration</a>
             <a href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
+            <a href="/project/habits/project6.html">Habit Tracker</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
+            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+            <a href="/project/orders/project8.html">Order Processing</a>
             <details class="nav-dropdown-subsection" open>
-              <summary class="nav-dropdown-group-label">Habit Tracker</summary>
+              <summary class="nav-dropdown-group-label">Real-Time Operations Dashboard</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
               <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
             </details>
-            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
-            <a href="/project/polling/project2.html">Movie Poll</a>
-            <a href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
-            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-            <a href="/project/orders/project8.html">Order Processing</a>
-            <a href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
             <a href="/project/fanningsns/project3.html">SNS Notifications</a>
             <a href="/project/vpc/index.html">VPC Network Design</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
@@ -73,12 +73,16 @@
   <main>
     <section class="hero">
       <p class="eyebrow">Project</p>
-      <h1 class="hero-title-compact">Habit Tracker</h1>
+      <h1 class="hero-title-compact">Real-Time Operations Dashboard</h1>
+      <div class="reference-build-notice">
+        This AWS architecture is fully designed and documented below, but intentionally not deployed — Kinesis Data Streams bills per shard-hour (~$15–20/month minimum) even at idle, which isn't justified for a portfolio demo. The chart below is driven by a simulated event stream running entirely in your browser.
+      </div>
       <p>
-        Add a habit, check in once a day, and watch your streak grow.
-        Miss a day and a background <strong>EventBridge Scheduler</strong>
-        job quietly resets it the next morning — no visitor request has
-        to trigger that, it just happens on a schedule.
+        Kinesis Data Streams ingests a continuous flow of events, a Lambda
+        consumer aggregates them in near real time, and DynamoDB holds the
+        rollups a dashboard can poll — the same shape as a production
+        operations or observability dashboard, minus the always-on
+        infrastructure bill.
       </p>
       <div class="hero-actions">
         <a class="button-link" href="#how-it-works">See how it works</a>
@@ -89,169 +93,156 @@
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
-      <div class="card-full-row">
+      <div class="card-primary-col">
         <div>
           <p class="eyebrow">Demo</p>
-          <h2 id="demo-heading">Track a habit</h2>
+          <h2 id="demo-heading">Simulated event stream</h2>
           <p class="muted">
-            This runs against a real AWS backend — no mock data. Add a
-            habit below and check in once a day to build a streak; each
-            card tracks a running streak and a personal best, calculated
-            from real check-in timestamps in DynamoDB, not just a total
-            check-in count.
+            This runs entirely in your browser — no Kinesis stream, no
+            Lambda, no network request of any kind. Starting it spins up an
+            in-page interval that manufactures synthetic events and redraws
+            the charts below from a rolling in-memory buffer, the same shape
+            the real Lambda aggregator would produce from a live stream.
           </p>
-          <p class="muted">
-            Miss a day and the current streak resets to zero, but your
-            best streak stays on the card — so you can always see how
-            today's run compares to your best run so far.
+          <p class="muted small-note">
+            <strong>Privacy notice:</strong> nothing is collected or sent
+            anywhere — every event lives only in this browser tab's memory
+            and disappears on refresh.
           </p>
         </div>
 
-        <div class="device-notice">
-          This tracker doesn't use accounts. Your habits are stored
-          against a random id kept in this browser's local storage
-          (<code id="device-id-note"></code>&hellip;) — there's no sign-up
-          and no way to recover them from a different browser or device.
-          Clearing your browser data deletes this id, and with it, access
-          to everything tracked here.
+        <div class="notify-trigger">
+          <div class="trigger-button-row">
+            <button type="button" id="stream-toggle-button">Start simulated stream</button>
+            <button type="button" class="button-link ghost small" id="stream-reset-button">Reset</button>
+          </div>
+          <div class="form-status" id="stream-status" role="status" aria-live="polite"></div>
         </div>
+      </div>
 
-        <form class="contact-form habit-form" id="habit-form">
-          <label>
-            New habit
-            <input type="text" id="habit-name" maxlength="80" placeholder="e.g. Read for 20 minutes" required />
-          </label>
-          <div class="form-status" id="habit-form-status" role="status" aria-live="polite" hidden></div>
-          <button type="submit">Add habit</button>
-        </form>
+      <div class="opsdash-stats-row" id="opsdash-stats-row" hidden>
+        <div class="opsdash-stat">
+          <span class="opsdash-stat-value" id="stat-rate">0</span>
+          <span class="opsdash-stat-label">events / sec</span>
+        </div>
+        <div class="opsdash-stat">
+          <span class="opsdash-stat-value" id="stat-total">0</span>
+          <span class="opsdash-stat-label">total events this session</span>
+        </div>
+        <div class="opsdash-stat">
+          <span class="opsdash-stat-value" id="stat-buffer">0</span>
+          <span class="opsdash-stat-label">events in rolling window</span>
+        </div>
+      </div>
 
-        <div class="habit-list" id="habit-list"></div>
-        <p class="muted small-note habit-list-empty-note" id="habit-list-empty-note">No habits yet — add one above to get started.</p>
+      <p class="result-placeholder" id="opsdash-placeholder">Start the simulated stream to see the dashboard fill in.</p>
+
+      <div class="opsdash-charts" id="opsdash-charts" hidden>
+        <div class="opsdash-chart-card">
+          <h3>Events by region <span class="muted small-note">(rolling window)</span></h3>
+          <svg id="opsdash-bar-chart" class="opsdash-bar-chart" viewBox="0 0 480 180" role="img" aria-label="Bar chart of simulated events by AWS region"></svg>
+        </div>
+        <div class="opsdash-chart-card">
+          <h3>Event rate <span class="muted small-note">(events per tick, last 40 ticks)</span></h3>
+          <svg id="opsdash-line-chart" class="opsdash-line-chart" viewBox="0 0 480 180" role="img" aria-label="Line chart of simulated event rate over time"></svg>
+        </div>
       </div>
     </section>
 
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture</p>
-        <h2 id="how-it-works-heading">How it works</h2>
+        <h2 id="how-it-works-heading">How this would work, if deployed</h2>
         <p class="muted section-intro">
-          This is a real AWS project, not a mockup. Here's what actually
-          happens both when you check in, and every night in the
-          background whether you visit the site or not — click any step
-          to jump to it, or let it play through on its own.
+          This is a reference architecture, not a mockup — every resource
+          below is real, compilable CDK code in this project's repository.
+          It's simply never instantiated, so nothing here has ever run
+          against a live AWS account.
         </p>
       </div>
 
-      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
-      <div class="flow-diagram habits-diagram" id="flow-diagram">
+      <div class="flow-diagram workflow-diagram" id="opsdash-flow-diagram">
         <div class="flow-track">
-          <div class="flow-node" data-node="visitor">
+          <div class="flow-node">
             <span class="flow-node-icon" aria-hidden="true">
-              <svg viewBox="0 0 32 32" fill="none"><circle cx="12" cy="10" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M4 26c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="23" cy="12" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M18.5 26c0-3.6 2.5-6.5 6-7.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 32 32" fill="none"><rect x="4" y="18" width="5" height="10" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="13.5" y="12" width="5" height="16" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="23" y="6" width="5" height="22" rx="1.5" stroke="currentColor" stroke-width="2"/></svg>
             </span>
-            <span class="flow-node-label">Visitor</span>
+            <span class="flow-node-label">Kinesis Data Stream</span>
           </div>
 
-          <div class="flow-connector" data-step="1" aria-hidden="true">
-            <span class="flow-connector-num">1</span>
+          <div class="flow-connector" aria-hidden="true">
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="apigateway" data-step="1" role="button" tabindex="0" aria-label="Step 1: Visitor clicks Check in today">
+          <div class="flow-node">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/lambda.png" alt="" />
+            </span>
+            <span class="flow-node-label">Lambda (aggregation)</span>
+          </div>
+
+          <div class="flow-connector" aria-hidden="true">
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/dynamodb.png" alt="" />
+            </span>
+            <span class="flow-node-label">DynamoDB (rollups)</span>
+          </div>
+
+          <div class="flow-connector" aria-hidden="true">
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node">
             <span class="flow-node-icon" aria-hidden="true">
               <img src="/assets/aws-icons/apigateway.png" alt="" />
             </span>
             <span class="flow-node-label">API Gateway</span>
           </div>
 
-          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
-            <span class="flow-connector-num">2</span>
+          <div class="flow-connector" aria-hidden="true">
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="lambda" data-step="2" role="button" tabindex="0" aria-label="Step 2: Lambda updates the streak in DynamoDB">
+          <div class="flow-node">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="20" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M3 12h26" stroke="currentColor" stroke-width="2"/><rect x="7" y="16" width="6" height="6" stroke="currentColor" stroke-width="1.6"/><rect x="16" y="16" width="9" height="6" stroke="currentColor" stroke-width="1.6"/></svg>
             </span>
-            <span class="flow-node-label">Lambda</span>
-          </div>
-
-          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
-            <span class="flow-connector-num">3</span>
-            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
-          </div>
-
-          <div class="flow-node" data-node="dynamodb" data-step="3" role="button" tabindex="0" aria-label="Step 3: DynamoDB stores the habit and its check-ins">
-            <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/dynamodb.png" alt="" />
-            </span>
-            <span class="flow-node-label">DynamoDB</span>
-          </div>
-
-          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
-            <span class="flow-connector-num">4</span>
-            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
-          </div>
-
-          <div class="flow-node" data-node="scheduler" data-step="4" role="button" tabindex="0" aria-label="Step 4: EventBridge Scheduler runs once every night">
-            <span class="flow-node-icon" aria-hidden="true">
-              <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="17" r="11" stroke="currentColor" stroke-width="2"/><path d="M16 10v7l5 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 4h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            </span>
-            <span class="flow-node-label">EventBridge Scheduler</span>
-          </div>
-
-          <div class="flow-connector" data-step="5" aria-hidden="true">
-            <span class="flow-connector-num">5</span>
-            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
-          </div>
-
-          <div class="flow-node" data-node="resetlambda" data-step="5" role="button" tabindex="0" aria-label="Step 5: A Lambda function resets any streak that missed yesterday">
-            <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
-            </span>
-            <span class="flow-node-label">Reset Lambda</span>
+            <span class="flow-node-label">Dashboard (this page)</span>
           </div>
         </div>
       </div>
 
-      <ol class="flow-steps" id="flow-steps">
-        <li class="flow-step" data-step="1" tabindex="0">
+      <ol class="flow-steps">
+        <li class="flow-step">
           <span class="flow-step-num">1</span>
           <div class="flow-step-body">
-            <h3>Visitor clicks Check in today</h3>
-            <p>The browser sends its locally-generated device id along with the habit id to <code>POST /habits/{id}/checkins</code> — there's no sign-in step first.</p>
+            <h3>Producers write to a Kinesis Data Stream</h3>
+            <p>Any number of producers — application servers, IoT devices, other Lambdas — call <code>PutRecord</code>/<code>PutRecords</code> with a small JSON event. Kinesis retains records in order, per shard, for a configurable window (24 hours by default).</p>
           </div>
         </li>
-
-        <li class="flow-step" data-step="2" tabindex="0">
+        <li class="flow-step">
           <span class="flow-step-num">2</span>
           <div class="flow-step-body">
-            <h3>Lambda updates the streak</h3>
-            <p>Lambda compares today's date against the habit's last check-in date: yesterday means the streak continues, anything else means it restarts at 1.</p>
+            <h3>A Lambda consumer aggregates each batch</h3>
+            <p>An <code>EventSourceMapping</code> invokes a Lambda function with a batch of records at a time. The function base64-decodes and parses each record, groups them by category, and applies atomic <code>ADD</code> updates to DynamoDB counters rather than read-modify-write cycles, so concurrent batches never clobber each other's counts.</p>
           </div>
         </li>
-
-        <li class="flow-step" data-step="3" tabindex="0">
+        <li class="flow-step">
           <span class="flow-step-num">3</span>
           <div class="flow-step-body">
-            <h3>DynamoDB stores the habit and its check-ins</h3>
-            <p>One table holds each habit's current/longest streak; a second table holds one row per day checked in, which is what draws the calendar grid on each card.</p>
+            <h3>DynamoDB holds the current rollups</h3>
+            <p>One item per category, each with a running count and a last-updated timestamp — cheap to read, cheap to update, no idle capacity to pay for on-demand billing.</p>
           </div>
         </li>
-
-        <li class="flow-step" data-step="4" tabindex="0">
+        <li class="flow-step">
           <span class="flow-step-num">4</span>
           <div class="flow-step-body">
-            <h3>EventBridge Scheduler runs once every night</h3>
-            <p>A cron schedule fires shortly after midnight UTC, every single day, with nobody visiting the site required to trigger it.</p>
-          </div>
-        </li>
-
-        <li class="flow-step" data-step="5" tabindex="0">
-          <span class="flow-step-num">5</span>
-          <div class="flow-step-body">
-            <h3>A Lambda function resets any streak that missed yesterday</h3>
-            <p>The scheduled job scans every habit in the table and zeroes <code>currentStreak</code> for any whose last check-in wasn't yesterday — <code>longestStreak</code> is never touched, so your best run stays on record.</p>
+            <h3>The dashboard polls a read API</h3>
+            <p>A separate, unauthenticated <code>GET /rollups</code> route behind API Gateway returns the current DynamoDB rollups as JSON. The dashboard polls it on an interval and redraws its charts — the same shape as the simulated version above, just fed by real data instead of an in-browser random generator.</p>
           </div>
         </li>
       </ol>
@@ -262,31 +253,52 @@
       <p class="eyebrow">Use cases</p>
       <h2 id="use-cases-heading">Where this pattern fits</h2>
       <p class="muted section-intro">
-        A scheduled background job that acts on data nobody is actively
-        looking at shows up constantly in real systems.
+        Kinesis earns its keep anywhere a high volume of small events needs
+        to be ingested in order and aggregated continuously, rather than
+        processed one request at a time.
       </p>
       </div>
       <div class="usecase-grid">
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 18l4-6 4 3 5-9 3 5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </span>
-          <h3>Subscription &amp; trial expiry</h3>
-          <p class="muted">A nightly job that checks every account for an expired trial or a failed renewal, instead of checking on every single request.</p>
+          <h3>Operational metrics &amp; observability</h3>
+          <p class="muted">
+            Request logs, error events, and latency samples streamed from
+            many services into one place a dashboard can aggregate and
+            chart in near real time.
+          </p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 3v4M12 17v4M3 12h4M17 12h4" stroke-linecap="round" />
+              <circle cx="12" cy="12" r="5" />
+            </svg>
           </span>
-          <h3>SLA &amp; streak-style metrics</h3>
-          <p class="muted">Any "consecutive days/periods without an incident" counter needs the exact same daily "did this get satisfied yesterday?" check this project runs.</p>
+          <h3>Clickstream &amp; IoT telemetry</h3>
+          <p class="muted">
+            High-volume, low-per-event-value data — page views, sensor
+            readings — where ordered ingestion and downstream fan-out
+            matter more than any single event's individual latency.
+          </p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </span>
-          <h3>Scheduled reports &amp; digests</h3>
-          <p class="muted">Nightly or weekly summary emails, cleanup jobs, and cache-warming tasks all follow the same "run on a clock, not on a request" shape.</p>
+          <h3>Anomaly &amp; fraud detection pipelines</h3>
+          <p class="muted">
+            Kinesis's ordered, replayable stream lets multiple independent
+            consumers — an aggregator, an anomaly detector, an archival
+            job — each process the exact same event sequence at their own
+            pace.
+          </p>
         </div>
       </div>
     </section>
@@ -294,23 +306,23 @@
     <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
       <div data-reveal>
       <p class="eyebrow">Pricing</p>
-      <h2 id="pricing-heading">What this actually costs</h2>
+      <h2 id="pricing-heading">What this would cost, if deployed</h2>
       <p class="muted section-intro">
-        Pay-per-use the whole way through — an
-        unused demo costs nothing. These are estimates based on public
-        AWS list pricing, not a guarantee.
+        This project is never actually deployed (see the notice at the top
+        of this page), so nothing here is billing you anything. These are
+        estimates based on public AWS list pricing for what running this
+        continuously would cost.
       </p>
       </div>
       <div class="pricing-layout">
         <div class="pricing-slider">
           <div class="pricing-card pricing-slider-card">
-            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
-            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="pricing-tier" id="pricing-slider-tier">One shard, idle</p>
+            <p class="pricing-amount" id="pricing-slider-amount">~$15<span class="pricing-period">/mo</span></p>
             <p class="muted" id="pricing-slider-desc">
-              A handful of habits and daily check-ins — comfortably inside
-              Lambda, DynamoDB, and API Gateway's free tiers. EventBridge
-              Scheduler's free tier alone covers 14 million invocations a
-              month, far more than one job a day will ever use.
+              A single Kinesis shard costs about $0.015/hour (~$11/month)
+              whether or not any events arrive, plus a small PUT payload
+              charge — this is the floor, not the ceiling.
             </p>
           </div>
           <div class="pricing-slider-control">
@@ -319,28 +331,28 @@
               class="pricing-slider-input"
               id="pricing-slider-input"
               min="0"
-              max="4"
+              max="3"
               step="1"
               value="0"
-              aria-label="Daily check-in volume"
+              aria-label="Simulated ingestion volume"
               aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
             />
             <div class="pricing-slider-ticks" aria-hidden="true">
-              <span>100</span>
-              <span>1K</span>
-              <span>10K</span>
-              <span>50K</span>
-              <span>100K+</span>
+              <span>Idle</span>
+              <span>Light</span>
+              <span>Moderate</span>
+              <span>Heavy</span>
             </div>
-            <p class="pricing-slider-unit" id="pricing-slider-unit">Check-ins per day</p>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">Ingestion volume</p>
           </div>
         </div>
         <div class="pricing-breakdown">
           <h3>What drives the cost</h3>
           <ul>
-            <li><strong>EventBridge Scheduler</strong> — one invocation per day, effectively free at any realistic scale for this project.</li>
-            <li><strong>DynamoDB</strong> — on-demand billing for two tables (habits, check-ins); the nightly reset job's table Scan is the only recurring read cost that grows with total habit count rather than traffic.</li>
-            <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
+            <li><strong>Kinesis Data Streams</strong> — billed per shard-hour regardless of traffic, plus a small per-million-records PUT payload charge; more shards means more parallel throughput, and more flat monthly cost.</li>
+            <li><strong>Lambda</strong> — the aggregation consumer is billed per invocation and per millisecond, batched, so cost tracks event volume closely.</li>
+            <li><strong>DynamoDB</strong> — on-demand billing for a handful of rollup counters; effectively free at this scale.</li>
+            <li><strong>API Gateway</strong> — billed per request on the read route the dashboard polls.</li>
           </ul>
         </div>
       </div>
@@ -349,7 +361,7 @@
     <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
       <div data-reveal>
         <p class="eyebrow">Design decisions</p>
-        <h2 id="decisions-heading">Why I built it this way</h2>
+        <h2 id="decisions-heading">Why I designed it this way</h2>
         <p class="muted section-intro">
           A few choices here aren't the only way to build this — here's the
           reasoning behind them.
@@ -357,44 +369,47 @@
       </div>
       <div class="decision-list">
         <div class="decision-item">
-          <h3>Anonymous device id instead of an account</h3>
+          <h3>Kinesis, not SQS, for ingestion</h3>
           <p class="muted">
-            A habit tracker's core idea — check in, watch a streak, see
-            a scheduled job act on it — doesn't need real Cognito
-            authentication to demonstrate; a disclosed, no-account
-            identity keeps the demo's friction at zero without
-            pretending it's something it isn't.
+            SQS is a great fit for the fan-out project elsewhere in this
+            portfolio, but it doesn't preserve strict ordering across
+            multiple consumers or let more than one independent consumer
+            replay the exact same sequence of events. Kinesis's ordered,
+            replayable shard model is the right tool once "aggregate this
+            stream" might later mean two or three different downstream
+            consumers reading it independently.
           </p>
         </div>
         <div class="decision-item">
-          <h3>EventBridge Scheduler, not an EventBridge Rule</h3>
+          <h3>Atomic counter updates, not read-modify-write</h3>
           <p class="muted">
-            A classic EventBridge Rule with a cron expression would work
-            too, but Scheduler is the newer, purpose-built service for
-            exactly this: a single schedule with a first-class target,
-            without needing a whole event bus and rule pattern around it
-            for what is genuinely just "run this Lambda once a day."
+            With many Lambda invocations processing batches concurrently,
+            reading a counter's current value, incrementing it in memory,
+            and writing it back would lose updates whenever two batches
+            overlap. DynamoDB's atomic <code>ADD</code> update expression
+            increments in place at the database layer, so concurrent
+            batches never clobber each other.
           </p>
         </div>
         <div class="decision-item">
-          <h3>The reset job never touches longestStreak</h3>
+          <h3>Rollups in DynamoDB, not raw events</h3>
           <p class="muted">
-            A missed day should cost you your current streak, not erase
-            the record of your best one. Keeping that as a separate
-            field that only ever increases (in check_in_handler.py) means
-            the nightly job's <code>UpdateExpression</code> only ever
-            needs to write <code>currentStreak</code>.
+            The dashboard only ever needs "how many, of what kind, right
+            now" — not a full history of every individual event. Storing
+            pre-aggregated counters instead of one row per event keeps the
+            read path a handful of cheap point reads instead of a query
+            that gets more expensive as the stream grows.
           </p>
         </div>
         <div class="decision-item">
-          <h3>A full table Scan in the reset job, on purpose</h3>
+          <h3>The demo simulates the stream, not the whole pipeline</h3>
           <p class="muted">
-            Every other "list" endpoint on this site avoids Scan because
-            it can't answer "the most recent N" reliably. This job needs
-            the opposite thing — every row, with no ordering requirement
-            at all — which is exactly what Scan is for; reaching for a
-            GSI here would add complexity to solve a problem this job
-            doesn't have.
+            An earlier idea was to fake a Lambda invocation client-side
+            too. That would have added complexity without adding anything
+            true — the real interesting behavior for a visitor to see is
+            "a chart updating as events arrive," and a browser-side
+            interval reproduces exactly that, honestly, without pretending
+            to run infrastructure that isn't there.
           </p>
         </div>
       </div>
@@ -455,20 +470,20 @@
         <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
         <a class="mobile-sidebar-sublink" href="/project/containers/index.html">Container Orchestration</a>
         <a class="mobile-sidebar-sublink" href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
+        <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
+        <a class="mobile-sidebar-sublink" href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
+        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
         <details class="mobile-sidebar-subgroup" open>
-          <summary class="mobile-sidebar-group-label">Habit Tracker</summary>
+          <summary class="mobile-sidebar-group-label">Real-Time Operations Dashboard</summary>
           <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
           <a class="mobile-sidebar-sublink" href="#how-it-works">How it works</a>
           <a class="mobile-sidebar-sublink" href="#use-cases">Use cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
         </details>
-        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
-        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
-        <a class="mobile-sidebar-sublink" href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
-        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
-        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
-        <a class="mobile-sidebar-sublink" href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
         <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
         <a class="mobile-sidebar-sublink" href="/project/vpc/index.html">VPC Network Design</a>
         <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
@@ -485,7 +500,6 @@
     </nav>
   </div>
 
-  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

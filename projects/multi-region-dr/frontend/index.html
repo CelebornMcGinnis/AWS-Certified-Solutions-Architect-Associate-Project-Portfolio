@@ -13,8 +13,8 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Habit Tracker — McGinnis Architecture</title>
-  <meta name="description" content="An anonymous, device-local habit tracker — check in daily and watch a background EventBridge Scheduler job reset any streak you miss." />
+  <title>Multi-Region Disaster Recovery — McGinnis Architecture</title>
+  <meta name="description" content="A reference AWS multi-region DR architecture — pilot light, warm standby, and active-active failover, simulated client-side. Not deployed, by design." />
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
@@ -40,17 +40,17 @@
             <a href="/project/contactform/project1.html">Contact Form</a>
             <a href="/project/containers/index.html">Container Orchestration</a>
             <a href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
+            <a href="/project/habits/project6.html">Habit Tracker</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
             <details class="nav-dropdown-subsection" open>
-              <summary class="nav-dropdown-group-label">Habit Tracker</summary>
+              <summary class="nav-dropdown-group-label">Multi-Region Disaster Recovery</summary>
               <a class="nav-dropdown-sublink" href="#demo">Try it</a>
               <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
               <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
             </details>
-            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
-            <a href="/project/polling/project2.html">Movie Poll</a>
-            <a href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
             <a href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
@@ -73,12 +73,16 @@
   <main>
     <section class="hero">
       <p class="eyebrow">Project</p>
-      <h1 class="hero-title-compact">Habit Tracker</h1>
+      <h1 class="hero-title-compact">Multi-Region Disaster Recovery</h1>
+      <div class="reference-build-notice">
+        This AWS architecture is fully designed and documented below, but intentionally not deployed — running a genuinely useful second-region posture costs anywhere from $5/month (pilot light) to $500+/month (active-active) even at idle, which isn't justified for a portfolio demo. Every interaction below runs entirely in your browser.
+      </div>
       <p>
-        Add a habit, check in once a day, and watch your streak grow.
-        Miss a day and a background <strong>EventBridge Scheduler</strong>
-        job quietly resets it the next morning — no visitor request has
-        to trigger that, it just happens on a schedule.
+        Three ways to survive a region outage — <strong>pilot light</strong>,
+        <strong>warm standby</strong>, and <strong>active-active</strong> —
+        each trading idle-time cost against how fast traffic actually comes
+        back. Pick a posture, then simulate an outage and watch Route 53's
+        health-check failover carry traffic to the standby region.
       </p>
       <div class="hero-actions">
         <a class="button-link" href="#how-it-works">See how it works</a>
@@ -89,45 +93,78 @@
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
-      <div class="card-full-row">
+      <div class="card-primary-col">
         <div>
           <p class="eyebrow">Demo</p>
-          <h2 id="demo-heading">Track a habit</h2>
+          <h2 id="demo-heading">Simulate a region outage</h2>
           <p class="muted">
-            This runs against a real AWS backend — no mock data. Add a
-            habit below and check in once a day to build a streak; each
-            card tracks a running streak and a personal best, calculated
-            from real check-in timestamps in DynamoDB, not just a total
-            check-in count.
-          </p>
-          <p class="muted">
-            Miss a day and the current streak resets to zero, but your
-            best streak stays on the card — so you can always see how
-            today's run compares to your best run so far.
+            Everything below runs in your browser — there's no real Route
+            53 health check or DynamoDB Global Table behind it. Pick a
+            posture, then trigger the outage to watch the simulated
+            failover sequence.
           </p>
         </div>
 
-        <div class="device-notice">
-          This tracker doesn't use accounts. Your habits are stored
-          against a random id kept in this browser's local storage
-          (<code id="device-id-note"></code>&hellip;) — there's no sign-up
-          and no way to recover them from a different browser or device.
-          Clearing your browser data deletes this id, and with it, access
-          to everything tracked here.
+        <div class="dr-mode-select" role="radiogroup" aria-label="Disaster recovery posture">
+          <button type="button" class="dr-mode-button is-active" data-mode="pilot-light" role="radio" aria-checked="true">
+            <span class="dr-mode-name">Pilot light</span>
+            <span class="dr-mode-sub">Data replicated, compute cold</span>
+          </button>
+          <button type="button" class="dr-mode-button" data-mode="warm-standby" role="radio" aria-checked="false">
+            <span class="dr-mode-name">Warm standby</span>
+            <span class="dr-mode-sub">Scaled-down copy, always on</span>
+          </button>
+          <button type="button" class="dr-mode-button" data-mode="active-active" role="radio" aria-checked="false">
+            <span class="dr-mode-name">Active-active</span>
+            <span class="dr-mode-sub">Full copy, already serving traffic</span>
+          </button>
         </div>
 
-        <form class="contact-form habit-form" id="habit-form">
-          <label>
-            New habit
-            <input type="text" id="habit-name" maxlength="80" placeholder="e.g. Read for 20 minutes" required />
-          </label>
-          <div class="form-status" id="habit-form-status" role="status" aria-live="polite" hidden></div>
-          <button type="submit">Add habit</button>
-        </form>
-
-        <div class="habit-list" id="habit-list"></div>
-        <p class="muted small-note habit-list-empty-note" id="habit-list-empty-note">No habits yet — add one above to get started.</p>
+        <div class="notify-trigger">
+          <div class="trigger-button-row">
+            <button type="button" id="simulate-outage-button">Simulate region outage</button>
+            <button type="button" class="button-link ghost small" id="reset-dr-button">Reset demo</button>
+          </div>
+          <div class="form-status" id="dr-status" role="status" aria-live="polite"></div>
+        </div>
       </div>
+
+      <div class="dr-region-map" id="dr-region-map">
+        <div class="dr-region dr-region-primary" id="dr-region-primary" data-role="primary">
+          <p class="dr-region-label">us-east-1</p>
+          <p class="dr-region-role" id="dr-primary-role">Primary — serving traffic</p>
+          <span class="dr-region-pulse" aria-hidden="true"></span>
+        </div>
+        <div class="dr-region-link" aria-hidden="true">
+          <span class="dr-region-link-line"></span>
+        </div>
+        <div class="dr-region dr-region-standby" id="dr-region-standby" data-role="standby">
+          <p class="dr-region-label">us-west-2</p>
+          <p class="dr-region-role" id="dr-standby-role">Standby — pilot light</p>
+        </div>
+      </div>
+
+      <ol class="job-timeline" id="dr-timeline">
+        <li class="job-timeline-step" data-status="DETECTING">
+          <span class="job-timeline-line" aria-hidden="true"></span>
+          <span class="job-timeline-dot" aria-hidden="true">1</span>
+          <span class="job-timeline-label">Health check failing</span>
+        </li>
+        <li class="job-timeline-step" data-status="FAILING_OVER">
+          <span class="job-timeline-line" aria-hidden="true"></span>
+          <span class="job-timeline-dot" aria-hidden="true">2</span>
+          <span class="job-timeline-label">Route 53 failing over</span>
+        </li>
+        <li class="job-timeline-step" data-status="PROMOTED">
+          <span class="job-timeline-line" aria-hidden="true"></span>
+          <span class="job-timeline-dot" aria-hidden="true">3</span>
+          <span class="job-timeline-label">Standby promoted</span>
+        </li>
+        <li class="job-timeline-step" data-status="SERVING">
+          <span class="job-timeline-dot" aria-hidden="true">4</span>
+          <span class="job-timeline-label">Serving from us-west-2</span>
+        </li>
+      </ol>
     </section>
 
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
@@ -135,15 +172,15 @@
         <p class="eyebrow">Architecture</p>
         <h2 id="how-it-works-heading">How it works</h2>
         <p class="muted section-intro">
-          This is a real AWS project, not a mockup. Here's what actually
-          happens both when you check in, and every night in the
-          background whether you visit the site or not — click any step
-          to jump to it, or let it play through on its own.
+          This is a reference architecture, not a mockup of one — the
+          diagram below is exactly what <code>cdk/lib/multi-region-dr-stack.ts</code>
+          would provision if it were ever wired into a deploy. Click any
+          step to jump to it, or let it play through on its own.
         </p>
       </div>
 
       <div class="flow-diagram-sentinel" aria-hidden="true"></div>
-      <div class="flow-diagram habits-diagram" id="flow-diagram">
+      <div class="flow-diagram" id="flow-diagram">
         <div class="flow-track">
           <div class="flow-node" data-node="visitor">
             <span class="flow-node-icon" aria-hidden="true">
@@ -157,11 +194,11 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="apigateway" data-step="1" role="button" tabindex="0" aria-label="Step 1: Visitor clicks Check in today">
+          <div class="flow-node" data-node="route53" data-step="1" role="button" tabindex="0" aria-label="Step 1: DNS query reaches Route 53's failover routing">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/apigateway.png" alt="" />
+              <img src="/assets/aws-icons/route53.png" alt="" />
             </span>
-            <span class="flow-node-label">API Gateway</span>
+            <span class="flow-node-label">Route 53</span>
           </div>
 
           <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
@@ -169,11 +206,11 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="lambda" data-step="2" role="button" tabindex="0" aria-label="Step 2: Lambda updates the streak in DynamoDB">
+          <div class="flow-node" data-node="apigateway" data-step="2" role="button" tabindex="0" aria-label="Step 2: Healthy path routes to the primary region's API Gateway">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/apigateway.png" alt="" />
             </span>
-            <span class="flow-node-label">Lambda</span>
+            <span class="flow-node-label">Primary API</span>
           </div>
 
           <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
@@ -181,11 +218,11 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="dynamodb" data-step="3" role="button" tabindex="0" aria-label="Step 3: DynamoDB stores the habit and its check-ins">
+          <div class="flow-node" data-node="lambda" data-step="3" role="button" tabindex="0" aria-label="Step 3: Lambda serves the request and reads/writes DynamoDB">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/dynamodb.png" alt="" />
+              <img src="/assets/aws-icons/lambda.png" alt="" />
             </span>
-            <span class="flow-node-label">DynamoDB</span>
+            <span class="flow-node-label">Lambda</span>
           </div>
 
           <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
@@ -193,11 +230,11 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="scheduler" data-step="4" role="button" tabindex="0" aria-label="Step 4: EventBridge Scheduler runs once every night">
+          <div class="flow-node" data-node="dynamodb" data-step="4" role="button" tabindex="0" aria-label="Step 4: DynamoDB Global Table holds the primary region's copy">
             <span class="flow-node-icon" aria-hidden="true">
-              <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="17" r="11" stroke="currentColor" stroke-width="2"/><path d="M16 10v7l5 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 4h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <img src="/assets/aws-icons/dynamodb.png" alt="" />
             </span>
-            <span class="flow-node-label">EventBridge Scheduler</span>
+            <span class="flow-node-label">DynamoDB (primary)</span>
           </div>
 
           <div class="flow-connector" data-step="5" aria-hidden="true">
@@ -205,11 +242,11 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="resetlambda" data-step="5" role="button" tabindex="0" aria-label="Step 5: A Lambda function resets any streak that missed yesterday">
+          <div class="flow-node" data-node="dynamodb-standby" data-step="5" role="button" tabindex="0" aria-label="Step 5: The Global Table replicates every write to the standby region">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/dynamodb.png" alt="" />
             </span>
-            <span class="flow-node-label">Reset Lambda</span>
+            <span class="flow-node-label">DynamoDB (standby)</span>
           </div>
         </div>
       </div>
@@ -218,40 +255,40 @@
         <li class="flow-step" data-step="1" tabindex="0">
           <span class="flow-step-num">1</span>
           <div class="flow-step-body">
-            <h3>Visitor clicks Check in today</h3>
-            <p>The browser sends its locally-generated device id along with the habit id to <code>POST /habits/{id}/checkins</code> — there's no sign-in step first.</p>
+            <h3>DNS query reaches Route 53</h3>
+            <p>Route 53's failover routing policy holds two record sets for the same name — one marked <code>PRIMARY</code>, one <code>SECONDARY</code> — and continuously evaluates a health check against the primary region's API endpoint before answering.</p>
           </div>
         </li>
 
         <li class="flow-step" data-step="2" tabindex="0">
           <span class="flow-step-num">2</span>
           <div class="flow-step-body">
-            <h3>Lambda updates the streak</h3>
-            <p>Lambda compares today's date against the habit's last check-in date: yesterday means the streak continues, anything else means it restarts at 1.</p>
+            <h3>Healthy path routes to the primary region</h3>
+            <p>As long as the health check passes, Route 53 answers with the <code>PRIMARY</code> record, and traffic reaches us-east-1's API Gateway exactly like any single-region project in this portfolio.</p>
           </div>
         </li>
 
         <li class="flow-step" data-step="3" tabindex="0">
           <span class="flow-step-num">3</span>
           <div class="flow-step-body">
-            <h3>DynamoDB stores the habit and its check-ins</h3>
-            <p>One table holds each habit's current/longest streak; a second table holds one row per day checked in, which is what draws the calendar grid on each card.</p>
+            <h3>Lambda serves the request</h3>
+            <p>A Lambda function in the primary region reads or writes failover state through the DynamoDB Global Table — the same handler code would run in either region, since neither one is hardcoded as "the real one."</p>
           </div>
         </li>
 
         <li class="flow-step" data-step="4" tabindex="0">
           <span class="flow-step-num">4</span>
           <div class="flow-step-body">
-            <h3>EventBridge Scheduler runs once every night</h3>
-            <p>A cron schedule fires shortly after midnight UTC, every single day, with nobody visiting the site required to trigger it.</p>
+            <h3>DynamoDB Global Table, primary copy</h3>
+            <p>Every write lands in the primary region's table copy first.</p>
           </div>
         </li>
 
         <li class="flow-step" data-step="5" tabindex="0">
           <span class="flow-step-num">5</span>
           <div class="flow-step-body">
-            <h3>A Lambda function resets any streak that missed yesterday</h3>
-            <p>The scheduled job scans every habit in the table and zeroes <code>currentStreak</code> for any whose last check-in wasn't yesterday — <code>longestStreak</code> is never touched, so your best run stays on record.</p>
+            <h3>Replication keeps the standby region current</h3>
+            <p>DynamoDB Global Tables replicate every write to the standby region's table within roughly a second, typically — so when a failover happens, the standby region isn't starting from stale data. This is what makes pilot light viable at all: the expensive-to-warm-up part (compute) can stay cold, because the cheap-to-replicate part (data) never does.</p>
           </div>
         </li>
       </ol>
@@ -260,33 +297,54 @@
     <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
       <div data-reveal>
       <p class="eyebrow">Use cases</p>
-      <h2 id="use-cases-heading">Where this pattern fits</h2>
+      <h2 id="use-cases-heading">Where each posture fits</h2>
       <p class="muted section-intro">
-        A scheduled background job that acts on data nobody is actively
-        looking at shows up constantly in real systems.
+        The right posture is almost always a business question — "what
+        does an hour of downtime cost us?" — before it's a technical one.
       </p>
       </div>
       <div class="usecase-grid">
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 3v6l4 2" stroke-linecap="round" stroke-linejoin="round" />
+              <circle cx="12" cy="12" r="9" />
+            </svg>
           </span>
-          <h3>Subscription &amp; trial expiry</h3>
-          <p class="muted">A nightly job that checks every account for an expired trial or a failed renewal, instead of checking on every single request.</p>
+          <h3>Pilot light — internal tools, low-traffic services</h3>
+          <p class="muted">
+            A few minutes of downtime during a genuine region-wide AWS
+            outage is tolerable, and the cost of a mostly-idle standby
+            region needs to stay close to zero.
+          </p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 12h4l2-7 4 14 2-7h4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </span>
-          <h3>SLA &amp; streak-style metrics</h3>
-          <p class="muted">Any "consecutive days/periods without an incident" counter needs the exact same daily "did this get satisfied yesterday?" check this project runs.</p>
+          <h3>Warm standby — customer-facing production apps</h3>
+          <p class="muted">
+            An always-on (if smaller) second-region copy means failover is
+            a traffic cutover, not a cold start — worth the steady extra
+            spend once real customers are affected by downtime.
+          </p>
         </div>
         <div class="usecase-card">
           <span class="usecase-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="8" cy="12" r="4" />
+              <circle cx="16" cy="12" r="4" />
+            </svg>
           </span>
-          <h3>Scheduled reports &amp; digests</h3>
-          <p class="muted">Nightly or weekly summary emails, cleanup jobs, and cache-warming tasks all follow the same "run on a clock, not on a request" shape.</p>
+          <h3>Active-active — revenue-critical, latency-sensitive systems</h3>
+          <p class="muted">
+            Both regions already serve real traffic, so "failover" is just
+            routing more of it to the region that's still healthy — the
+            only posture with effectively zero recovery time, at the
+            highest steady-state cost.
+          </p>
         </div>
       </div>
     </section>
@@ -294,23 +352,24 @@
     <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
       <div data-reveal>
       <p class="eyebrow">Pricing</p>
-      <h2 id="pricing-heading">What this actually costs</h2>
+      <h2 id="pricing-heading">What each posture actually costs</h2>
       <p class="muted section-intro">
-        Pay-per-use the whole way through — an
-        unused demo costs nothing. These are estimates based on public
+        Unlike this portfolio's live projects, DR cost isn't driven by
+        traffic volume — it's driven by how much you keep running in the
+        standby region while nothing is wrong. Estimates based on public
         AWS list pricing, not a guarantee.
       </p>
       </div>
       <div class="pricing-layout">
         <div class="pricing-slider">
           <div class="pricing-card pricing-slider-card">
-            <p class="pricing-tier" id="pricing-slider-tier">Low volume</p>
-            <p class="pricing-amount" id="pricing-slider-amount">~$0<span class="pricing-period">/mo</span></p>
+            <p class="pricing-tier" id="pricing-slider-tier">Pilot light</p>
+            <p class="pricing-amount" id="pricing-slider-amount">$5&ndash;30<span class="pricing-period">/mo</span></p>
             <p class="muted" id="pricing-slider-desc">
-              A handful of habits and daily check-ins — comfortably inside
-              Lambda, DynamoDB, and API Gateway's free tiers. EventBridge
-              Scheduler's free tier alone covers 14 million invocations a
-              month, far more than one job a day will ever use.
+              Just DynamoDB Global Table replication plus a minimal
+              standby Lambda/API footprint. The cheapest posture, and the
+              default choice unless there's a specific reason to spend
+              more.
             </p>
           </div>
           <div class="pricing-slider-control">
@@ -319,28 +378,27 @@
               class="pricing-slider-input"
               id="pricing-slider-input"
               min="0"
-              max="4"
+              max="2"
               step="1"
               value="0"
-              aria-label="Daily check-in volume"
+              aria-label="Disaster recovery posture"
               aria-describedby="pricing-slider-tier pricing-slider-amount pricing-slider-desc pricing-slider-unit"
             />
             <div class="pricing-slider-ticks" aria-hidden="true">
-              <span>100</span>
-              <span>1K</span>
-              <span>10K</span>
-              <span>50K</span>
-              <span>100K+</span>
+              <span>Pilot light</span>
+              <span>Warm standby</span>
+              <span>Active-active</span>
             </div>
-            <p class="pricing-slider-unit" id="pricing-slider-unit">Check-ins per day</p>
+            <p class="pricing-slider-unit" id="pricing-slider-unit">Disaster recovery posture</p>
           </div>
         </div>
         <div class="pricing-breakdown">
           <h3>What drives the cost</h3>
           <ul>
-            <li><strong>EventBridge Scheduler</strong> — one invocation per day, effectively free at any realistic scale for this project.</li>
-            <li><strong>DynamoDB</strong> — on-demand billing for two tables (habits, check-ins); the nightly reset job's table Scan is the only recurring read cost that grows with total habit count rather than traffic.</li>
-            <li><strong>Lambda &amp; API Gateway</strong> — billed per request; effectively free at this scale.</li>
+            <li><strong>Standby compute</strong> — the single biggest lever: cold (pilot light) vs. always-on-but-small (warm standby) vs. full-scale (active-active).</li>
+            <li><strong>DynamoDB Global Tables</strong> — replicated write costs in every region, present in all three postures since data has to be current regardless of posture.</li>
+            <li><strong>Route 53 health checks</strong> — a small, fixed per-health-check monthly fee, the same across all three postures.</li>
+            <li><strong>Cross-region data transfer</strong> — replication traffic between regions, scaling with write volume rather than posture.</li>
           </ul>
         </div>
       </div>
@@ -357,44 +415,49 @@
       </div>
       <div class="decision-list">
         <div class="decision-item">
-          <h3>Anonymous device id instead of an account</h3>
+          <h3>Route 53 failover routing, not a third-party global load balancer</h3>
           <p class="muted">
-            A habit tracker's core idea — check in, watch a streak, see
-            a scheduled job act on it — doesn't need real Cognito
-            authentication to demonstrate; a disclosed, no-account
-            identity keeps the demo's friction at zero without
-            pretending it's something it isn't.
+            AWS Global Accelerator is the other common answer here, and
+            trades DNS TTL-based propagation delay for faster,
+            anycast-based failover at a higher fixed monthly cost. Route
+            53 health-check failover is the more common starting point
+            precisely because it adds no fixed cost beyond the health
+            check itself — the right trade for most workloads that don't
+            need sub-second failover.
           </p>
         </div>
         <div class="decision-item">
-          <h3>EventBridge Scheduler, not an EventBridge Rule</h3>
+          <h3>DynamoDB Global Tables over cross-region replication jobs</h3>
           <p class="muted">
-            A classic EventBridge Rule with a cron expression would work
-            too, but Scheduler is the newer, purpose-built service for
-            exactly this: a single schedule with a first-class target,
-            without needing a whole event bus and rule pattern around it
-            for what is genuinely just "run this Lambda once a day."
+            A scheduled or event-driven replication job is another way to
+            keep a standby region's data current, but it introduces its
+            own lag and failure modes to reason about. Global Tables make
+            replication a property of the table itself — every region
+            with a replica sees writes from every other region within
+            about a second, with no separate pipeline to build or
+            monitor.
           </p>
         </div>
         <div class="decision-item">
-          <h3>The reset job never touches longestStreak</h3>
+          <h3>Three fixed postures, not a continuous cost slider</h3>
           <p class="muted">
-            A missed day should cost you your current streak, not erase
-            the record of your best one. Keeping that as a separate
-            field that only ever increases (in check_in_handler.py) means
-            the nightly job's <code>UpdateExpression</code> only ever
-            needs to write <code>currentStreak</code>.
+            Real DR decisions cluster around a small number of genuinely
+            distinct architectures, not a smooth dial — a region is either
+            running full-scale compute, a scaled-down copy, or none at
+            all. Presenting three discrete postures matches how this
+            decision actually gets made, rather than implying a
+            granularity that doesn't reflect how the underlying
+            infrastructure works.
           </p>
         </div>
         <div class="decision-item">
-          <h3>A full table Scan in the reset job, on purpose</h3>
+          <h3>Simulated, not deployed</h3>
           <p class="muted">
-            Every other "list" endpoint on this site avoids Scan because
-            it can't answer "the most recent N" reliably. This job needs
-            the opposite thing — every row, with no ordering requirement
-            at all — which is exactly what Scan is for; reaching for a
-            GSI here would add complexity to solve a problem this job
-            doesn't have.
+            A real second region costs money every hour it exists,
+            regardless of whether an outage ever happens — that's the
+            entire point of DR, and also why it doesn't belong running
+            continuously behind a portfolio demo. See "Why this isn't
+            deployed" in the README for the actual numbers.
           </p>
         </div>
       </div>
@@ -455,17 +518,17 @@
         <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
         <a class="mobile-sidebar-sublink" href="/project/containers/index.html">Container Orchestration</a>
         <a class="mobile-sidebar-sublink" href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
+        <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
         <details class="mobile-sidebar-subgroup" open>
-          <summary class="mobile-sidebar-group-label">Habit Tracker</summary>
+          <summary class="mobile-sidebar-group-label">Multi-Region Disaster Recovery</summary>
           <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
           <a class="mobile-sidebar-sublink" href="#how-it-works">How it works</a>
           <a class="mobile-sidebar-sublink" href="#use-cases">Use cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
         </details>
-        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
-        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
-        <a class="mobile-sidebar-sublink" href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
         <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
         <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
         <a class="mobile-sidebar-sublink" href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
@@ -485,7 +548,6 @@
     </nav>
   </div>
 
-  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
