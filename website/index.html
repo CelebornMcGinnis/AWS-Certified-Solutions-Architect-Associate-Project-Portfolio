@@ -413,7 +413,16 @@
             io.unobserve(entry.target);
           }
         });
-      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+      // threshold is a fraction of the OBSERVED ELEMENT's own area, not the
+      // viewport's -- 0.15 silently could never be satisfied for a tall
+      // multi-row element (e.g. the project grid, now 14+ cards) once the
+      // viewport is short enough that even 100% viewport coverage doesn't
+      // add up to 15% of that element's total height. Landscape mobile is
+      // exactly this case (short viewport, tall grid), where the section
+      // would otherwise never reveal no matter how far you scroll. A near-
+      // zero threshold fires as soon as any sliver is visible, which is
+      // viewport-height-independent and safe for elements of any size.
+      }, { threshold: 0.01, rootMargin: '0px 0px -60px 0px' });
       revealEls.forEach(function (el) { io.observe(el); });
     } else {
       revealEls.forEach(function (el) { el.classList.add('is-visible'); });

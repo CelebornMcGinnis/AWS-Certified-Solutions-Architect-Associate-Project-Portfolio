@@ -979,7 +979,11 @@
             revealIo.unobserve(entry.target);
           }
         });
-      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+      // See website/index.html's identical reveal-observer comment: 0.15 is
+      // a fraction of the observed element's own height, which can become
+      // mathematically unreachable for a tall element in a short (e.g.
+      // landscape mobile) viewport. threshold: 0.01 is viewport-height-safe.
+      }, { threshold: 0.01, rootMargin: '0px 0px -60px 0px' });
       revealEls.forEach(function (el) { revealIo.observe(el); });
     } else {
       revealEls.forEach(function (el) { el.classList.add('is-visible'); });
