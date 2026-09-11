@@ -853,9 +853,17 @@ footer {
   left: 50%;
   transform: translateX(-50%);
   display: grid;
+  align-content: start;
   gap: 0.1rem;
   min-width: 300px;
   max-width: calc(100vw - 2rem);
+  /* the list keeps growing as projects are added, so cap the panel's
+     height and let it scroll internally rather than spilling off the
+     bottom of the viewport on shorter desktop windows */
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   padding: 0.6rem;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1175,6 +1183,93 @@ footer {
   transform: translateY(-8px);
   box-shadow: 0 30px 70px rgba(23, 32, 51, 0.18);
   border-color: var(--accent);
+}
+
+/* Without this, the [hidden] attribute the projects filter sets on a
+   non-matching card has no visible effect -- .project-card's own
+   `display: flex` above ties the native [hidden] UA rule on specificity,
+   and an author rule always wins that tie, so the card stayed visibly
+   rendered regardless of the filter until this override was added. */
+.project-card[hidden] {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------
+   12b. PROJECTS FILTER BAR
+   Two <select>s (service, deployment status) that narrow .project-grid
+   client-side -- see the "Projects filter" script at the bottom of
+   index.html. Beta-only for now: this ships fine to prod too since it
+   degrades to "show everything," but the deployment-status filter has
+   nothing to narrow there (every project on prod is live), so it's
+   being held back until there's an actual promotion decision to make.
+   --------------------------------------------------------------------- */
+.project-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.project-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.project-filter-label {
+  color: var(--muted);
+}
+
+.project-filter select {
+  appearance: none;
+  min-width: 200px;
+  padding: 0.55rem 2.2rem 0.55rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23697086' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.project-filter select:hover,
+.project-filter select:focus-visible {
+  border-color: var(--accent);
+}
+
+.project-filter-reset {
+  align-self: center;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.project-filter-reset:hover {
+  background: var(--info-bg);
+  border-color: var(--accent);
+}
+
+.project-filter-reset[hidden] {
+  display: none;
+}
+
+.project-filter-empty {
+  margin: -0.5rem 0 1.5rem;
+}
+
+.project-filter-empty[hidden] {
+  display: none;
 }
 
 .project-thumb {
@@ -3982,6 +4077,13 @@ footer {
   .chatbot-diagram .flow-node[data-node="bedrock"] { grid-column: 1; grid-row: 5; }
   .chatbot-diagram .flow-node[data-node="dynamodb"] { grid-column: 3; grid-row: 5; }
 
+  .containers-diagram .flow-node[data-node="developer"] { grid-column: 1; grid-row: 1; }
+  .containers-diagram .flow-node[data-node="cicd"] { grid-column: 3; grid-row: 1; }
+  .containers-diagram .flow-node[data-node="ecs"] { grid-column: 3; grid-row: 3; }
+  .containers-diagram .flow-node[data-node="elb"] { grid-column: 1; grid-row: 3; }
+  .containers-diagram .flow-node[data-node="ecsdrain"] { grid-column: 1; grid-row: 5; }
+  .containers-diagram .flow-node[data-node="cloudwatch"] { grid-column: 3; grid-row: 5; }
+
   .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector {
     display: block;
     pointer-events: none;
@@ -6303,42 +6405,109 @@ footer {
 /* ---------------------------------------------------------------------
    30. CONTAINER ORCHESTRATION (project/containers/index.html only)
    Rolling-deployment task grid and homepage-card thumbnail scene.
+   The diagram sits in the #demo card's right-hand column (the same
+   grid .card uses everywhere else for "intro copy left, interactive
+   widget right") and stacks CI/CD trigger -> ALB -> tasks top to
+   bottom, one column wide, so it reads as a vertical pipeline rather
+   than the wide horizontal task row this used to be. The connectors
+   between tiers carry a continuously-looping dot (.orchestration-flow-
+   dot) so the pipeline visibly "moves" even at rest, not just while a
+   deployment is in progress.
    --------------------------------------------------------------------- */
 .orchestration-diagram {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
-  padding: 2rem 1rem;
-  margin-bottom: 1.5rem;
+  padding: 1.75rem 1.5rem;
   background: var(--info-bg);
   border-radius: 16px;
+  width: 100%;
+  max-width: 260px;
+  margin: 0 auto;
 }
 
 .orchestration-node {
-  padding: 0.5rem 1.2rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
   border-radius: 999px;
   background: var(--surface);
   border: 1px solid var(--border);
   font-weight: 700;
   font-size: 0.85rem;
   color: var(--text);
+  text-align: center;
+}
+
+.orchestration-connector {
+  position: relative;
+  width: 2px;
+  height: 32px;
+  background: var(--border);
+}
+
+.orchestration-connector::after {
+  /* arrowhead */
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.orchestration-flow-dot {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+  animation: orchestrationFlowDot 2.4s ease-in-out infinite;
+}
+
+@keyframes orchestrationFlowDot {
+  0%, 4% {
+    top: 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  96%, 100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orchestration-flow-dot {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 .orchestration-task-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-  gap: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
   width: 100%;
-  max-width: 520px;
+  margin-top: 1.25rem;
 }
 
 .orchestration-task {
-  aspect-ratio: 1 / 1;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--success-bg, #e3f7e9);
   border: 2px solid var(--success-text, #1a7d3c);
   transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;

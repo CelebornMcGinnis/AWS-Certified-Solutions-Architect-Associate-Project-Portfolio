@@ -103,8 +103,54 @@
         </p>
       </div>
 
+      <div class="project-filters" data-reveal>
+        <label class="project-filter">
+          <span class="project-filter-label">Uses service</span>
+          <select id="project-filter-service">
+            <option value="all">All services</option>
+            <option value="apigateway">API Gateway</option>
+            <option value="elb">Application Load Balancer</option>
+            <option value="athena">Athena</option>
+            <option value="bedrock">Bedrock</option>
+            <option value="cloudfront">CloudFront</option>
+            <option value="cloudwatch">CloudWatch</option>
+            <option value="cognito">Cognito</option>
+            <option value="dynamodb">DynamoDB</option>
+            <option value="ecs">ECS (Fargate)</option>
+            <option value="eventbridge">EventBridge</option>
+            <option value="glue">Glue</option>
+            <option value="iam">IAM</option>
+            <option value="internetgateway">Internet Gateway</option>
+            <option value="kinesis">Kinesis</option>
+            <option value="lambda">Lambda</option>
+            <option value="natgateway">NAT Gateway</option>
+            <option value="quicksight">QuickSight</option>
+            <option value="rekognition">Rekognition</option>
+            <option value="route53">Route 53</option>
+            <option value="s3">S3</option>
+            <option value="ses">SES</option>
+            <option value="sns">SNS</option>
+            <option value="sqs">SQS</option>
+            <option value="stepfunctions">Step Functions</option>
+            <option value="vpc">VPC</option>
+          </select>
+        </label>
+        <label class="project-filter">
+          <span class="project-filter-label">Deployment status</span>
+          <select id="project-filter-status">
+            <option value="all">Live + reference</option>
+            <option value="live">Live in AWS</option>
+            <option value="reference">Reference build</option>
+          </select>
+        </label>
+        <button type="button" class="project-filter-reset" id="project-filter-reset" hidden>Clear filters</button>
+      </div>
+      <p class="project-filter-empty muted" id="project-filter-empty" hidden>
+        No projects match those filters.
+      </p>
+
       <div class="project-grid" data-reveal>
-        <article class="project-card" id="project-next">
+        <article class="project-card project-card-placeholder" id="project-next">
           <div class="project-thumb thumb-arch" aria-hidden="true">
             <svg viewBox="0 0 320 200" class="arch-scene" aria-hidden="true">
               <g class="arch-line arch-line-1">
@@ -148,7 +194,7 @@
         </article>
 
         <!-- STAGE_ONLY_PROJECT_CARDS -->
-        <article class="project-card is-live" id="project-fanningsns">
+        <article class="project-card is-live" id="project-fanningsns" data-services="apigateway,dynamodb,lambda,ses,sns,sqs">
           <a class="project-link" href="/project/fanningsns/project3.html" aria-label="View the SNS Notification Fan-Out project">
             <div class="project-thumb thumb-icons" aria-hidden="true">
               <svg viewBox="0 0 320 200" class="icon-scene fanout-thumb-scene" aria-hidden="true">
@@ -189,7 +235,7 @@
           </a>
         </article>
 
-        <article class="project-card is-live" id="project-polling">
+        <article class="project-card is-live" id="project-polling" data-services="apigateway,dynamodb,lambda">
           <a class="project-link" href="/project/polling/project2.html" aria-label="View the Movie Poll project">
             <div class="project-thumb thumb-reel" aria-hidden="true">
               <svg viewBox="0 0 320 200" class="icon-scene reel-scene" aria-hidden="true">
@@ -221,7 +267,7 @@
           </a>
         </article>
 
-        <article class="project-card is-live" id="project-contact-form">
+        <article class="project-card is-live" id="project-contact-form" data-services="apigateway,cloudfront,lambda,route53,s3,ses">
           <a class="project-link" href="/project/contactform/project1.html" aria-label="View the Contact Form project">
             <div class="project-thumb thumb-envelope" aria-hidden="true">
               <svg viewBox="0 0 320 200" class="icon-scene envelope-scene" aria-hidden="true">
@@ -637,6 +683,53 @@
           reflectState();
         });
       });
+    })();
+
+    // Projects filter — narrows the grid by AWS service (data-services,
+    // a comma-separated list per card) and by deployment status (the
+    // is-live/is-reference class each card already carries for its status
+    // dot). .project-card-placeholder ("Next project — in progress") has
+    // neither and always stays visible, since it isn't a real project to
+    // filter against.
+    (function () {
+      var serviceSelect = document.getElementById('project-filter-service');
+      var statusSelect = document.getElementById('project-filter-status');
+      if (!serviceSelect || !statusSelect) return;
+
+      var resetBtn = document.getElementById('project-filter-reset');
+      var emptyMsg = document.getElementById('project-filter-empty');
+      var cards = document.querySelectorAll('.project-card:not(.project-card-placeholder)');
+
+      function applyFilters() {
+        var service = serviceSelect.value;
+        var status = statusSelect.value;
+        var visibleCount = 0;
+
+        cards.forEach(function (card) {
+          var services = (card.dataset.services || '').split(',');
+          var matchesService = service === 'all' || services.indexOf(service) !== -1;
+          var matchesStatus =
+            status === 'all' ||
+            (status === 'live' && card.classList.contains('is-live')) ||
+            (status === 'reference' && card.classList.contains('is-reference'));
+          var visible = matchesService && matchesStatus;
+          card.hidden = !visible;
+          if (visible) visibleCount += 1;
+        });
+
+        if (resetBtn) resetBtn.hidden = service === 'all' && status === 'all';
+        if (emptyMsg) emptyMsg.hidden = visibleCount > 0;
+      }
+
+      serviceSelect.addEventListener('change', applyFilters);
+      statusSelect.addEventListener('change', applyFilters);
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+          serviceSelect.value = 'all';
+          statusSelect.value = 'all';
+          applyFilters();
+        });
+      }
     })();
   </script>
 </body>
