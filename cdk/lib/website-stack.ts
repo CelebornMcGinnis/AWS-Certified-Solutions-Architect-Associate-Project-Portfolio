@@ -32,6 +32,17 @@ export interface WebsiteStackProps extends cdk.StackProps {
   apiEndpoints: Record<ProjectKey, string>;
   /** Non-endpoint per-project config.js tokens (e.g. Cognito ids) for this stage. See buildConfigJsSources(). */
   extraConfigReplacements?: Partial<Record<ProjectKey, Record<string, string>>>;
+  /**
+   * Optional extra hostname (e.g. www.mcginnisarchitecture.com) that should
+   * 301-redirect to domainName instead of serving its own copy of the site.
+   * certificateArn must already cover it (the wildcard cert, typically) --
+   * this never requests or replaces a cert, same rule as everywhere else in
+   * this file.
+   */
+  wwwRedirect?: {
+    domainName: string;
+    certificateArn: string;
+  };
 }
 
 /**
@@ -121,6 +132,89 @@ export class WebsiteStack extends cdk.Stack {
       }),
     );
 
+    // A second, independent distribution rather than a second alias on the
+    // one above: CloudFront allows exactly one cert per distribution
+    // covering every alias on it, and domainName's cert (see config.ts) is
+    // never touched/replaced to add a SAN. wwwRedirect.certificateArn (the
+    // wildcard cert) already covers this hostname on its own, so this needs
+    // its own distribution rather than widening the primary one.
+    //
+    // Origin points at the same bucket as the primary distribution above,
+    // but deliberately isn't granted any access to it -- the function below
+    // returns a redirect for every request at viewer-request, before
+    // CloudFront ever looks at the origin, so it's only here because
+    // CloudFront requires *an* origin to exist. If the function ever somehow
+    // didn't fire, the fallback is a bare S3 AccessDenied, never real
+    // content served from an unintended hostname.
+    let wwwDistribution: cloudfront.CfnDistribution | undefined;
+    if (props.wwwRedirect) {
+      const wwwRedirect = props.wwwRedirect;
+      const wwwFunctionName = `${wwwRedirect.domainName.replace(/\./g, '-')}-redirect`;
+      const wwwRedirectFunction = new cloudfront.CfnFunction(this, 'WwwRedirectFunction', {
+        name: wwwFunctionName,
+        autoPublish: true,
+        functionConfig: {
+          comment: `Redirect ${wwwRedirect.domainName} to https://${props.domainName}`,
+          runtime: 'cloudfront-js-2.0',
+        },
+        functionCode: `
+function handler(event) {
+    var request = event.request;
+    var host = request.headers.host.value;
+    if (host === '${wwwRedirect.domainName}') {
+        var qsKeys = Object.keys(request.querystring);
+        var qs = qsKeys.length
+            ? '?' + qsKeys.map(function (k) { return k + '=' + request.querystring[k].value; }).join('&')
+            : '';
+        return {
+            statusCode: 301,
+            statusDescription: 'Moved Permanently',
+            headers: {
+                location: { value: 'https://${props.domainName}' + request.uri + qs }
+            }
+        };
+    }
+    return request;
+}
+`,
+      });
+
+      wwwDistribution = new cloudfront.CfnDistribution(this, 'WwwRedirectDistribution', {
+        distributionConfig: {
+          enabled: true,
+          comment: `${props.comment} (${wwwRedirect.domainName} redirect)`,
+          httpVersion: 'http2',
+          ipv6Enabled: true,
+          aliases: [wwwRedirect.domainName],
+          origins: [
+            {
+              id: originId,
+              domainName: bucket.bucketRegionalDomainName,
+              originAccessControlId: oac.attrId,
+              s3OriginConfig: { originAccessIdentity: '' },
+            },
+          ],
+          defaultCacheBehavior: {
+            targetOriginId: originId,
+            viewerProtocolPolicy: 'redirect-to-https',
+            allowedMethods: ['GET', 'HEAD'],
+            cachedMethods: ['GET', 'HEAD'],
+            compress: true,
+            cachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6', // Managed-CachingOptimized
+            functionAssociations: [{ eventType: 'viewer-request', functionArn: wwwRedirectFunction.attrFunctionArn }],
+          },
+          viewerCertificate: {
+            acmCertificateArn: wwwRedirect.certificateArn,
+            sslSupportMethod: 'sni-only',
+            minimumProtocolVersion: 'TLSv1.2_2021',
+          },
+        },
+      });
+
+      new cdk.CfnOutput(this, 'WwwDistributionDomainName', { value: wwwDistribution.attrDomainName });
+      new cdk.CfnOutput(this, 'WwwDistributionId', { value: wwwDistribution.attrId });
+    }
+
     // AWS::Route53::RecordSet is not a CloudFormation-importable resource
     // type at all, so like BucketDeployment below, the alias record(s) are
     // only added in the follow-up plain `cdk deploy`. Route53 record
@@ -148,6 +242,25 @@ export class WebsiteStack extends cdk.Stack {
           zone: hostedZone,
           recordName: props.domainName,
           target: aliasTarget,
+        });
+      }
+
+      if (props.wwwRedirect && wwwDistribution) {
+        const wwwAliasTarget = route53.RecordTarget.fromAlias({
+          bind: () => ({
+            dnsName: wwwDistribution!.attrDomainName,
+            hostedZoneId: 'Z2FDTNDATAQYW2', // fixed CloudFront alias-target hosted zone id
+          }),
+        });
+        new route53.ARecord(this, 'WwwAliasRecordA', {
+          zone: hostedZone,
+          recordName: props.wwwRedirect.domainName,
+          target: wwwAliasTarget,
+        });
+        new route53.AaaaRecord(this, 'WwwAliasRecordAAAA', {
+          zone: hostedZone,
+          recordName: props.wwwRedirect.domainName,
+          target: wwwAliasTarget,
         });
       }
     }

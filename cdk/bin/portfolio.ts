@@ -154,6 +154,12 @@ const websiteProd = new WebsiteStack(app, 'portfolio-website-prod', {
   webAclId: 'arn:aws:wafv2:us-east-1:942960194803:global/webacl/CreatedByCloudFront-7737fc15/748f67d8-c668-4be9-9d0f-e93e6037a39a',
   apiEndpoints: prodApiEndpoints,
   extraConfigReplacements: prodExtraConfigReplacements,
+  // www has never had a working redirect (or any DNS record at all) --
+  // the wildcard cert already covers it, so no new/replaced cert needed.
+  wwwRedirect: {
+    domainName: 'www.mcginnisarchitecture.com',
+    certificateArn: WILDCARD_CERTIFICATE_ARN,
+  },
 });
 
 const websiteBeta = new WebsiteStack(app, 'portfolio-website-beta', {
