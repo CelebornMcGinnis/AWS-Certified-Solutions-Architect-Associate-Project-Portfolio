@@ -102,30 +102,36 @@
           version" plays out the same task-by-task rollout an actual
           Fargate service would run.
         </p>
-      </div>
-
-      <div class="card-full-row">
-        <div class="orchestration-diagram" id="orchestration-diagram">
-          <div class="orchestration-node orchestration-cicd" aria-hidden="true">
-            <span class="orchestration-node-label">CI/CD trigger</span>
-          </div>
-          <div class="orchestration-node orchestration-alb" aria-hidden="true">
-            <span class="orchestration-node-label">Application Load Balancer</span>
-          </div>
-          <div class="orchestration-task-grid" id="orchestration-task-grid" role="img" aria-label="Six Fargate tasks behind the load balancer">
-            <div class="orchestration-task" data-task="0"><span class="orchestration-task-version">v1</span></div>
-            <div class="orchestration-task" data-task="1"><span class="orchestration-task-version">v1</span></div>
-            <div class="orchestration-task" data-task="2"><span class="orchestration-task-version">v1</span></div>
-            <div class="orchestration-task" data-task="3"><span class="orchestration-task-version">v1</span></div>
-            <div class="orchestration-task" data-task="4"><span class="orchestration-task-version">v1</span></div>
-            <div class="orchestration-task" data-task="5"><span class="orchestration-task-version">v1</span></div>
-          </div>
-        </div>
 
         <div class="reset-inventory-row">
           <button type="button" class="button-link" id="deploy-button">Deploy new version</button>
           <button type="button" class="button-link ghost small" id="reset-deployment-button">Reset demo</button>
           <span class="muted small-note" id="deployment-status" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+
+      <div class="orchestration-diagram" id="orchestration-diagram">
+        <div class="orchestration-node orchestration-cicd" aria-hidden="true">
+          <span class="orchestration-node-label">CI/CD trigger</span>
+        </div>
+        <div class="orchestration-connector" aria-hidden="true">
+          <span class="orchestration-connector-line"></span>
+          <span class="orchestration-flow-dot"></span>
+        </div>
+        <div class="orchestration-node orchestration-alb" aria-hidden="true">
+          <span class="orchestration-node-label">Application Load Balancer</span>
+        </div>
+        <div class="orchestration-connector" aria-hidden="true">
+          <span class="orchestration-connector-line"></span>
+          <span class="orchestration-flow-dot"></span>
+        </div>
+        <div class="orchestration-task-grid" id="orchestration-task-grid" role="img" aria-label="Six Fargate tasks behind the load balancer">
+          <div class="orchestration-task" data-task="0"><span class="orchestration-task-version">v1</span></div>
+          <div class="orchestration-task" data-task="1"><span class="orchestration-task-version">v1</span></div>
+          <div class="orchestration-task" data-task="2"><span class="orchestration-task-version">v1</span></div>
+          <div class="orchestration-task" data-task="3"><span class="orchestration-task-version">v1</span></div>
+          <div class="orchestration-task" data-task="4"><span class="orchestration-task-version">v1</span></div>
+          <div class="orchestration-task" data-task="5"><span class="orchestration-task-version">v1</span></div>
         </div>
       </div>
     </section>
@@ -137,8 +143,81 @@
         <p class="muted section-intro">
           This is what the deployment above stands in for — the actual
           sequence a CI/CD pipeline and ECS's rolling-update controller
-          would run against a real Fargate service.
+          would run against a real Fargate service. Click any icon to
+          jump to that step, or let it play through on its own.
         </p>
+      </div>
+
+      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
+      <div class="flow-diagram containers-diagram" id="flow-diagram">
+        <div class="flow-track">
+          <div class="flow-node" data-node="developer">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="11" r="6" stroke="currentColor" stroke-width="2"/><path d="M5 27c0-6.1 4.9-11 11-11s11 4.9 11 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <span class="flow-node-label">Developer</span>
+          </div>
+
+          <div class="flow-connector" data-step="1" aria-hidden="true">
+            <span class="flow-connector-num">1</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="cicd" data-step="1" role="button" tabindex="0" aria-label="Step 1: A new image is pushed and a deployment is triggered">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><path d="M25 10a10 10 0 1 0 2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M27 4v7h-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="flow-node-label">CI/CD Trigger</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+            <span class="flow-connector-num">2</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="ecs" data-step="2" role="button" tabindex="0" aria-label="Step 2: ECS starts a new task alongside the old ones">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/ecs.png" alt="" />
+            </span>
+            <span class="flow-node-label">New Fargate Task</span>
+          </div>
+
+          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
+            <span class="flow-connector-num">3</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="elb" data-step="3" role="button" tabindex="0" aria-label="Step 3: The load balancer health-checks the new task">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/elb.png" alt="" />
+            </span>
+            <span class="flow-node-label">Load Balancer</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
+            <span class="flow-connector-num">4</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="ecsdrain" data-step="4" role="button" tabindex="0" aria-label="Step 4: An old task drains and stops">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/ecs.png" alt="" />
+            </span>
+            <span class="flow-node-label">Old Task Drains</span>
+          </div>
+
+          <div class="flow-connector" data-step="5" aria-hidden="true">
+            <span class="flow-connector-num">5</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="cloudwatch" data-step="5" role="button" tabindex="0" aria-label="Step 5: The cycle repeats until the rollout completes">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/cloudwatch.png" alt="" />
+            </span>
+            <span class="flow-node-label">Rollout Complete</span>
+          </div>
+        </div>
       </div>
 
       <ol class="flow-steps" id="flow-steps">
