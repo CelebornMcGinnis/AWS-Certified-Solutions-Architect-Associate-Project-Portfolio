@@ -1,35 +1,31 @@
         <article class="project-card is-live" data-services="apigateway,dynamodb,lambda,stepfunctions" id="project-orders">
           <a class="project-link" href="/project/orders/project8.html" aria-label="View the Order Processing project">
             <div class="project-thumb thumb-arch" aria-hidden="true">
-              <svg viewBox="0 0 320 200" class="icon-scene" aria-hidden="true">
-                <g class="arch-line arch-line-1">
-                  <line x1="90" y1="110" x2="135" y2="110" />
-                </g>
-                <g class="arch-line arch-line-2">
-                  <line x1="185" y1="110" x2="230" y2="110" />
-                </g>
+              <svg viewBox="0 0 320 200" class="icon-scene orders-thumb-scene" aria-hidden="true">
+                <line x1="50" y1="150" x2="270" y2="150" class="orders-thumb-belt" />
+                <circle class="order-ship-dot" cx="50" cy="150" r="4" />
 
-                <circle class="order-ship-dot" cx="90" cy="110" r="4" />
-
-                <g class="arch-node arch-node-1">
-                  <rect x="40" y="85" width="50" height="50" rx="12" />
-                  <path d="M52 100h16M52 108h16M52 116h10" class="arch-glyph-stroke" />
+                <g class="orders-thumb-stop">
+                  <rect x="45" y="80" width="40" height="40" rx="9" />
+                  <path d="M58 96h14M58 103h14M58 110h8" class="arch-glyph-stroke" />
                 </g>
 
-                <g class="arch-node arch-node-2">
-                  <rect x="135" y="85" width="50" height="50" rx="12" />
-                  <circle cx="160" cy="110" r="9" class="arch-glyph-stroke" fill="none" />
-                  <path d="M156 110l3 3 6-6" class="arch-glyph-stroke" fill="none" />
+                <g class="orders-thumb-stop">
+                  <rect x="140" y="80" width="40" height="40" rx="9" />
+                  <circle cx="160" cy="100" r="9" class="arch-glyph-stroke" fill="none" />
+                  <path d="M156 100l3 3 6-6" class="arch-glyph-stroke" fill="none" />
                 </g>
 
-                <g class="arch-node arch-node-3">
-                  <rect x="230" y="85" width="50" height="50" rx="12" />
-                  <path d="M247 118l8-16 8 16" class="arch-glyph-stroke" fill="none" />
+                <g class="orders-thumb-stop">
+                  <rect x="235" y="80" width="40" height="40" rx="9" />
+                  <path d="M245 108v-10h12l6 6v4M245 98h18" class="arch-glyph-stroke" fill="none" />
+                  <circle cx="251" cy="110" r="2.4" class="arch-glyph-stroke" />
+                  <circle cx="265" cy="110" r="2.4" class="arch-glyph-stroke" />
                 </g>
               </svg>
             </div>
             <div class="project-body">
-              <p class="project-meta"><span class="status-dot" aria-hidden="true"></span>Beta preview</p>
+              <p class="project-meta"><span class="status-dot" aria-hidden="true"></span>Beta Preview</p>
               <h3>Order Processing</h3>
               <p class="muted">
                 Reserve inventory, charge payment, ship — a real Step

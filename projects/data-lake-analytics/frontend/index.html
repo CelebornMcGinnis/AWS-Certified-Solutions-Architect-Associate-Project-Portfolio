@@ -41,11 +41,11 @@
             <a href="/project/containers/index.html">Container Orchestration</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Data Lake &amp; Analytics</summary>
-              <a class="nav-dropdown-sublink" href="#demo">Try it</a>
-              <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
-              <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
+              <a class="nav-dropdown-sublink" href="#demo">Try It</a>
+              <a class="nav-dropdown-sublink" href="#how-it-works">How It Works</a>
+              <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
-              <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
+              <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
             </details>
             <a href="/project/habits/project6.html">Habit Tracker</a>
             <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
@@ -58,7 +58,7 @@
             <a href="/project/vpc/index.html">VPC Network Design</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
             <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+            <a class="nav-dropdown-all" href="/#projects">View All Projects</a>
           </div>
         </details>
         <a href="/#about">About</a>
@@ -88,10 +88,11 @@
         small, static, baked-in dataset with zero AWS calls.
       </div>
       <div class="hero-actions">
-        <a class="button-link" href="#how-it-works">See how it works</a>
-        <a class="button-link" href="#use-cases">Use cases</a>
+        <a class="button-link" href="#how-it-works">See How It Works</a>
+        <a class="button-link" href="#use-cases">Use Cases</a>
         <a class="button-link" href="#pricing">Pricing</a>
-        <a class="button-link" href="#design-decisions">Design decisions</a>
+        <a class="button-link" href="#design-decisions">Design Decisions</a>
+        <a class="button-link" href="#architecture-diagram">Architecture Diagram</a>
       </div>
     </section>
 
@@ -99,7 +100,7 @@
       <div class="card-primary-col">
         <div>
           <p class="eyebrow">Demo</p>
-          <h2 id="demo-heading">Run a sample query</h2>
+          <h2 id="demo-heading">Run a Sample Query</h2>
           <p class="muted">
             This runs entirely in your browser against a small, static
             dataset baked into this page — no AWS backend, no network
@@ -120,7 +121,7 @@
 
           <div class="form-status" id="query-status" role="status" aria-live="polite" hidden></div>
 
-          <button type="submit" id="query-submit">Run query</button>
+          <button type="submit" id="query-submit">Run Query</button>
         </form>
       </div>
 
@@ -141,55 +142,56 @@
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture</p>
-        <h2 id="how-it-works-heading">How it works (as designed, not as deployed)</h2>
+        <h2 id="how-it-works-heading">How It Works (As Designed, Not As Deployed)</h2>
         <p class="muted section-intro">
           This diagram shows the architecture exactly as documented in
           this project's <code>cdk/lib/data-lake-analytics-stack.ts</code>
-          and README — since nothing here is actually running, the steps
-          below describe what the real pipeline would do rather than
-          something you can trigger.
+          and README — since nothing here is actually running, every step
+          is shown lit up rather than progressing on its own. Click any
+          icon to jump to its written explanation below.
         </p>
       </div>
 
-      <div class="flow-diagram" id="flow-diagram">
+      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
+      <div class="flow-diagram datalake-diagram" id="flow-diagram">
         <div class="flow-track">
-          <div class="flow-node is-done" data-node="raw">
+          <div class="flow-node is-done" data-node="raw" data-step="1" role="button" tabindex="0" aria-label="Step 1: Source data lands in the S3 raw zone">
             <span class="flow-node-icon" aria-hidden="true">
               <img src="/assets/aws-icons/s3.png" alt="" />
             </span>
             <span class="flow-node-label">S3 (raw zone)</span>
           </div>
 
-          <div class="flow-connector is-done" aria-hidden="true">
+          <div class="flow-connector is-done" data-step="1" aria-hidden="true">
             <span class="flow-connector-num">1</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node is-done" data-node="glue">
+          <div class="flow-node is-done" data-node="glue" data-step="2" role="button" tabindex="0" aria-label="Step 2: A Glue crawler updates the Data Catalog">
             <span class="flow-node-icon" aria-hidden="true">
               <img src="/assets/aws-icons/glue.png" alt="" />
             </span>
             <span class="flow-node-label">Glue Crawler + Catalog</span>
           </div>
 
-          <div class="flow-connector is-done" aria-hidden="true">
+          <div class="flow-connector is-done" data-step="2" aria-hidden="true">
             <span class="flow-connector-num">2</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node is-done" data-node="athena">
+          <div class="flow-node is-done" data-node="athena" data-step="3" role="button" tabindex="0" aria-label="Step 3: Athena runs serverless SQL against the catalog">
             <span class="flow-node-icon" aria-hidden="true">
               <img src="/assets/aws-icons/athena.png" alt="" />
             </span>
             <span class="flow-node-label">Athena (serverless SQL)</span>
           </div>
 
-          <div class="flow-connector is-done" aria-hidden="true">
+          <div class="flow-connector is-done" data-step="3" aria-hidden="true">
             <span class="flow-connector-num">3</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node is-done" data-node="quicksight">
+          <div class="flow-node is-done" data-node="quicksight" data-step="4" role="button" tabindex="0" aria-label="Step 4: QuickSight visualizes the results">
             <span class="flow-node-icon" aria-hidden="true">
               <img src="/assets/aws-icons/quicksight.png" alt="" />
             </span>
@@ -232,8 +234,8 @@
 
     <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
       <div data-reveal>
-      <p class="eyebrow">Use cases</p>
-      <h2 id="use-cases-heading">Where this pattern fits</h2>
+      <p class="eyebrow">Use Cases</p>
+      <h2 id="use-cases-heading">Where This Pattern Fits</h2>
       <p class="muted section-intro">
         A serverless data lake shows up anywhere raw, semi-structured
         data needs to become queryable without standing up and managing
@@ -268,7 +270,7 @@
     <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
       <div data-reveal>
       <p class="eyebrow">Pricing</p>
-      <h2 id="pricing-heading">What this would actually cost</h2>
+      <h2 id="pricing-heading">What This Would Actually Cost</h2>
       <p class="muted section-intro">
         Nothing here is deployed, so nothing here is billing today — these
         are estimates based on public AWS list pricing for what the
@@ -322,8 +324,8 @@
 
     <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
       <div data-reveal>
-        <p class="eyebrow">Design decisions</p>
-        <h2 id="decisions-heading">Why I designed it this way</h2>
+        <p class="eyebrow">Design Decisions</p>
+        <h2 id="decisions-heading">Why I Designed It This Way</h2>
         <p class="muted section-intro">
           A few choices here aren't the only way to build this — here's
           the reasoning behind them.
@@ -360,6 +362,20 @@
           </p>
         </div>
       </div>
+    </section>
+
+    <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture Diagram</p>
+        <h2 id="architecture-diagram-heading">Full Architecture Diagram</h2>
+        <p class="muted section-intro">
+          The complete AWS architecture diagram for this project, built with draw.io. Click it to expand full screen.
+        </p>
+      </div>
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the Data Lake & Analytics architecture diagram to full screen">
+        <img src="architecture.png" alt="Data Lake & Analytics AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+        <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
+      </button>
     </section>
   </main>
 
@@ -418,11 +434,11 @@
         <a class="mobile-sidebar-sublink" href="/project/containers/index.html">Container Orchestration</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">Data Lake &amp; Analytics</summary>
-          <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
-          <a class="mobile-sidebar-sublink" href="#how-it-works">How it works</a>
-          <a class="mobile-sidebar-sublink" href="#use-cases">Use cases</a>
+          <a class="mobile-sidebar-sublink" href="#demo">Try It</a>
+          <a class="mobile-sidebar-sublink" href="#how-it-works">How It Works</a>
+          <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
-          <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
+          <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
         <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
@@ -435,16 +451,21 @@
         <a class="mobile-sidebar-sublink" href="/project/vpc/index.html">VPC Network Design</a>
         <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
         <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
+        <a class="mobile-sidebar-sublink" href="/#projects">View All Projects</a>
         </div>
       </details>
       <a class="mobile-sidebar-link" href="/#about">About</a>
       <button type="button" class="theme-toggle mobile-sidebar-link mobile-sidebar-theme-toggle" id="theme-toggle-sidebar-panel" aria-pressed="false" aria-label="Toggle dark mode">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        <span>Dark mode</span>
+        <span>Dark Mode</span>
       </button>
     </nav>
+  </div>
+
+  <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
+    <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
+    <img src="architecture.png" alt="Data Lake & Analytics AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
   </div>
 
   <script src="script.js"></script>

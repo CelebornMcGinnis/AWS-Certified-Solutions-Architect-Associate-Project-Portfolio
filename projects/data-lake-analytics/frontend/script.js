@@ -159,12 +159,103 @@ document.getElementById('year').textContent = new Date().getFullYear();
 })();
 
 // -----------------------------------------------------------------------
+// "How it works" diagram: every node stays permanently lit (is-done) --
+// unlike the interactive projects, there's no live action to autoplay
+// through, since this pipeline was never deployed. Clicking a node still
+// jumps to (and briefly highlights) its written step below, so the
+// diagram reads as explorable rather than a plain static illustration.
+// -----------------------------------------------------------------------
+(function () {
+  var diagram = document.getElementById('flow-diagram');
+  var stepsList = document.getElementById('flow-steps');
+  if (!diagram || !stepsList) return;
+
+  var clickableNodes = Array.prototype.slice.call(diagram.querySelectorAll('.flow-node[data-step]'));
+  var stepItems = Array.prototype.slice.call(stepsList.querySelectorAll('.flow-step'));
+  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var flashTimer = null;
+
+  function jumpToStep(step) {
+    var target = stepItems.filter(function (el) {
+      return Number(el.getAttribute('data-step')) === step;
+    })[0];
+    if (!target) return;
+
+    target.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+
+    if (flashTimer) clearTimeout(flashTimer);
+    stepItems.forEach(function (el) { el.classList.remove('is-jumped-to'); });
+    target.classList.add('is-jumped-to');
+    flashTimer = window.setTimeout(function () {
+      target.classList.remove('is-jumped-to');
+    }, 1600);
+  }
+
+  clickableNodes.forEach(function (el) {
+    el.addEventListener('click', function () {
+      jumpToStep(Number(el.getAttribute('data-step')));
+    });
+    el.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        jumpToStep(Number(el.getAttribute('data-step')));
+      }
+    });
+  });
+
+  var sentinel = document.querySelector('.flow-diagram-sentinel');
+  if (sentinel && 'IntersectionObserver' in window) {
+    var stickyIo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        diagram.classList.toggle('is-stuck', !entry.isIntersecting);
+      });
+    }, { threshold: 0 });
+    stickyIo.observe(sentinel);
+  }
+})();
+
+// -----------------------------------------------------------------------
+// Architecture diagram lightbox: click the thumbnail (or press Enter/
+// Space on it) to expand the full diagram full-screen; Escape, the
+// backdrop, or the close button dismiss it. Same markup/behavior on
+// every project page.
+// -----------------------------------------------------------------------
+(function () {
+  var trigger = document.getElementById('arch-diagram-trigger');
+  var lightbox = document.getElementById('arch-diagram-lightbox');
+  var closeBtn = document.getElementById('arch-diagram-lightbox-close');
+  if (!trigger || !lightbox || !closeBtn) return;
+
+  function openLightbox() {
+    lightbox.classList.add('is-open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('diagram-lightbox-open');
+    closeBtn.focus();
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('is-open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('diagram-lightbox-open');
+    trigger.focus();
+  }
+
+  trigger.addEventListener('click', openLightbox);
+  closeBtn.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', function (event) {
+    if (event.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && lightbox.classList.contains('is-open')) {
+      closeLightbox();
+    }
+  });
+})();
+
+// -----------------------------------------------------------------------
 // Shared chrome behaviors, copied from the other project pages:
 // scroll-reveal, nav dropdown, sticky header shrink, back-to-top, mobile
-// menu, dark mode toggle. This page's own architecture diagram is fully
-// static (see index.html) and needs no autoplay/click-to-jump JS since
-// the pipeline it documents was never deployed and isn't something a
-// visitor triggers.
+// menu, dark mode toggle.
 // -----------------------------------------------------------------------
 
 var revealEls = document.querySelectorAll('[data-reveal]');

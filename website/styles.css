@@ -1959,29 +1959,74 @@ footer {
    identical boxes.
    --------------------------------------------------------------------- */
 
-/* Habit Tracker: four little streak dots under the check-in node fill
-   in one at a time, then reset together -- the streak building up
-   before the nightly EventBridge job can break it. */
-.habit-streak-dot {
+/* Habit Tracker: a week strip of day cells -- the first several already
+   checked off, the current day mid-pulse (still open), the rest empty --
+   with a flame that flickers to signal an active streak. Replaces the
+   old three-generic-boxes skeleton entirely; a calendar reads as
+   "habit" in a way an icon-in-a-box never could. */
+.habits-thumb-day {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.habits-thumb-day-done {
   fill: var(--accent);
-  opacity: 0.25;
+  stroke: var(--accent);
 }
 
-.habit-streak-dot-1 { animation: habitStreakFill 8s ease-in-out infinite; animation-delay: 0.2s; }
-.habit-streak-dot-2 { animation: habitStreakFill 8s ease-in-out infinite; animation-delay: 0.45s; }
-.habit-streak-dot-3 { animation: habitStreakFill 8s ease-in-out infinite; animation-delay: 0.7s; }
-.habit-streak-dot-4 { animation: habitStreakFill 8s ease-in-out infinite; animation-delay: 0.95s; }
-
-@keyframes habitStreakFill {
-  0%, 8% { opacity: 0.25; }
-  20%, 78% { opacity: 1; }
-  92%, 100% { opacity: 0.25; }
+.habits-thumb-day-active {
+  fill: var(--info-bg);
+  stroke: var(--accent);
+  stroke-dasharray: 4 3;
+  animation: habitsDayPulse 2.2s ease-in-out infinite;
 }
 
-/* Moderated Image Gallery: a light scan bar sweeps down the
-   Rekognition node, like a moderation pass running over the photo. */
+@keyframes habitsDayPulse {
+  0%, 100% { stroke-opacity: 0.45; }
+  50% { stroke-opacity: 1; }
+}
+
+.habits-thumb-flame {
+  fill: var(--accent);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: habitsFlameFlicker 2.2s ease-in-out infinite;
+}
+
+@keyframes habitsFlameFlicker {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Moderated Image Gallery: a small stack of photos, one still mid-scan
+   (Rekognition sweep), one already approved (shield-check), one
+   rejected (shield-x) -- the actual moderation outcomes, not a generic
+   camera-in-a-box. */
+.gallery-thumb-photo rect {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.gallery-thumb-landscape {
+  stroke: var(--muted);
+}
+
+.gallery-thumb-badge path:first-child {
+  stroke: none;
+}
+
+.gallery-thumb-badge-approve path:first-child {
+  fill: var(--success-text);
+}
+
+.gallery-thumb-badge-reject path:first-child {
+  fill: var(--error-text);
+}
+
 .gallery-scan-bar {
-  fill: rgba(255, 255, 255, 0.55);
+  fill: rgba(52, 84, 209, 0.28);
   transform-box: fill-box;
   opacity: 0;
   animation: gallerySweep 8s ease-in-out infinite;
@@ -1990,12 +2035,55 @@ footer {
 @keyframes gallerySweep {
   0%, 24% { transform: translateY(0); opacity: 0; }
   30% { opacity: 0.9; }
-  62% { transform: translateY(44px); opacity: 0.9; }
-  70%, 100% { transform: translateY(44px); opacity: 0; }
+  62% { transform: translateY(70px); opacity: 0.9; }
+  70%, 100% { transform: translateY(70px); opacity: 0; }
 }
 
-/* Nova Lite Summarizer: the source-text lines compress down, then the
-   summary lines glow in -- a paragraph getting condensed. */
+/* Nova Lite Summarizer: a full page of text lines funnels down into a
+   short summary page, a spark marking the model call at the pinch
+   point -- literally "long text in, short text out" instead of three
+   boxes with a checkmark between them. */
+.summarizer-thumb-page {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.summarizer-thumb-page-summary {
+  stroke: var(--accent);
+}
+
+.summarizer-thumb-line {
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.summarizer-thumb-summary-line {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.summarizer-thumb-funnel {
+  stroke: var(--border);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.summarizer-thumb-spark {
+  fill: var(--accent);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: summarizerSparkPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes summarizerSparkPulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
 .nova-doc-lines {
   transform-box: fill-box;
   transform-origin: 0% 50%;
@@ -2018,11 +2106,19 @@ footer {
   100% { opacity: 0.5; }
 }
 
-/* Order Processing: a small dot travels along the connector line
-   through the middle node and disappears behind each box in turn --
-   the order itself moving through reserve -> charge -> ship. Placed
-   before the node boxes in the markup so it passes visibly behind
-   them, only showing over the connector gaps. */
+/* Order Processing: three waypoints on a conveyor belt (placed ->
+   charged -> shipped) with the order itself traveling the full belt as
+   a dot, instead of a dot hopping between two gaps in a row of boxes. */
+.orders-thumb-belt {
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+
+.orders-thumb-stop rect {
+  fill: var(--accent);
+}
+
 .order-ship-dot {
   fill: #fff;
   filter: drop-shadow(0 0 4px var(--accent));
@@ -2033,12 +2129,42 @@ footer {
 @keyframes orderShipTravel {
   0%, 8% { opacity: 0; transform: translateX(0); }
   14% { opacity: 1; }
-  46% { opacity: 1; transform: translateX(140px); }
-  52%, 100% { opacity: 0; transform: translateX(140px); }
+  46% { opacity: 1; transform: translateX(220px); }
+  52%, 100% { opacity: 0; transform: translateX(220px); }
 }
 
-/* Website Chatbot: the two static dots in the chat-bubble node become
-   three, bouncing in sequence like a real typing indicator. */
+/* Website Chatbot: two conversation bubbles -- a plain visitor bubble
+   and an accent bot bubble with a typing indicator and a small spark --
+   instead of an icon-in-a-box row.  */
+.chatbot-thumb-bubble {
+  fill: var(--info-bg);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.chatbot-thumb-bubble-bot {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.chatbot-thumb-bubble-line {
+  stroke: var(--muted);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.chatbot-thumb-spark {
+  fill: var(--accent);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: chatbotSparkPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes chatbotSparkPulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
 .chat-typing-dot {
   animation: chatTypingBounce 1.1s ease-in-out infinite;
 }
@@ -2052,12 +2178,13 @@ footer {
   30% { transform: translateY(-3px); opacity: 1; }
 }
 
-/* Workflow Visualizer: three state circles on a line, with a ring that
-   jumps from one to the next -- a state machine's current state
-   advancing, rather than three parallel boxes lighting up together. */
-.workflow-thumb-line {
-  stroke: var(--border);
-  stroke-width: 3;
+/* Workflow Visualizer: three diamond state nodes (the classic
+   flowchart/state-machine symbol) linked by small chevron waypoints,
+   with a ring that jumps from one to the next -- a state machine's
+   current state advancing, rather than three parallel boxes lighting
+   up together. */
+.workflow-thumb-chevron {
+  fill: var(--muted);
 }
 
 .workflow-thumb-state {
@@ -2088,18 +2215,59 @@ footer {
   88%, 100% { transform: translateX(190px); opacity: 0; }
 }
 
+/* Data Lake & Analytics: droplets fall into a lake, a bar chart rises
+   out the other side -- a literal "data lake" instead of an icon row. */
+.datalake-thumb-drop {
+  fill: var(--accent);
+  opacity: 0.85;
+  animation: datalakeDropFall 4s ease-in infinite;
+}
+
+.datalake-thumb-drop-1 { animation-delay: 0s; }
+.datalake-thumb-drop-2 { animation-delay: 1.3s; }
+.datalake-thumb-drop-3 { animation-delay: 2.6s; }
+
+@keyframes datalakeDropFall {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 0.85; }
+  70% { opacity: 0.85; }
+  85%, 100% { transform: translateY(70px); opacity: 0; }
+}
+
+.datalake-thumb-lake {
+  fill: var(--info-bg);
+}
+
+.datalake-thumb-lake-line {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.datalake-thumb-chart rect {
+  fill: var(--accent);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .habit-streak-dot,
+  .datalake-thumb-drop {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .habits-thumb-day-active,
+  .habits-thumb-flame,
   .gallery-scan-bar,
   .nova-doc-lines,
   .nova-summary-lines,
+  .summarizer-thumb-spark,
   .order-ship-dot,
   .chat-typing-dot,
+  .chatbot-thumb-spark,
   .workflow-thumb-active-ring {
     animation: none;
   }
 
-  .habit-streak-dot,
   .nova-summary-lines {
     opacity: 1;
   }
@@ -2307,6 +2475,125 @@ footer {
 .pricing .section-intro,
 .decisions .section-intro {
   margin-bottom: 2.5rem;
+}
+
+/* ---------------------------------------------------------------------
+   ARCHITECTURE DIAGRAM (all project pages)
+   A full AWS architecture diagram (built with draw.io, exported as a
+   PNG) sits at the bottom of every project page as a click-to-expand
+   thumbnail, plus a hero button (#architecture-diagram) linking
+   straight to it. Shared markup/behavior across every project --
+   the trigger/lightbox ids are the same everywhere, wired by an
+   identical small script copied into each project's script.js,
+   matching this codebase's existing "shared chrome, copied per page"
+   convention rather than a separate JS file.
+   --------------------------------------------------------------------- */
+.architecture-diagram-section {
+  padding: 1rem 0 4rem;
+}
+
+.arch-diagram-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface);
+  cursor: zoom-in;
+  position: relative;
+  box-shadow: var(--shadow);
+}
+
+.arch-diagram-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: filter 0.2s ease;
+}
+
+.arch-diagram-trigger:hover .arch-diagram-thumb,
+.arch-diagram-trigger:focus-visible .arch-diagram-thumb {
+  filter: brightness(0.93);
+}
+
+.arch-diagram-trigger:focus-visible {
+  outline: 3px solid rgba(52, 84, 209, 0.35);
+  outline-offset: 3px;
+}
+
+.arch-diagram-expand-hint {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(20, 24, 38, 0.75);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.arch-diagram-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: rgba(10, 12, 20, 0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.arch-diagram-lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.arch-diagram-lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  cursor: zoom-out;
+}
+
+.arch-diagram-lightbox-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.arch-diagram-lightbox-close:hover,
+.arch-diagram-lightbox-close:focus-visible {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+body.diagram-lightbox-open {
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .arch-diagram-expand-hint {
+    right: 0.6rem;
+    bottom: 0.6rem;
+    font-size: 0.72rem;
+    padding: 0.3rem 0.65rem;
+  }
 }
 
 .flow-diagram-sentinel {
@@ -3007,6 +3294,25 @@ footer {
 .flow-step:focus-visible {
   outline: 3px solid rgba(52, 84, 209, 0.35);
   outline-offset: 3px;
+}
+
+/* Data Lake & Analytics: every step is already permanently .is-active
+   (nothing here autoplays), so clicking a diagram node needs its own,
+   louder cue on arrival -- a brief outline pulse layered on top of the
+   steady .is-active styling, not a replacement for it. */
+.flow-step.is-jumped-to {
+  animation: flowStepJumpPulse 1.6s ease-out;
+}
+
+@keyframes flowStepJumpPulse {
+  0% { box-shadow: 0 0 0 4px rgba(52, 84, 209, 0.35); }
+  100% { box-shadow: var(--shadow); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-step.is-jumped-to {
+    animation: none;
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -4083,6 +4389,38 @@ footer {
   .containers-diagram .flow-node[data-node="elb"] { grid-column: 1; grid-row: 3; }
   .containers-diagram .flow-node[data-node="ecsdrain"] { grid-column: 1; grid-row: 5; }
   .containers-diagram .flow-node[data-node="cloudwatch"] { grid-column: 3; grid-row: 5; }
+
+  .vpcnet-diagram .flow-node[data-node="vpc"] { grid-column: 1; grid-row: 1; }
+  .vpcnet-diagram .flow-node[data-node="subnets"] { grid-column: 3; grid-row: 1; }
+  .vpcnet-diagram .flow-node[data-node="igw"] { grid-column: 3; grid-row: 3; }
+  .vpcnet-diagram .flow-node[data-node="natgw"] { grid-column: 1; grid-row: 3; }
+  .vpcnet-diagram .flow-node[data-node="isolated"] { grid-column: 1; grid-row: 5; }
+  .vpcnet-diagram .flow-node[data-node="sg"] { grid-column: 3; grid-row: 5; }
+
+  /* 5 nodes only (one shorter than the 6-node shape above) -- ends on
+     the left at row 5 instead of pairing up on the right. */
+  .opsdash-diagram .flow-node[data-node="producers"] { grid-column: 1; grid-row: 1; }
+  .opsdash-diagram .flow-node[data-node="kinesis"] { grid-column: 3; grid-row: 1; }
+  .opsdash-diagram .flow-node[data-node="lambda"] { grid-column: 3; grid-row: 3; }
+  .opsdash-diagram .flow-node[data-node="dynamodb"] { grid-column: 1; grid-row: 3; }
+  .opsdash-diagram .flow-node[data-node="apigateway"] { grid-column: 1; grid-row: 5; }
+
+  /* 4 nodes, no unstepped entry -- fills exactly 2 rows. */
+  .datalake-diagram .flow-node[data-node="raw"] { grid-column: 1; grid-row: 1; }
+  .datalake-diagram .flow-node[data-node="glue"] { grid-column: 3; grid-row: 1; }
+  .datalake-diagram .flow-node[data-node="athena"] { grid-column: 3; grid-row: 3; }
+  .datalake-diagram .flow-node[data-node="quicksight"] { grid-column: 1; grid-row: 3; }
+
+  /* Was missing a scoping class entirely -- fell through to unpositioned
+     grid auto-placement on mobile, scrambling the zigzag (nodes and
+     connectors landing in each other's rows). Same 6-node shape as
+     .workflow-diagram/.orders-diagram. */
+  .dr-diagram .flow-node[data-node="visitor"] { grid-column: 1; grid-row: 1; }
+  .dr-diagram .flow-node[data-node="route53"] { grid-column: 3; grid-row: 1; }
+  .dr-diagram .flow-node[data-node="apigateway"] { grid-column: 3; grid-row: 3; }
+  .dr-diagram .flow-node[data-node="lambda"] { grid-column: 1; grid-row: 3; }
+  .dr-diagram .flow-node[data-node="dynamodb"] { grid-column: 1; grid-row: 5; }
+  .dr-diagram .flow-node[data-node="dynamodb-standby"] { grid-column: 3; grid-row: 5; }
 
   .flow-diagram:not(.ws-diagram):not(.fanout-diagram) .flow-connector {
     display: block;
@@ -6382,24 +6720,85 @@ footer {
   }
 }
 
-/* Homepage-card thumbnail scene: two region nodes with a connecting
-   line, the primary one glowing to show "active" -- same house style
-   as the other beta card scenes (simple circles/lines/text). */
-.dr-thumb-scene .dr-thumb-node {
-  fill: var(--surface);
+/* Homepage-card thumbnail scene: a globe split into two regions, one
+   pinned active (checkmark) and one standby (paused), joined by a
+   failover arc with a traveling dot -- literally "multi-region",
+   rather than two plain circles with a connecting line. */
+.dr-thumb-globe {
+  fill: var(--info-bg);
+}
+
+.dr-thumb-globe-outline,
+.dr-thumb-meridian {
+  fill: none;
   stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.dr-thumb-split {
+  stroke: var(--border);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+
+.dr-thumb-arc {
+  stroke: var(--accent);
+  opacity: 0.4;
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+}
+
+/* Approximates the M126,78 Q160,48 194,78 arc with a few translate
+   stops rather than CSS motion-path (offset-path/offset-distance),
+   which the rest of this site's thumb animations avoid for broader
+   browser support -- same technique as .opsdash-thumb-pulse-dot below. */
+.dr-thumb-arc-dot {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  opacity: 0;
+  animation: drArcTravel 3.4s ease-in-out infinite;
+}
+
+@keyframes drArcTravel {
+  0%, 8% { transform: translate(0, 0); opacity: 0; }
+  16% { opacity: 1; }
+  50% { transform: translate(34px, -28px); opacity: 1; }
+  84% { transform: translate(68px, 0); opacity: 1; }
+  92%, 100% { transform: translate(68px, 0); opacity: 0; }
+}
+
+.dr-thumb-pin circle {
+  fill: var(--surface);
   stroke-width: 2;
 }
 
-.dr-thumb-scene .dr-thumb-node-primary {
+.dr-thumb-pin-active circle {
   stroke: var(--accent);
   animation: statusPulse 2.4s ease-in-out infinite;
 }
 
-.dr-thumb-scene .dr-thumb-line {
-  stroke: var(--border);
-  stroke-width: 2;
-  stroke-dasharray: 4 5;
+.dr-thumb-pin-active .arch-glyph-stroke {
+  stroke: var(--accent);
+}
+
+.dr-thumb-pin-standby circle {
+  stroke: var(--muted);
+}
+
+.dr-thumb-pin-standby .arch-glyph-stroke {
+  stroke: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dr-thumb-arc-dot,
+  .dr-thumb-pin-active circle {
+    animation: none;
+  }
+
+  .dr-thumb-arc-dot {
+    opacity: 1;
+    transform: translate(68px, 0);
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -6550,13 +6949,18 @@ footer {
   stroke-width: 2;
 }
 
+/* The mid container is the one being swapped: it lifts on a crane
+   cable while it recolors, rather than just pulsing in place --
+   literally a container being craned in, not just a box blinking. */
 .containers-thumb-box-3 {
+  transform-box: fill-box;
+  transform-origin: center;
   animation: containersBoxUpdate 3.6s ease-in-out infinite;
 }
 
 @keyframes containersBoxUpdate {
-  0%, 60%, 100% { fill: var(--surface); stroke: var(--accent); }
-  30% { fill: var(--accent); stroke: var(--accent); opacity: 0.6; }
+  0%, 60%, 100% { fill: var(--surface); stroke: var(--accent); transform: translateY(0); }
+  30% { fill: var(--accent); stroke: var(--accent); opacity: 0.6; transform: translateY(-10px); }
 }
 
 .containers-thumb-line {
@@ -6566,6 +6970,24 @@ footer {
 
 .containers-thumb-dot {
   fill: var(--accent);
+}
+
+.containers-thumb-crane-arm {
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.containers-thumb-crane-cable {
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .containers-thumb-box-3 {
+    animation: none;
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -6778,26 +7200,39 @@ footer {
   stroke-dasharray: 5 4;
 }
 
-.vpc-thumb-scene .vpc-thumb-box {
+/* A small hex-node mesh inside the VPC boundary, standing in for the
+   subnet/route lattice this project actually lets you click through --
+   reads as "network design" in a way two nested rectangles didn't. */
+.vpc-thumb-mesh line {
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.vpc-thumb-node {
   fill: var(--info-bg);
   stroke: var(--accent);
   stroke-width: 1.5;
   animation: vpcThumbPulse 3.2s ease-in-out infinite;
 }
 
-.vpc-thumb-scene .vpc-thumb-box-2 {
-  animation-delay: 0.4s;
-}
-
-.vpc-thumb-scene .vpc-thumb-box-3 {
-  animation-delay: 0.8s;
-}
+.vpc-thumb-node-2 { animation-delay: 0.2s; }
+.vpc-thumb-node-3 { animation-delay: 0.4s; }
+.vpc-thumb-node-4 { animation-delay: 0.6s; }
+.vpc-thumb-node-5 { animation-delay: 0.8s; }
+.vpc-thumb-node-6 { animation-delay: 1s; }
 
 @keyframes vpcThumbPulse {
   0%, 100% {
     stroke-opacity: 0.4;
   }
   50% {
+    stroke-opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vpc-thumb-node {
+    animation: none;
     stroke-opacity: 1;
   }
 }
@@ -6907,31 +7342,44 @@ footer {
   }
 }
 
-.opsdash-thumb-bar {
+/* A live heartbeat/pulse line with a traveling blip, standing in for
+   the Kinesis event stream -- reads as "real-time" in a way three
+   static bars never could (bars don't move, a live monitor does). */
+.opsdash-thumb-baseline {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.opsdash-thumb-pulse-line {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Approximates the pulse-line's path with a few translate stops
+   rather than CSS motion-path, matching .dr-thumb-arc-dot's approach. */
+.opsdash-thumb-pulse-dot {
   fill: var(--accent);
-  transform-origin: bottom;
-  animation: opsdashBarPulse 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px var(--accent));
+  opacity: 0;
+  animation: opsdashPulseTravel 3.2s ease-in-out infinite;
 }
 
-.opsdash-thumb-bar:nth-child(2) {
-  animation-delay: 0.25s;
-}
-
-.opsdash-thumb-bar:nth-child(3) {
-  animation-delay: 0.5s;
-}
-
-@keyframes opsdashBarPulse {
-  0%, 100% {
-    transform: scaleY(0.6);
-  }
-  50% {
-    transform: scaleY(1);
-  }
+@keyframes opsdashPulseTravel {
+  0%, 4% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 1; }
+  20% { transform: translate(80px, 0); }
+  27% { transform: translate(95px, -30px); }
+  34% { transform: translate(110px, 30px); }
+  41% { transform: translate(125px, -15px); }
+  48% { transform: translate(140px, 0); }
+  88% { transform: translate(260px, 0); opacity: 1; }
+  96%, 100% { transform: translate(260px, 0); opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .opsdash-thumb-bar {
+  .opsdash-thumb-pulse-dot {
     animation: none;
   }
 }

@@ -2,19 +2,31 @@
           <a class="project-link" href="/project/dr/index.html" aria-label="View the Multi-Region Disaster Recovery project">
             <div class="project-thumb thumb-arch" aria-hidden="true">
               <svg viewBox="0 0 320 200" class="icon-scene dr-thumb-scene" aria-hidden="true">
-                <line x1="120" y1="100" x2="200" y2="100" class="dr-thumb-line" />
+                <clipPath id="dr-globe-clip"><circle cx="160" cy="112" r="52" /></clipPath>
+                <g clip-path="url(#dr-globe-clip)">
+                  <circle cx="160" cy="112" r="52" class="dr-thumb-globe" />
+                  <ellipse cx="160" cy="112" rx="22" ry="52" class="dr-thumb-meridian" />
+                  <ellipse cx="160" cy="112" rx="52" ry="22" class="dr-thumb-meridian" />
+                  <line x1="108" y1="112" x2="212" y2="112" class="dr-thumb-meridian" />
+                  <line x1="160" y1="60" x2="160" y2="164" class="dr-thumb-split" />
+                </g>
+                <circle cx="160" cy="112" r="52" class="dr-thumb-globe-outline" />
 
-                <circle cx="90" cy="100" r="28" class="dr-thumb-node dr-thumb-node-primary" />
-                <path d="M80 100l7 7 14-14" class="arch-glyph-stroke" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M126 78q34-30 68 0" class="dr-thumb-arc" fill="none" />
+                <circle class="dr-thumb-arc-dot" cx="126" cy="78" r="3.5" />
 
-                <circle cx="230" cy="100" r="28" class="dr-thumb-node" />
-                <circle cx="222" cy="100" r="3" fill="var(--muted)" />
-                <circle cx="230" cy="100" r="3" fill="var(--muted)" />
-                <circle cx="238" cy="100" r="3" fill="var(--muted)" />
+                <g class="dr-thumb-pin dr-thumb-pin-active">
+                  <circle cx="126" cy="78" r="13" />
+                  <path d="M121 78l3.5 3.5 7-7" class="arch-glyph-stroke" fill="none" />
+                </g>
+                <g class="dr-thumb-pin dr-thumb-pin-standby">
+                  <circle cx="194" cy="78" r="13" />
+                  <path d="M194 71v7l5 3" class="arch-glyph-stroke" fill="none" />
+                </g>
               </svg>
             </div>
             <div class="project-body">
-              <p class="project-meta"><span class="status-dot is-reference-dot" aria-hidden="true"></span>Reference build</p>
+              <p class="project-meta"><span class="status-dot is-reference-dot" aria-hidden="true"></span>Reference Build</p>
               <h3>Multi-Region Disaster Recovery</h3>
               <p class="muted">
                 Pilot light, warm standby, and active-active failover,

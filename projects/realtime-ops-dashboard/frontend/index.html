@@ -48,17 +48,17 @@
             <a href="/project/orders/project8.html">Order Processing</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Real-Time Operations Dashboard</summary>
-              <a class="nav-dropdown-sublink" href="#demo">Try it</a>
-              <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
-              <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
+              <a class="nav-dropdown-sublink" href="#demo">Try It</a>
+              <a class="nav-dropdown-sublink" href="#how-it-works">How It Works</a>
+              <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
-              <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
+              <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
             </details>
             <a href="/project/fanningsns/project3.html">SNS Notifications</a>
             <a href="/project/vpc/index.html">VPC Network Design</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
             <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+            <a class="nav-dropdown-all" href="/#projects">View All Projects</a>
           </div>
         </details>
         <a href="/#about">About</a>
@@ -85,10 +85,11 @@
         infrastructure bill.
       </p>
       <div class="hero-actions">
-        <a class="button-link" href="#how-it-works">See how it works</a>
-        <a class="button-link" href="#use-cases">Use cases</a>
+        <a class="button-link" href="#how-it-works">See How It Works</a>
+        <a class="button-link" href="#use-cases">Use Cases</a>
         <a class="button-link" href="#pricing">Pricing</a>
-        <a class="button-link" href="#design-decisions">Design decisions</a>
+        <a class="button-link" href="#design-decisions">Design Decisions</a>
+        <a class="button-link" href="#architecture-diagram">Architecture Diagram</a>
       </div>
     </section>
 
@@ -96,7 +97,7 @@
       <div class="card-primary-col">
         <div>
           <p class="eyebrow">Demo</p>
-          <h2 id="demo-heading">Simulated event stream</h2>
+          <h2 id="demo-heading">Simulated Event Stream</h2>
           <p class="muted">
             This runs entirely in your browser — no Kinesis stream, no
             Lambda, no network request of any kind. Starting it spins up an
@@ -113,7 +114,7 @@
 
         <div class="notify-trigger">
           <div class="trigger-button-row">
-            <button type="button" id="stream-toggle-button">Start simulated stream</button>
+            <button type="button" id="stream-toggle-button">Start Simulated Stream</button>
             <button type="button" class="button-link ghost small" id="stream-reset-button">Reset</button>
           </div>
           <div class="form-status" id="stream-status" role="status" aria-live="polite"></div>
@@ -152,93 +153,99 @@
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture</p>
-        <h2 id="how-it-works-heading">How this would work, if deployed</h2>
+        <h2 id="how-it-works-heading">How This Would Work, If Deployed</h2>
         <p class="muted section-intro">
           This is a reference architecture, not a mockup — every resource
           below is real, compilable CDK code in this project's repository.
           It's simply never instantiated, so nothing here has ever run
-          against a live AWS account.
+          against a live AWS account. Click any icon to jump to that step,
+          or let it play through on its own.
         </p>
       </div>
 
-      <div class="flow-diagram workflow-diagram" id="opsdash-flow-diagram">
+      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
+      <div class="flow-diagram opsdash-diagram" id="flow-diagram">
         <div class="flow-track">
-          <div class="flow-node">
+          <div class="flow-node" data-node="producers">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="4" width="9" height="9" rx="2" stroke="currentColor" stroke-width="2"/><rect x="12.5" y="4" width="9" height="9" rx="2" stroke="currentColor" stroke-width="2"/><rect x="22" y="4" width="9" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7.5 13v6M17 13v3M26.5 13v6M7.5 22h19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="flow-node-label">Producers</span>
+          </div>
+
+          <div class="flow-connector" data-step="1" aria-hidden="true">
+            <span class="flow-connector-num">1</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="kinesis" data-step="1" role="button" tabindex="0" aria-label="Step 1: Producers write to a Kinesis Data Stream">
             <span class="flow-node-icon" aria-hidden="true">
               <img src="/assets/aws-icons/kinesis.png" alt="" />
             </span>
             <span class="flow-node-label">Kinesis Data Stream</span>
           </div>
 
-          <div class="flow-connector" aria-hidden="true">
+          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+            <span class="flow-connector-num">2</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node">
+          <div class="flow-node" data-node="lambda" data-step="2" role="button" tabindex="0" aria-label="Step 2: A Lambda consumer aggregates each batch">
             <span class="flow-node-icon" aria-hidden="true">
               <img src="/assets/aws-icons/lambda.png" alt="" />
             </span>
             <span class="flow-node-label">Lambda (aggregation)</span>
           </div>
 
-          <div class="flow-connector" aria-hidden="true">
+          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
+            <span class="flow-connector-num">3</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node">
+          <div class="flow-node" data-node="dynamodb" data-step="3" role="button" tabindex="0" aria-label="Step 3: DynamoDB holds the current rollups">
             <span class="flow-node-icon" aria-hidden="true">
               <img src="/assets/aws-icons/dynamodb.png" alt="" />
             </span>
             <span class="flow-node-label">DynamoDB (rollups)</span>
           </div>
 
-          <div class="flow-connector" aria-hidden="true">
+          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
+            <span class="flow-connector-num">4</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node">
+          <div class="flow-node" data-node="apigateway" data-step="4" role="button" tabindex="0" aria-label="Step 4: The dashboard polls a read API">
             <span class="flow-node-icon" aria-hidden="true">
               <img src="/assets/aws-icons/apigateway.png" alt="" />
             </span>
             <span class="flow-node-label">API Gateway</span>
           </div>
-
-          <div class="flow-connector" aria-hidden="true">
-            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
-          </div>
-
-          <div class="flow-node">
-            <span class="flow-node-icon" aria-hidden="true">
-              <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="20" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M3 12h26" stroke="currentColor" stroke-width="2"/><rect x="7" y="16" width="6" height="6" stroke="currentColor" stroke-width="1.6"/><rect x="16" y="16" width="9" height="6" stroke="currentColor" stroke-width="1.6"/></svg>
-            </span>
-            <span class="flow-node-label">Dashboard (this page)</span>
-          </div>
         </div>
       </div>
 
-      <ol class="flow-steps">
-        <li class="flow-step">
+      <ol class="flow-steps" id="flow-steps">
+        <li class="flow-step" data-step="1" tabindex="0">
           <span class="flow-step-num">1</span>
           <div class="flow-step-body">
             <h3>Producers write to a Kinesis Data Stream</h3>
             <p>Any number of producers — application servers, IoT devices, other Lambdas — call <code>PutRecord</code>/<code>PutRecords</code> with a small JSON event. Kinesis retains records in order, per shard, for a configurable window (24 hours by default).</p>
           </div>
         </li>
-        <li class="flow-step">
+        <li class="flow-step" data-step="2" tabindex="0">
           <span class="flow-step-num">2</span>
           <div class="flow-step-body">
             <h3>A Lambda consumer aggregates each batch</h3>
             <p>An <code>EventSourceMapping</code> invokes a Lambda function with a batch of records at a time. The function base64-decodes and parses each record, groups them by category, and applies atomic <code>ADD</code> updates to DynamoDB counters rather than read-modify-write cycles, so concurrent batches never clobber each other's counts.</p>
           </div>
         </li>
-        <li class="flow-step">
+        <li class="flow-step" data-step="3" tabindex="0">
           <span class="flow-step-num">3</span>
           <div class="flow-step-body">
             <h3>DynamoDB holds the current rollups</h3>
             <p>One item per category, each with a running count and a last-updated timestamp — cheap to read, cheap to update, no idle capacity to pay for on-demand billing.</p>
           </div>
         </li>
-        <li class="flow-step">
+        <li class="flow-step" data-step="4" tabindex="0">
           <span class="flow-step-num">4</span>
           <div class="flow-step-body">
             <h3>The dashboard polls a read API</h3>
@@ -250,8 +257,8 @@
 
     <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
       <div data-reveal>
-      <p class="eyebrow">Use cases</p>
-      <h2 id="use-cases-heading">Where this pattern fits</h2>
+      <p class="eyebrow">Use Cases</p>
+      <h2 id="use-cases-heading">Where This Pattern Fits</h2>
       <p class="muted section-intro">
         Kinesis earns its keep anywhere a high volume of small events needs
         to be ingested in order and aggregated continuously, rather than
@@ -306,7 +313,7 @@
     <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
       <div data-reveal>
       <p class="eyebrow">Pricing</p>
-      <h2 id="pricing-heading">What this would cost, if deployed</h2>
+      <h2 id="pricing-heading">What This Would Cost, If Deployed</h2>
       <p class="muted section-intro">
         This project is never actually deployed (see the notice at the top
         of this page), so nothing here is billing you anything. These are
@@ -360,8 +367,8 @@
 
     <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
       <div data-reveal>
-        <p class="eyebrow">Design decisions</p>
-        <h2 id="decisions-heading">Why I designed it this way</h2>
+        <p class="eyebrow">Design Decisions</p>
+        <h2 id="decisions-heading">Why I Designed It This Way</h2>
         <p class="muted section-intro">
           A few choices here aren't the only way to build this — here's the
           reasoning behind them.
@@ -413,6 +420,20 @@
           </p>
         </div>
       </div>
+    </section>
+
+    <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture Diagram</p>
+        <h2 id="architecture-diagram-heading">Full Architecture Diagram</h2>
+        <p class="muted section-intro">
+          The complete AWS architecture diagram for this project, built with draw.io. Click it to expand full screen.
+        </p>
+      </div>
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the Real-Time Operations Dashboard architecture diagram to full screen">
+        <img src="architecture.png" alt="Real-Time Operations Dashboard AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+        <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
+      </button>
     </section>
   </main>
 
@@ -478,26 +499,31 @@
         <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">Real-Time Operations Dashboard</summary>
-          <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
-          <a class="mobile-sidebar-sublink" href="#how-it-works">How it works</a>
-          <a class="mobile-sidebar-sublink" href="#use-cases">Use cases</a>
+          <a class="mobile-sidebar-sublink" href="#demo">Try It</a>
+          <a class="mobile-sidebar-sublink" href="#how-it-works">How It Works</a>
+          <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
-          <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
+          <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
         <a class="mobile-sidebar-sublink" href="/project/vpc/index.html">VPC Network Design</a>
         <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
         <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
+        <a class="mobile-sidebar-sublink" href="/#projects">View All Projects</a>
         </div>
       </details>
       <a class="mobile-sidebar-link" href="/#about">About</a>
       <button type="button" class="theme-toggle mobile-sidebar-link mobile-sidebar-theme-toggle" id="theme-toggle-sidebar-panel" aria-pressed="false" aria-label="Toggle dark mode">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        <span>Dark mode</span>
+        <span>Dark Mode</span>
       </button>
     </nav>
+  </div>
+
+  <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
+    <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
+    <img src="architecture.png" alt="Real-Time Operations Dashboard AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
   </div>
 
   <script src="script.js"></script>

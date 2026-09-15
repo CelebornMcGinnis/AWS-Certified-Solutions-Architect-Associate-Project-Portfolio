@@ -425,6 +425,44 @@ var DeviceId = (function () {
 })();
 
 // -----------------------------------------------------------------------
+// Architecture diagram lightbox: click the thumbnail (or press Enter/
+// Space on it) to expand the full diagram full-screen; Escape, the
+// backdrop, or the close button dismiss it. Same markup/behavior on
+// every project page.
+// -----------------------------------------------------------------------
+(function () {
+  var trigger = document.getElementById('arch-diagram-trigger');
+  var lightbox = document.getElementById('arch-diagram-lightbox');
+  var closeBtn = document.getElementById('arch-diagram-lightbox-close');
+  if (!trigger || !lightbox || !closeBtn) return;
+
+  function openLightbox() {
+    lightbox.classList.add('is-open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('diagram-lightbox-open');
+    closeBtn.focus();
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('is-open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('diagram-lightbox-open');
+    trigger.focus();
+  }
+
+  trigger.addEventListener('click', openLightbox);
+  closeBtn.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', function (event) {
+    if (event.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && lightbox.classList.contains('is-open')) {
+      closeLightbox();
+    }
+  });
+})();
+
+// -----------------------------------------------------------------------
 // Shared chrome behaviors, copied from the other project pages:
 // scroll-reveal, nav dropdown, sticky header shrink, back-to-top, mobile
 // menu, dark mode toggle.

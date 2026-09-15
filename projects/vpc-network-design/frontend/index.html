@@ -50,15 +50,15 @@
             <a href="/project/fanningsns/project3.html">SNS Notifications</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">VPC Network Design</summary>
-              <a class="nav-dropdown-sublink" href="#demo">Try it</a>
-              <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
-              <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
+              <a class="nav-dropdown-sublink" href="#demo">Try It</a>
+              <a class="nav-dropdown-sublink" href="#how-it-works">How It Works</a>
+              <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
-              <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
+              <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
             </details>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
             <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+            <a class="nav-dropdown-all" href="/#projects">View All Projects</a>
           </div>
         </details>
         <a href="/#about">About</a>
@@ -85,17 +85,18 @@
         design this CDK stack would provision.
       </p>
       <div class="hero-actions">
-        <a class="button-link" href="#how-it-works">See how it works</a>
-        <a class="button-link" href="#use-cases">Use cases</a>
+        <a class="button-link" href="#how-it-works">See How It Works</a>
+        <a class="button-link" href="#use-cases">Use Cases</a>
         <a class="button-link" href="#pricing">Pricing</a>
-        <a class="button-link" href="#design-decisions">Design decisions</a>
+        <a class="button-link" href="#design-decisions">Design Decisions</a>
+        <a class="button-link" href="#architecture-diagram">Architecture Diagram</a>
       </div>
     </section>
 
     <section class="card" id="demo" aria-labelledby="demo-heading">
       <div>
         <p class="eyebrow">Demo</p>
-        <h2 id="demo-heading">Click to inspect the network</h2>
+        <h2 id="demo-heading">Click to Inspect the Network</h2>
         <p class="muted">
           This diagram is the real topology <code>cdk/lib/vpc-network-design-stack.ts</code>
           would provision. Click any subnet or resource icon to see its
@@ -199,45 +200,118 @@
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture</p>
-        <h2 id="how-it-works-heading">How it works</h2>
+        <h2 id="how-it-works-heading">How It Works</h2>
         <p class="muted section-intro">
           A reference architecture, not a mockup — this is exactly what
           <code>cdk/lib/vpc-network-design-stack.ts</code> provisions if
           it were ever instantiated. It never is: see
-          <a href="#design-decisions">Design decisions</a> for why.
+          <a href="#design-decisions">Design Decisions</a> for why. Click
+          any icon to jump to that step, or let it play through on its own.
         </p>
       </div>
 
+      <div class="flow-diagram-sentinel" aria-hidden="true"></div>
+      <div class="flow-diagram vpcnet-diagram" id="flow-diagram">
+        <div class="flow-track">
+          <div class="flow-node" data-node="vpc">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/vpc.png" alt="" />
+            </span>
+            <span class="flow-node-label">VPC</span>
+          </div>
+
+          <div class="flow-connector" data-step="1" aria-hidden="true">
+            <span class="flow-connector-num">1</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="subnets" data-step="1" role="button" tabindex="0" aria-label="Step 1: One VPC, three subnet tiers, two Availability Zones">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><rect x="4" y="5" width="24" height="6" rx="2" stroke="currentColor" stroke-width="2"/><rect x="4" y="13" width="24" height="6" rx="2" stroke="currentColor" stroke-width="2"/><rect x="4" y="21" width="24" height="6" rx="2" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+            <span class="flow-node-label">3 Subnet Tiers</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+            <span class="flow-connector-num">2</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="igw" data-step="2" role="button" tabindex="0" aria-label="Step 2: Public subnets route outbound through the Internet Gateway">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/internetgateway.png" alt="" />
+            </span>
+            <span class="flow-node-label">Internet Gateway</span>
+          </div>
+
+          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
+            <span class="flow-connector-num">3</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="natgw" data-step="3" role="button" tabindex="0" aria-label="Step 3: Private subnets route outbound through a per-AZ NAT Gateway">
+            <span class="flow-node-icon" aria-hidden="true">
+              <img src="/assets/aws-icons/natgateway.png" alt="" />
+            </span>
+            <span class="flow-node-label">NAT Gateway</span>
+          </div>
+
+          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
+            <span class="flow-connector-num">4</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="isolated" data-step="4" role="button" tabindex="0" aria-label="Step 4: Isolated subnets have no route out at all">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><rect x="8" y="15" width="16" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M12 15v-4a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+            <span class="flow-node-label">Isolated Subnet</span>
+          </div>
+
+          <div class="flow-connector" data-step="5" aria-hidden="true">
+            <span class="flow-connector-num">5</span>
+            <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
+          </div>
+
+          <div class="flow-node" data-node="sg" data-step="5" role="button" tabindex="0" aria-label="Step 5: Security groups enforce tier-to-tier access, not subnet boundaries">
+            <span class="flow-node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><path d="M16 4l10 4v8c0 7-4.5 11-10 12-5.5-1-10-5-10-12V8z" stroke="currentColor" stroke-width="2"/><path d="M11 16l3.5 3.5L21 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="flow-node-label">Security Groups</span>
+          </div>
+        </div>
+      </div>
+
       <ol class="flow-steps" id="flow-steps">
-        <li class="flow-step">
+        <li class="flow-step" data-step="1" tabindex="0">
           <span class="flow-step-num">1</span>
           <div class="flow-step-body">
             <h3>One VPC, three subnet tiers, two Availability Zones</h3>
             <p>A single <code>ec2.Vpc</code> with an explicit <code>subnetConfiguration</code>: <code>PUBLIC</code>, <code>PRIVATE_WITH_EGRESS</code>, and <code>PRIVATE_ISOLATED</code> subnet groups, each duplicated across <code>us-east-1a</code> and <code>us-east-1b</code> for availability.</p>
           </div>
         </li>
-        <li class="flow-step">
+        <li class="flow-step" data-step="2" tabindex="0">
           <span class="flow-step-num">2</span>
           <div class="flow-step-body">
             <h3>Public subnets route outbound through the Internet Gateway</h3>
             <p>Each public subnet's route table sends <code>0.0.0.0/0</code> traffic straight to the VPC's Internet Gateway — this is the only tier CDK attaches a public IP to by default.</p>
           </div>
         </li>
-        <li class="flow-step">
+        <li class="flow-step" data-step="3" tabindex="0">
           <span class="flow-step-num">3</span>
           <div class="flow-step-body">
             <h3>Private subnets route outbound through a per-AZ NAT Gateway</h3>
             <p>CDK provisions one NAT Gateway per AZ by default (not one shared gateway), so a private subnet's outbound traffic never crosses an AZ boundary just to reach the internet — the tradeoff is paying for two NAT Gateways instead of one.</p>
           </div>
         </li>
-        <li class="flow-step">
+        <li class="flow-step" data-step="4" tabindex="0">
           <span class="flow-step-num">4</span>
           <div class="flow-step-body">
             <h3>Isolated subnets have no route out at all</h3>
             <p>The database tier's route table has only the local <code>10.0.0.0/16</code> route — no NAT Gateway, no Internet Gateway. It can only be reached from inside the VPC, and it can't reach anything outside it either.</p>
           </div>
         </li>
-        <li class="flow-step">
+        <li class="flow-step" data-step="5" tabindex="0">
           <span class="flow-step-num">5</span>
           <div class="flow-step-body">
             <h3>Security groups enforce tier-to-tier access, not subnet boundaries</h3>
@@ -249,8 +323,8 @@
 
     <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
       <div data-reveal>
-      <p class="eyebrow">Use cases</p>
-      <h2 id="use-cases-heading">Where this pattern fits</h2>
+      <p class="eyebrow">Use Cases</p>
+      <h2 id="use-cases-heading">Where This Pattern Fits</h2>
       <p class="muted section-intro">
         Any workload that needs to separate what's internet-facing from
         what should never be, without relying on IAM alone to enforce it.
@@ -284,7 +358,7 @@
     <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
       <div data-reveal>
       <p class="eyebrow">Pricing</p>
-      <h2 id="pricing-heading">What deploying this would cost</h2>
+      <h2 id="pricing-heading">What Deploying This Would Cost</h2>
       <p class="muted section-intro">
         Estimates based on public AWS list pricing for <code>us-east-1</code>,
         not a guarantee — and not a bill this project has ever
@@ -305,8 +379,8 @@
 
     <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
       <div data-reveal>
-        <p class="eyebrow">Design decisions</p>
-        <h2 id="decisions-heading">Why I built it this way</h2>
+        <p class="eyebrow">Design Decisions</p>
+        <h2 id="decisions-heading">Why I Built It This Way</h2>
         <p class="muted section-intro">
           A few choices here aren't the only way to build this — here's the
           reasoning behind them.
@@ -366,6 +440,20 @@
           </p>
         </div>
       </div>
+    </section>
+
+    <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture Diagram</p>
+        <h2 id="architecture-diagram-heading">Full Architecture Diagram</h2>
+        <p class="muted section-intro">
+          The complete AWS architecture diagram for this project, built with draw.io. Click it to expand full screen.
+        </p>
+      </div>
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the VPC Network Design architecture diagram to full screen">
+        <img src="architecture.png" alt="VPC Network Design AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+        <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
+      </button>
     </section>
   </main>
 
@@ -433,24 +521,29 @@
         <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">VPC Network Design</summary>
-          <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
-          <a class="mobile-sidebar-sublink" href="#how-it-works">How it works</a>
-          <a class="mobile-sidebar-sublink" href="#use-cases">Use cases</a>
+          <a class="mobile-sidebar-sublink" href="#demo">Try It</a>
+          <a class="mobile-sidebar-sublink" href="#how-it-works">How It Works</a>
+          <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
-          <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
+          <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
         <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
+        <a class="mobile-sidebar-sublink" href="/#projects">View All Projects</a>
         </div>
       </details>
       <a class="mobile-sidebar-link" href="/#about">About</a>
       <button type="button" class="theme-toggle mobile-sidebar-link mobile-sidebar-theme-toggle" id="theme-toggle-sidebar-panel" aria-pressed="false" aria-label="Toggle dark mode">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        <span>Dark mode</span>
+        <span>Dark Mode</span>
       </button>
     </nav>
+  </div>
+
+  <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
+    <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
+    <img src="architecture.png" alt="VPC Network Design AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
   </div>
 
   <script src="script.js"></script>

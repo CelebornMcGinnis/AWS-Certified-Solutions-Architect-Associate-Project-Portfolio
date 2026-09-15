@@ -45,11 +45,11 @@
             <a href="/project/polling/project2.html">Movie Poll</a>
             <details class="nav-dropdown-subsection" open>
               <summary class="nav-dropdown-group-label">Multi-Region Disaster Recovery</summary>
-              <a class="nav-dropdown-sublink" href="#demo">Try it</a>
-              <a class="nav-dropdown-sublink" href="#how-it-works">How it works</a>
-              <a class="nav-dropdown-sublink" href="#use-cases">Use cases</a>
+              <a class="nav-dropdown-sublink" href="#demo">Try It</a>
+              <a class="nav-dropdown-sublink" href="#how-it-works">How It Works</a>
+              <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
-              <a class="nav-dropdown-sublink" href="#design-decisions">Design decisions</a>
+              <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
             </details>
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
@@ -58,7 +58,7 @@
             <a href="/project/vpc/index.html">VPC Network Design</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
             <a href="/project/workflow/project4.html">Workflow Visualizer</a>
-            <a class="nav-dropdown-all" href="/#projects">View all projects</a>
+            <a class="nav-dropdown-all" href="/#projects">View All Projects</a>
           </div>
         </details>
         <a href="/#about">About</a>
@@ -85,10 +85,11 @@
         health-check failover carry traffic to the standby region.
       </p>
       <div class="hero-actions">
-        <a class="button-link" href="#how-it-works">See how it works</a>
-        <a class="button-link" href="#use-cases">Use cases</a>
+        <a class="button-link" href="#how-it-works">See How It Works</a>
+        <a class="button-link" href="#use-cases">Use Cases</a>
         <a class="button-link" href="#pricing">Pricing</a>
-        <a class="button-link" href="#design-decisions">Design decisions</a>
+        <a class="button-link" href="#design-decisions">Design Decisions</a>
+        <a class="button-link" href="#architecture-diagram">Architecture Diagram</a>
       </div>
     </section>
 
@@ -96,7 +97,7 @@
       <div class="card-primary-col">
         <div>
           <p class="eyebrow">Demo</p>
-          <h2 id="demo-heading">Simulate a region outage</h2>
+          <h2 id="demo-heading">Simulate a Region Outage</h2>
           <p class="muted">
             Everything below runs in your browser — there's no real Route
             53 health check or DynamoDB Global Table behind it. Pick a
@@ -122,8 +123,8 @@
 
         <div class="notify-trigger">
           <div class="trigger-button-row">
-            <button type="button" id="simulate-outage-button">Simulate region outage</button>
-            <button type="button" class="button-link ghost small" id="reset-dr-button">Reset demo</button>
+            <button type="button" id="simulate-outage-button">Simulate Region Outage</button>
+            <button type="button" class="button-link ghost small" id="reset-dr-button">Reset Demo</button>
           </div>
           <div class="form-status" id="dr-status" role="status" aria-live="polite"></div>
         </div>
@@ -170,7 +171,7 @@
     <section class="how-it-works" id="how-it-works" aria-labelledby="how-it-works-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture</p>
-        <h2 id="how-it-works-heading">How it works</h2>
+        <h2 id="how-it-works-heading">How It Works</h2>
         <p class="muted section-intro">
           This is a reference architecture, not a mockup of one — the
           diagram below is exactly what <code>cdk/lib/multi-region-dr-stack.ts</code>
@@ -180,7 +181,7 @@
       </div>
 
       <div class="flow-diagram-sentinel" aria-hidden="true"></div>
-      <div class="flow-diagram" id="flow-diagram">
+      <div class="flow-diagram dr-diagram" id="flow-diagram">
         <div class="flow-track">
           <div class="flow-node" data-node="visitor">
             <span class="flow-node-icon" aria-hidden="true">
@@ -296,8 +297,8 @@
 
     <section class="use-cases" id="use-cases" aria-labelledby="use-cases-heading">
       <div data-reveal>
-      <p class="eyebrow">Use cases</p>
-      <h2 id="use-cases-heading">Where each posture fits</h2>
+      <p class="eyebrow">Use Cases</p>
+      <h2 id="use-cases-heading">Where Each Posture Fits</h2>
       <p class="muted section-intro">
         The right posture is almost always a business question — "what
         does an hour of downtime cost us?" — before it's a technical one.
@@ -352,7 +353,7 @@
     <section class="pricing" id="pricing" aria-labelledby="pricing-heading">
       <div data-reveal>
       <p class="eyebrow">Pricing</p>
-      <h2 id="pricing-heading">What each posture actually costs</h2>
+      <h2 id="pricing-heading">What Each Posture Actually Costs</h2>
       <p class="muted section-intro">
         Unlike this portfolio's live projects, DR cost isn't driven by
         traffic volume — it's driven by how much you keep running in the
@@ -406,8 +407,8 @@
 
     <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
       <div data-reveal>
-        <p class="eyebrow">Design decisions</p>
-        <h2 id="decisions-heading">Why I built it this way</h2>
+        <p class="eyebrow">Design Decisions</p>
+        <h2 id="decisions-heading">Why I Built It This Way</h2>
         <p class="muted section-intro">
           A few choices here aren't the only way to build this — here's the
           reasoning behind them.
@@ -461,6 +462,20 @@
           </p>
         </div>
       </div>
+    </section>
+
+    <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
+      <div data-reveal>
+        <p class="eyebrow">Architecture Diagram</p>
+        <h2 id="architecture-diagram-heading">Full Architecture Diagram</h2>
+        <p class="muted section-intro">
+          The complete AWS architecture diagram for this project, built with draw.io. Click it to expand full screen.
+        </p>
+      </div>
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the Multi-Region Disaster Recovery architecture diagram to full screen">
+        <img src="architecture.png" alt="Multi-Region Disaster Recovery AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+        <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
+      </button>
     </section>
   </main>
 
@@ -523,11 +538,11 @@
         <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
         <details class="mobile-sidebar-subgroup" open>
           <summary class="mobile-sidebar-group-label">Multi-Region Disaster Recovery</summary>
-          <a class="mobile-sidebar-sublink" href="#demo">Try it</a>
-          <a class="mobile-sidebar-sublink" href="#how-it-works">How it works</a>
-          <a class="mobile-sidebar-sublink" href="#use-cases">Use cases</a>
+          <a class="mobile-sidebar-sublink" href="#demo">Try It</a>
+          <a class="mobile-sidebar-sublink" href="#how-it-works">How It Works</a>
+          <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
-          <a class="mobile-sidebar-sublink" href="#design-decisions">Design decisions</a>
+          <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
         <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
@@ -536,16 +551,21 @@
         <a class="mobile-sidebar-sublink" href="/project/vpc/index.html">VPC Network Design</a>
         <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
         <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
-        <a class="mobile-sidebar-sublink" href="/#projects">View all projects</a>
+        <a class="mobile-sidebar-sublink" href="/#projects">View All Projects</a>
         </div>
       </details>
       <a class="mobile-sidebar-link" href="/#about">About</a>
       <button type="button" class="theme-toggle mobile-sidebar-link mobile-sidebar-theme-toggle" id="theme-toggle-sidebar-panel" aria-pressed="false" aria-label="Toggle dark mode">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        <span>Dark mode</span>
+        <span>Dark Mode</span>
       </button>
     </nav>
+  </div>
+
+  <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
+    <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
+    <img src="architecture.png" alt="Multi-Region Disaster Recovery AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
   </div>
 
   <script src="script.js"></script>

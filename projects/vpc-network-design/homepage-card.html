@@ -3,13 +3,27 @@
             <div class="project-thumb thumb-arch" aria-hidden="true">
               <svg viewBox="0 0 320 200" class="icon-scene vpc-thumb-scene" aria-hidden="true">
                 <rect x="50" y="55" width="220" height="110" rx="14" class="vpc-thumb-outer" />
-                <rect x="70" y="72" width="70" height="34" rx="8" class="vpc-thumb-box vpc-thumb-box-1" />
-                <rect x="70" y="118" width="70" height="34" rx="8" class="vpc-thumb-box vpc-thumb-box-2" />
-                <rect x="180" y="95" width="70" height="34" rx="8" class="vpc-thumb-box vpc-thumb-box-3" />
+
+                <g class="vpc-thumb-mesh">
+                  <line x1="101" y1="85" x2="149" y2="85" />
+                  <line x1="171" y1="85" x2="219" y2="85" />
+                  <line x1="101" y1="135" x2="149" y2="135" />
+                  <line x1="171" y1="135" x2="219" y2="135" />
+                  <line x1="90" y1="94.5" x2="90" y2="125.5" />
+                  <line x1="160" y1="94.5" x2="160" y2="125.5" />
+                  <line x1="230" y1="94.5" x2="230" y2="125.5" />
+                </g>
+
+                <path d="M101,85 L95.5,75.5 L84.5,75.5 L79,85 L84.5,94.5 L95.5,94.5 Z" class="vpc-thumb-node vpc-thumb-node-1" />
+                <path d="M171,85 L165.5,75.5 L154.5,75.5 L149,85 L154.5,94.5 L165.5,94.5 Z" class="vpc-thumb-node vpc-thumb-node-2" />
+                <path d="M241,85 L235.5,75.5 L224.5,75.5 L219,85 L224.5,94.5 L235.5,94.5 Z" class="vpc-thumb-node vpc-thumb-node-3" />
+                <path d="M101,135 L95.5,125.5 L84.5,125.5 L79,135 L84.5,144.5 L95.5,144.5 Z" class="vpc-thumb-node vpc-thumb-node-4" />
+                <path d="M171,135 L165.5,125.5 L154.5,125.5 L149,135 L154.5,144.5 L165.5,144.5 Z" class="vpc-thumb-node vpc-thumb-node-5" />
+                <path d="M241,135 L235.5,125.5 L224.5,125.5 L219,135 L224.5,144.5 L235.5,144.5 Z" class="vpc-thumb-node vpc-thumb-node-6" />
               </svg>
             </div>
             <div class="project-body">
-              <p class="project-meta"><span class="status-dot is-reference-dot" aria-hidden="true"></span>Reference build</p>
+              <p class="project-meta"><span class="status-dot is-reference-dot" aria-hidden="true"></span>Reference Build</p>
               <h3>VPC Network Design</h3>
               <p class="muted">
                 A multi-tier VPC — public, private, and isolated subnets

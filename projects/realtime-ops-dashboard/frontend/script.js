@@ -275,6 +275,183 @@ document.getElementById('year').textContent = new Date().getFullYear();
 })();
 
 // -----------------------------------------------------------------------
+// "How it works" diagram: same autoplay/click-to-jump behavior used on
+// the other project pages.
+// -----------------------------------------------------------------------
+(function () {
+  var diagram = document.getElementById('flow-diagram');
+  var stepsList = document.getElementById('flow-steps');
+  if (!diagram || !stepsList) return;
+
+  var STEP_MS = 2800;
+  var IDLE_RESUME_MS = 6000;
+  var TOTAL_STEPS = 4;
+  var nodes = Array.prototype.slice.call(diagram.querySelectorAll('.flow-node'));
+  var clickableNodes = nodes.filter(function (el) { return el.hasAttribute('data-step'); });
+  var connectors = Array.prototype.slice.call(diagram.querySelectorAll('.flow-connector'));
+  var stepItems = Array.prototype.slice.call(stepsList.querySelectorAll('.flow-step'));
+  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var currentStep = 0;
+  var timer = null;
+  var resumeTimer = null;
+
+  function setActiveStep(step) {
+    currentStep = step;
+
+    connectors.forEach(function (el) {
+      var n = Number(el.getAttribute('data-step'));
+      var active = n === step;
+      el.classList.toggle('is-done', n < step);
+      if (active) {
+        el.classList.remove('is-active');
+        void el.offsetWidth;
+        el.classList.add('is-active');
+      } else {
+        el.classList.remove('is-active');
+      }
+    });
+
+    nodes.forEach(function (el) {
+      var hasStep = el.hasAttribute('data-step');
+      var n = hasStep ? Number(el.getAttribute('data-step')) : 0;
+      el.classList.toggle('is-active', hasStep && n === step);
+      el.classList.toggle('is-done', hasStep ? n < step : step >= 1);
+    });
+
+    stepItems.forEach(function (el) {
+      var n = Number(el.getAttribute('data-step'));
+      el.classList.toggle('is-active', n === step);
+    });
+  }
+
+  function stopAutoplay() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }
+
+  function startAutoplay(fromStep) {
+    stopAutoplay();
+    if (resumeTimer) {
+      clearTimeout(resumeTimer);
+      resumeTimer = null;
+    }
+    if (prefersReducedMotion) {
+      setActiveStep(1);
+      return;
+    }
+    setActiveStep(fromStep || 1);
+    timer = setInterval(function () {
+      var next = currentStep >= TOTAL_STEPS ? 1 : currentStep + 1;
+      setActiveStep(next);
+    }, STEP_MS);
+  }
+
+  function goToStepManually(step) {
+    stopAutoplay();
+    setActiveStep(step);
+    if (resumeTimer) {
+      clearTimeout(resumeTimer);
+    }
+    if (!prefersReducedMotion) {
+      resumeTimer = setTimeout(function () {
+        startAutoplay(step >= TOTAL_STEPS ? 1 : step + 1);
+      }, IDLE_RESUME_MS);
+    }
+  }
+
+  clickableNodes.forEach(function (el) {
+    el.addEventListener('click', function () {
+      goToStepManually(Number(el.getAttribute('data-step')));
+    });
+    el.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        goToStepManually(Number(el.getAttribute('data-step')));
+      }
+    });
+  });
+
+  stepItems.forEach(function (el) {
+    el.addEventListener('click', function () {
+      goToStepManually(Number(el.getAttribute('data-step')));
+    });
+    el.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        goToStepManually(Number(el.getAttribute('data-step')));
+      }
+    });
+  });
+
+  if ('IntersectionObserver' in window) {
+    var started = false;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && !started) {
+          started = true;
+          startAutoplay();
+          io.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+    io.observe(diagram);
+  } else {
+    startAutoplay();
+  }
+
+  var sentinel = document.querySelector('.flow-diagram-sentinel');
+  if (sentinel && 'IntersectionObserver' in window) {
+    var stickyIo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        diagram.classList.toggle('is-stuck', !entry.isIntersecting);
+      });
+    }, { threshold: 0 });
+    stickyIo.observe(sentinel);
+  }
+})();
+
+// -----------------------------------------------------------------------
+// Architecture diagram lightbox: click the thumbnail (or press Enter/
+// Space on it) to expand the full diagram full-screen; Escape, the
+// backdrop, or the close button dismiss it. Same markup/behavior on
+// every project page.
+// -----------------------------------------------------------------------
+(function () {
+  var trigger = document.getElementById('arch-diagram-trigger');
+  var lightbox = document.getElementById('arch-diagram-lightbox');
+  var closeBtn = document.getElementById('arch-diagram-lightbox-close');
+  if (!trigger || !lightbox || !closeBtn) return;
+
+  function openLightbox() {
+    lightbox.classList.add('is-open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('diagram-lightbox-open');
+    closeBtn.focus();
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('is-open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('diagram-lightbox-open');
+    trigger.focus();
+  }
+
+  trigger.addEventListener('click', openLightbox);
+  closeBtn.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', function (event) {
+    if (event.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && lightbox.classList.contains('is-open')) {
+      closeLightbox();
+    }
+  });
+})();
+
+// -----------------------------------------------------------------------
 // Shared chrome behaviors, copied from the other project pages:
 // scroll-reveal, nav dropdown, sticky header shrink, back-to-top, mobile
 // menu, dark mode toggle.
