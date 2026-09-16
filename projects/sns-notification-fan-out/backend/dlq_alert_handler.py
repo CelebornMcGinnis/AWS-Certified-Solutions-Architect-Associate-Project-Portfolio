@@ -132,7 +132,7 @@ def lambda_handler(event, context):
             Source=SES_FROM_ADDRESS,
             Destination={"ToAddresses": [SES_TO_ADDRESS]},
             Message={
-                "Subject": {"Data": f"[Action needed] SNS fan-out ({STAGE}) DLQ message nearing expiry"},
+                "Subject": {"Data": f"SNS fan-out ({STAGE}) DLQ message nearing expiry"},
                 "Body": {
                     "Html": {"Data": _alert_email_html(STAGE, message_count, oldest_age_seconds, alarm_name, state_reason)},
                     "Text": {"Data": _alert_email_text(STAGE, message_count, oldest_age_seconds, alarm_name, state_reason)},
