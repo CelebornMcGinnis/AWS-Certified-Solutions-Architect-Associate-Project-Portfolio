@@ -1243,13 +1243,14 @@ footer {
 }
 
 .project-filter-reset {
-  align-self: center;
+  align-self: flex-end;
   padding: 0.55rem 1rem;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: none;
   color: var(--accent);
   font: inherit;
+  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
@@ -1391,9 +1392,12 @@ footer {
    just grow it in place rather than centering it — the translate
    below shifts it +88px in x exactly when it's at full scale, which
    lands its center at the frame's true midpoint (160). ----- */
-.fanout-thumb-scene .icon-node-bg {
-  fill: none;
-  stroke: none;
+.fanout-thumb-box {
+  fill: var(--accent);
+}
+
+.fanout-thumb-glyph-fill {
+  fill: #fff;
 }
 
 .fanout-thumb-line line {
@@ -1441,26 +1445,15 @@ footer {
   }
 }
 
-/* Real-icon thumbnails (Contact Form, Movie Poll) reuse the exact same
-   arch-node-1/2/3 + arch-line-1/2 timing/stagger as the placeholder
-   card above, just with a neutral card background instead of a solid
-   accent fill (the real AWS icons already carry their own brand
-   color), plus a soft glow to read as "lightly animated" rather than
-   a full step-by-step walkthrough. */
-.icon-node-bg {
-  fill: none;
-  stroke: none;
-}
-
-.thumb-icons image {
-  filter: drop-shadow(0 0 8px rgba(52, 84, 209, 0.35));
-}
-
 /* ----- Contact Form thumbnail: an envelope whose flap opens and stays
    open (revealing a lighter blue interior), with the four services it
    uses (S3, API Gateway, Lambda, SES) bursting outward from that single
    opening point to an evenly-spaced row above, then fading back toward
    center as the flap closes. ----- */
+.contact-thumb-box {
+  fill: var(--accent);
+}
+
 .envelope-body {
   fill: var(--accent);
 }
@@ -1990,27 +1983,63 @@ footer {
 .habits-thumb-flame {
   fill: var(--accent);
   transform-box: fill-box;
-  transform-origin: center;
-  animation: habitsFlameFlicker 2.2s ease-in-out infinite;
+  transform-origin: 50% 100%;
+  animation: habitsFlameFlicker 1.6s ease-in-out infinite;
 }
 
 @keyframes habitsFlameFlicker {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  30% { transform: scale(1.14) rotate(-4deg); opacity: 0.85; }
+  55% { transform: scale(0.94) rotate(3deg); opacity: 1; }
+  80% { transform: scale(1.1) rotate(-2deg); opacity: 0.9; }
 }
 
-/* Moderated Image Gallery: a small stack of photos, one still mid-scan
-   (Rekognition sweep), one already approved (shield-check), one
-   rejected (shield-x) -- the actual moderation outcomes, not a generic
-   camera-in-a-box. */
+/* Moderated Image Gallery: two different photos -- a mountain skyline
+   and a potted flower -- scanned by Rekognition at the same time, one
+   coming back approved (shield-check), the other rejected (shield-x).
+   Different subjects in each frame, not the same zigzag glyph rotated
+   twice, and the outcome badges fade in only once their scan finishes
+   rather than sitting on screen the whole time. */
 .gallery-thumb-photo rect {
   fill: var(--surface);
   stroke: var(--border);
   stroke-width: 2;
 }
 
-.gallery-thumb-landscape {
-  stroke: var(--muted);
+.gallery-thumb-sun {
+  fill: var(--accent);
+  opacity: 0.35;
+}
+
+.gallery-thumb-mountain-back {
+  fill: var(--border);
+}
+
+.gallery-thumb-mountain-front {
+  fill: var(--accent);
+  opacity: 0.85;
+}
+
+.gallery-thumb-art-stroke {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gallery-thumb-leaf {
+  fill: var(--accent);
+  opacity: 0.5;
+}
+
+.gallery-thumb-petal {
+  fill: var(--accent);
+  opacity: 0.75;
+}
+
+.gallery-thumb-flower-center {
+  fill: var(--accent);
 }
 
 .gallery-thumb-badge path:first-child {
@@ -2025,6 +2054,20 @@ footer {
   fill: var(--error-text);
 }
 
+.gallery-thumb-badge {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: galleryBadgeReveal 8s ease-in-out infinite;
+}
+
+@keyframes galleryBadgeReveal {
+  0%, 64% { opacity: 0; transform: scale(0.6); }
+  72% { opacity: 1; transform: scale(1.12); }
+  78%, 92% { opacity: 1; transform: scale(1); }
+  98%, 100% { opacity: 0; transform: scale(0.6); }
+}
+
 .gallery-scan-bar {
   fill: rgba(52, 84, 209, 0.28);
   transform-box: fill-box;
@@ -2035,8 +2078,8 @@ footer {
 @keyframes gallerySweep {
   0%, 24% { transform: translateY(0); opacity: 0; }
   30% { opacity: 0.9; }
-  62% { transform: translateY(70px); opacity: 0.9; }
-  70%, 100% { transform: translateY(70px); opacity: 0; }
+  62% { transform: translateY(120px); opacity: 0.9; }
+  70%, 100% { transform: translateY(120px); opacity: 0; }
 }
 
 /* Nova Lite Summarizer: a full page of text lines funnels down into a
@@ -2106,6 +2149,22 @@ footer {
   100% { opacity: 0.5; }
 }
 
+/* A dot traveling the funnel arrow itself -- the doc shrinking and the
+   summary glowing were both too subtle on their own to read as motion. */
+.nova-thumb-travel-dot {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  opacity: 0;
+  animation: novaDotTravel 8s ease-in-out infinite;
+}
+
+@keyframes novaDotTravel {
+  0%, 20% { transform: translateX(0); opacity: 0; }
+  28% { opacity: 1; }
+  48% { transform: translateX(60px); opacity: 1; }
+  56%, 100% { transform: translateX(60px); opacity: 0; }
+}
+
 /* Order Processing: three waypoints on a conveyor belt (placed ->
    charged -> shipped) with the order itself traveling the full belt as
    a dot, instead of a dot hopping between two gaps in a row of boxes. */
@@ -2120,7 +2179,7 @@ footer {
 }
 
 .order-ship-dot {
-  fill: #fff;
+  fill: var(--accent);
   filter: drop-shadow(0 0 4px var(--accent));
   opacity: 0;
   animation: orderShipTravel 8s ease-in-out infinite;
@@ -2258,9 +2317,11 @@ footer {
   .habits-thumb-day-active,
   .habits-thumb-flame,
   .gallery-scan-bar,
+  .gallery-thumb-badge,
   .nova-doc-lines,
   .nova-summary-lines,
   .summarizer-thumb-spark,
+  .nova-thumb-travel-dot,
   .order-ship-dot,
   .chat-typing-dot,
   .chatbot-thumb-spark,
@@ -2268,7 +2329,8 @@ footer {
     animation: none;
   }
 
-  .nova-summary-lines {
+  .nova-summary-lines,
+  .gallery-thumb-badge {
     opacity: 1;
   }
 
@@ -6720,10 +6782,14 @@ body.diagram-lightbox-open {
   }
 }
 
-/* Homepage-card thumbnail scene: a globe split into two regions, one
-   pinned active (checkmark) and one standby (paused), joined by a
-   failover arc with a traveling dot -- literally "multi-region",
-   rather than two plain circles with a connecting line. */
+/* Homepage-card thumbnail scene: a large globe split into two regions
+   telling the actual failover story end to end -- the left (primary)
+   region fails over (check -> X), a dotted route appears and traffic
+   travels it (accurately tracing the same quadratic curve the path is
+   drawn with, sampled at 10 points rather than the old 3-point
+   approximation that visibly drifted off the dashes), and the right
+   (standby) region comes up (clock -> check) -- rather than two static
+   pins that never change state. */
 .dr-thumb-globe {
   fill: var(--info-bg);
 }
@@ -6743,28 +6809,44 @@ body.diagram-lightbox-open {
 
 .dr-thumb-arc {
   stroke: var(--accent);
-  opacity: 0.4;
   stroke-width: 2;
   stroke-dasharray: 5 5;
+  opacity: 0;
+  animation: drArcAppear 6.8s ease-in-out infinite;
 }
 
-/* Approximates the M126,78 Q160,48 194,78 arc with a few translate
-   stops rather than CSS motion-path (offset-path/offset-distance),
-   which the rest of this site's thumb animations avoid for broader
-   browser support -- same technique as .opsdash-thumb-pulse-dot below. */
+@keyframes drArcAppear {
+  0%, 14% { opacity: 0; }
+  20%, 88% { opacity: 0.5; }
+  96%, 100% { opacity: 0; }
+}
+
+/* Traces M107.7,72.7 Q160,26.7 212.3,72.7 with 10 sampled points
+   (dx = W*t, dy = -2h*t*(1-t) for this symmetric quadratic) rather than
+   CSS motion-path, which the rest of this site's thumb animations avoid
+   for broader browser support -- same technique as
+   .opsdash-thumb-pulse-dot below. */
 .dr-thumb-arc-dot {
   fill: var(--accent);
   filter: drop-shadow(0 0 4px var(--accent));
   opacity: 0;
-  animation: drArcTravel 3.4s ease-in-out infinite;
+  animation: drArcTravel 6.8s ease-in-out infinite;
 }
 
 @keyframes drArcTravel {
-  0%, 8% { transform: translate(0, 0); opacity: 0; }
+  0%, 14% { transform: translate(0, 0); opacity: 0; }
   16% { opacity: 1; }
-  50% { transform: translate(34px, -28px); opacity: 1; }
-  84% { transform: translate(68px, 0); opacity: 1; }
-  92%, 100% { transform: translate(68px, 0); opacity: 0; }
+  22.8% { transform: translate(10.5px, -8.3px); }
+  29.6% { transform: translate(20.9px, -14.7px); }
+  36.4% { transform: translate(31.4px, -19.3px); }
+  43.2% { transform: translate(41.8px, -22.1px); }
+  50% { transform: translate(52.3px, -23px); }
+  56.8% { transform: translate(62.8px, -22.1px); }
+  63.6% { transform: translate(73.2px, -19.3px); }
+  70.4% { transform: translate(83.7px, -14.7px); }
+  77.2% { transform: translate(94.1px, -8.3px); }
+  84% { transform: translate(104.6px, 0); opacity: 1; }
+  92%, 100% { transform: translate(104.6px, 0); opacity: 0; }
 }
 
 .dr-thumb-pin circle {
@@ -6772,32 +6854,111 @@ body.diagram-lightbox-open {
   stroke-width: 2;
 }
 
-.dr-thumb-pin-active circle {
-  stroke: var(--accent);
-  animation: statusPulse 2.4s ease-in-out infinite;
+.dr-thumb-pin-left circle {
+  animation: drLeftPinColor 6.8s ease-in-out infinite;
 }
 
-.dr-thumb-pin-active .arch-glyph-stroke {
-  stroke: var(--accent);
+@keyframes drLeftPinColor {
+  0%, 14% { stroke: var(--success-text); }
+  22%, 100% { stroke: var(--error-text); }
 }
 
-.dr-thumb-pin-standby circle {
+.dr-thumb-check-left {
+  stroke: var(--success-text);
+  opacity: 1;
+  animation: drCheckLeftFade 6.8s ease-in-out infinite;
+}
+
+@keyframes drCheckLeftFade {
+  0%, 14% { opacity: 1; }
+  20%, 100% { opacity: 0; }
+}
+
+.dr-thumb-x-left {
+  stroke: var(--error-text);
+  opacity: 0;
+  animation: drXLeftFade 6.8s ease-in-out infinite;
+}
+
+@keyframes drXLeftFade {
+  0%, 14% { opacity: 0; }
+  20%, 100% { opacity: 1; }
+}
+
+.dr-thumb-pin-right circle {
+  animation: drRightPinColor 6.8s ease-in-out infinite;
+}
+
+@keyframes drRightPinColor {
+  0%, 84% { stroke: var(--muted); }
+  92%, 100% { stroke: var(--success-text); }
+}
+
+.dr-thumb-clock-right {
   stroke: var(--muted);
+  opacity: 1;
+  animation: drClockRightFade 6.8s ease-in-out infinite;
 }
 
-.dr-thumb-pin-standby .arch-glyph-stroke {
-  stroke: var(--muted);
+@keyframes drClockRightFade {
+  0%, 84% { opacity: 1; }
+  90%, 100% { opacity: 0; }
+}
+
+.dr-thumb-check-right {
+  stroke: var(--success-text);
+  opacity: 0;
+  animation: drCheckRightFade 6.8s ease-in-out infinite;
+}
+
+@keyframes drCheckRightFade {
+  0%, 84% { opacity: 0; }
+  90%, 100% { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .dr-thumb-arc,
   .dr-thumb-arc-dot,
-  .dr-thumb-pin-active circle {
+  .dr-thumb-pin-left circle,
+  .dr-thumb-pin-right circle,
+  .dr-thumb-check-left,
+  .dr-thumb-x-left,
+  .dr-thumb-clock-right,
+  .dr-thumb-check-right {
     animation: none;
+  }
+
+  .dr-thumb-arc {
+    opacity: 0.5;
   }
 
   .dr-thumb-arc-dot {
     opacity: 1;
-    transform: translate(68px, 0);
+    transform: translate(104.6px, 0);
+  }
+
+  .dr-thumb-pin-left circle {
+    stroke: var(--error-text);
+  }
+
+  .dr-thumb-check-left {
+    opacity: 0;
+  }
+
+  .dr-thumb-x-left {
+    opacity: 1;
+  }
+
+  .dr-thumb-pin-right circle {
+    stroke: var(--success-text);
+  }
+
+  .dr-thumb-clock-right {
+    opacity: 0;
+  }
+
+  .dr-thumb-check-right {
+    opacity: 1;
   }
 }
 
@@ -6949,19 +7110,36 @@ body.diagram-lightbox-open {
   stroke-width: 2;
 }
 
-/* The mid container is the one being swapped: it lifts on a crane
-   cable while it recolors, rather than just pulsing in place --
-   literally a container being craned in, not just a box blinking. */
-.containers-thumb-box-3 {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: containersBoxUpdate 3.6s ease-in-out infinite;
-}
+/* ECS rolling deployment: a highlight dot sweeps left to right along the
+   service's task row while each task flips from "old version" (outline)
+   to "new version" (filled + checked) as the dot reaches it, one at a
+   time. All five hold as "new" together, then the whole row rolls back
+   to "old" at once and the sweep restarts -- matching the card copy's
+   "rolling out new versions one task at a time," not five boxes each
+   blinking on their own independent clock. */
+.containers-thumb-flip-1 { animation: containersBoxFlip1 3.6s ease-in-out infinite; }
+.containers-thumb-flip-2 { animation: containersBoxFlip2 3.6s ease-in-out infinite; }
+.containers-thumb-flip-3 { animation: containersBoxFlip3 3.6s ease-in-out infinite; }
+.containers-thumb-flip-4 { animation: containersBoxFlip4 3.6s ease-in-out infinite; }
+.containers-thumb-flip-5 { animation: containersBoxFlip5 3.6s ease-in-out infinite; }
 
-@keyframes containersBoxUpdate {
-  0%, 60%, 100% { fill: var(--surface); stroke: var(--accent); transform: translateY(0); }
-  30% { fill: var(--accent); stroke: var(--accent); opacity: 0.6; transform: translateY(-10px); }
-}
+@keyframes containersBoxFlip1 { 0%, 4% { fill: var(--surface); stroke: var(--accent); } 8%, 92% { fill: var(--accent); stroke: var(--accent); } 98%, 100% { fill: var(--surface); stroke: var(--accent); } }
+@keyframes containersBoxFlip2 { 0%, 18% { fill: var(--surface); stroke: var(--accent); } 22%, 92% { fill: var(--accent); stroke: var(--accent); } 98%, 100% { fill: var(--surface); stroke: var(--accent); } }
+@keyframes containersBoxFlip3 { 0%, 32% { fill: var(--surface); stroke: var(--accent); } 36%, 92% { fill: var(--accent); stroke: var(--accent); } 98%, 100% { fill: var(--surface); stroke: var(--accent); } }
+@keyframes containersBoxFlip4 { 0%, 46% { fill: var(--surface); stroke: var(--accent); } 50%, 92% { fill: var(--accent); stroke: var(--accent); } 98%, 100% { fill: var(--surface); stroke: var(--accent); } }
+@keyframes containersBoxFlip5 { 0%, 60% { fill: var(--surface); stroke: var(--accent); } 64%, 92% { fill: var(--accent); stroke: var(--accent); } 98%, 100% { fill: var(--surface); stroke: var(--accent); } }
+
+.containers-thumb-check-1 { opacity: 0; animation: containersCheckFade1 3.6s ease-in-out infinite; }
+.containers-thumb-check-2 { opacity: 0; animation: containersCheckFade2 3.6s ease-in-out infinite; }
+.containers-thumb-check-3 { opacity: 0; animation: containersCheckFade3 3.6s ease-in-out infinite; }
+.containers-thumb-check-4 { opacity: 0; animation: containersCheckFade4 3.6s ease-in-out infinite; }
+.containers-thumb-check-5 { opacity: 0; animation: containersCheckFade5 3.6s ease-in-out infinite; }
+
+@keyframes containersCheckFade1 { 0%, 6% { opacity: 0; } 10%, 92% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes containersCheckFade2 { 0%, 20% { opacity: 0; } 24%, 92% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes containersCheckFade3 { 0%, 34% { opacity: 0; } 38%, 92% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes containersCheckFade4 { 0%, 48% { opacity: 0; } 52%, 92% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes containersCheckFade5 { 0%, 62% { opacity: 0; } 66%, 92% { opacity: 1; } 98%, 100% { opacity: 0; } }
 
 .containers-thumb-line {
   stroke: var(--border);
@@ -6970,22 +7148,22 @@ body.diagram-lightbox-open {
 
 .containers-thumb-dot {
   fill: var(--accent);
+  animation: containersDotSweep 3.6s ease-in-out infinite;
 }
 
-.containers-thumb-crane-arm {
-  stroke: var(--muted);
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.containers-thumb-crane-cable {
-  stroke: var(--muted);
-  stroke-width: 2;
-  stroke-dasharray: 3 3;
+@keyframes containersDotSweep {
+  0% { transform: translateX(0); opacity: 1; }
+  64% { transform: translateX(236px); opacity: 1; }
+  92% { transform: translateX(236px); opacity: 1; }
+  98% { transform: translateX(236px); opacity: 0; }
+  99% { transform: translateX(0); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .containers-thumb-box-3 {
+  .containers-thumb-flip-1, .containers-thumb-flip-2, .containers-thumb-flip-3, .containers-thumb-flip-4, .containers-thumb-flip-5,
+  .containers-thumb-check-1, .containers-thumb-check-2, .containers-thumb-check-3, .containers-thumb-check-4, .containers-thumb-check-5,
+  .containers-thumb-dot {
     animation: none;
   }
 }
@@ -7193,47 +7371,50 @@ body.diagram-lightbox-open {
   margin-top: 1rem;
 }
 
-.vpc-thumb-scene .vpc-thumb-outer {
-  fill: none;
+/* Two AZs, each a public/private/isolated tier stack -- fill opacity
+   increases tier by tier (lighter = more open to traffic, darker = more
+   locked down) and a dot flows top to bottom through each column,
+   standing in for the actual security-group-gated request path this
+   project lets you click through. */
+.vpc-thumb-tier {
+  stroke: var(--accent);
+  stroke-width: 2;
+  fill: var(--accent);
+}
+
+.vpc-thumb-tier-public { opacity: 0.18; }
+.vpc-thumb-tier-private { opacity: 0.4; }
+.vpc-thumb-tier-isolated { opacity: 0.65; }
+
+.vpc-thumb-link {
   stroke: var(--border);
   stroke-width: 2;
-  stroke-dasharray: 5 4;
+  stroke-dasharray: 3 3;
 }
 
-/* A small hex-node mesh inside the VPC boundary, standing in for the
-   subnet/route lattice this project actually lets you click through --
-   reads as "network design" in a way two nested rectangles didn't. */
-.vpc-thumb-mesh line {
-  stroke: var(--border);
-  stroke-width: 1.5;
+.vpc-thumb-flow-dot {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent));
+  opacity: 0;
+  animation: vpcFlowTravel 4s ease-in-out infinite;
 }
 
-.vpc-thumb-node {
-  fill: var(--info-bg);
-  stroke: var(--accent);
-  stroke-width: 1.5;
-  animation: vpcThumbPulse 3.2s ease-in-out infinite;
+.vpc-thumb-flow-dot-b {
+  animation-delay: 2s;
 }
 
-.vpc-thumb-node-2 { animation-delay: 0.2s; }
-.vpc-thumb-node-3 { animation-delay: 0.4s; }
-.vpc-thumb-node-4 { animation-delay: 0.6s; }
-.vpc-thumb-node-5 { animation-delay: 0.8s; }
-.vpc-thumb-node-6 { animation-delay: 1s; }
-
-@keyframes vpcThumbPulse {
-  0%, 100% {
-    stroke-opacity: 0.4;
-  }
-  50% {
-    stroke-opacity: 1;
-  }
+@keyframes vpcFlowTravel {
+  0%, 6% { transform: translateY(0); opacity: 0; }
+  14% { opacity: 1; }
+  50% { transform: translateY(48px); opacity: 1; }
+  86% { transform: translateY(96px); opacity: 1; }
+  94%, 100% { transform: translateY(96px); opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .vpc-thumb-node {
+  .vpc-thumb-flow-dot {
     animation: none;
-    stroke-opacity: 1;
+    opacity: 0;
   }
 }
 
@@ -7369,11 +7550,22 @@ body.diagram-lightbox-open {
 @keyframes opsdashPulseTravel {
   0%, 4% { transform: translate(0, 0); opacity: 0; }
   10% { opacity: 1; }
-  20% { transform: translate(80px, 0); }
-  27% { transform: translate(95px, -30px); }
-  34% { transform: translate(110px, 30px); }
-  41% { transform: translate(125px, -15px); }
-  48% { transform: translate(140px, 0); }
+  20% { transform: translate(0, 0); }
+  24.25% { transform: translate(25px, 0); }
+  28.5% { transform: translate(40px, -20px); }
+  32.75% { transform: translate(55px, 15px); }
+  37% { transform: translate(70px, -5px); }
+  41.25% { transform: translate(85px, -40px); }
+  45.5% { transform: translate(100px, 20px); }
+  49.75% { transform: translate(115px, -10px); }
+  54% { transform: translate(130px, 5px); }
+  58.25% { transform: translate(145px, -25px); }
+  62.5% { transform: translate(160px, 10px); }
+  66.75% { transform: translate(175px, -10px); }
+  71% { transform: translate(190px, 25px); }
+  75.25% { transform: translate(205px, -15px); }
+  79.5% { transform: translate(220px, 0); }
+  83.75% { transform: translate(235px, 0); }
   88% { transform: translate(260px, 0); opacity: 1; }
   96%, 100% { transform: translate(260px, 0); opacity: 0; }
 }

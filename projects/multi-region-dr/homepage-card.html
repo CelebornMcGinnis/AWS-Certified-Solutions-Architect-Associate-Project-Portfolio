@@ -2,26 +2,33 @@
           <a class="project-link" href="/project/dr/index.html" aria-label="View the Multi-Region Disaster Recovery project">
             <div class="project-thumb thumb-arch" aria-hidden="true">
               <svg viewBox="0 0 320 200" class="icon-scene dr-thumb-scene" aria-hidden="true">
-                <clipPath id="dr-globe-clip"><circle cx="160" cy="112" r="52" /></clipPath>
+                <!-- A much larger globe (cropped by the card, which is fine)
+                     with a full failover story instead of two static pins:
+                     the primary region fails (check -> X), a dotted route
+                     appears and traffic travels it, and the standby region
+                     comes up (clock -> check). -->
+                <clipPath id="dr-globe-clip"><circle cx="160" cy="125" r="80" /></clipPath>
                 <g clip-path="url(#dr-globe-clip)">
-                  <circle cx="160" cy="112" r="52" class="dr-thumb-globe" />
-                  <ellipse cx="160" cy="112" rx="22" ry="52" class="dr-thumb-meridian" />
-                  <ellipse cx="160" cy="112" rx="52" ry="22" class="dr-thumb-meridian" />
-                  <line x1="108" y1="112" x2="212" y2="112" class="dr-thumb-meridian" />
-                  <line x1="160" y1="60" x2="160" y2="164" class="dr-thumb-split" />
+                  <circle cx="160" cy="125" r="80" class="dr-thumb-globe" />
+                  <ellipse cx="160" cy="125" rx="34" ry="80" class="dr-thumb-meridian" />
+                  <ellipse cx="160" cy="125" rx="80" ry="34" class="dr-thumb-meridian" />
+                  <line x1="80" y1="125" x2="240" y2="125" class="dr-thumb-meridian" />
+                  <line x1="160" y1="45" x2="160" y2="205" class="dr-thumb-split" />
                 </g>
-                <circle cx="160" cy="112" r="52" class="dr-thumb-globe-outline" />
+                <circle cx="160" cy="125" r="80" class="dr-thumb-globe-outline" />
 
-                <path d="M126 78q34-30 68 0" class="dr-thumb-arc" fill="none" />
-                <circle class="dr-thumb-arc-dot" cx="126" cy="78" r="3.5" />
+                <path d="M107.7 72.7Q160 26.7 212.3 72.7" class="dr-thumb-arc" fill="none" />
+                <circle class="dr-thumb-arc-dot" cx="107.7" cy="72.7" r="4" />
 
-                <g class="dr-thumb-pin dr-thumb-pin-active">
-                  <circle cx="126" cy="78" r="13" />
-                  <path d="M121 78l3.5 3.5 7-7" class="arch-glyph-stroke" fill="none" />
+                <g class="dr-thumb-pin dr-thumb-pin-left">
+                  <circle cx="107.7" cy="72.7" r="16" />
+                  <path d="M101.7 72.7l4.3 4.3 8.6-8.6" class="arch-glyph-stroke dr-thumb-check-left" fill="none" />
+                  <path d="M101.7 66.7l12 12M113.7 66.7l-12 12" class="arch-glyph-stroke dr-thumb-x-left" fill="none" />
                 </g>
-                <g class="dr-thumb-pin dr-thumb-pin-standby">
-                  <circle cx="194" cy="78" r="13" />
-                  <path d="M194 71v7l5 3" class="arch-glyph-stroke" fill="none" />
+                <g class="dr-thumb-pin dr-thumb-pin-right">
+                  <circle cx="212.3" cy="72.7" r="16" />
+                  <path d="M212.3 63.7v9l6 3.5" class="arch-glyph-stroke dr-thumb-clock-right" fill="none" />
+                  <path d="M206.3 72.7l4.3 4.3 8.6-8.6" class="arch-glyph-stroke dr-thumb-check-right" fill="none" />
                 </g>
               </svg>
             </div>

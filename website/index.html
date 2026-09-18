@@ -206,18 +206,22 @@
                 </g>
 
                 <g class="fanout-thumb-hub">
-                  <rect x="47" y="75" width="50" height="50" rx="12" class="icon-node-bg" />
-                  <image href="/assets/aws-icons/sns.png" x="57" y="85" width="30" height="30" />
+                  <rect x="47" y="75" width="50" height="50" rx="12" class="fanout-thumb-box" />
+                  <circle cx="64" cy="100" r="2.5" class="fanout-thumb-glyph-fill" />
+                  <path d="M71 92a11 11 0 010 16" class="arch-glyph-stroke" fill="none" />
+                  <path d="M79 84a22 22 0 010 32" class="arch-glyph-stroke" fill="none" />
                 </g>
 
                 <g class="fanout-thumb-node fanout-thumb-node-1">
-                  <rect x="198" y="33" width="50" height="50" rx="12" class="icon-node-bg" />
-                  <image href="/assets/aws-icons/lambda.png" x="208" y="43" width="30" height="30" />
+                  <rect x="198" y="33" width="50" height="50" rx="12" class="fanout-thumb-box" />
+                  <path d="M228 43l-9 15h7l-4 12 12-16h-7z" class="arch-glyph-stroke" fill="none" />
                 </g>
 
                 <g class="fanout-thumb-node fanout-thumb-node-2">
-                  <rect x="198" y="117" width="50" height="50" rx="12" class="icon-node-bg" />
-                  <image href="/assets/aws-icons/sqs.png" x="208" y="127" width="30" height="30" />
+                  <rect x="198" y="117" width="50" height="50" rx="12" class="fanout-thumb-box" />
+                  <rect x="211" y="132" width="24" height="6" rx="2" class="fanout-thumb-glyph-fill" />
+                  <rect x="211" y="140" width="24" height="6" rx="2" class="fanout-thumb-glyph-fill" />
+                  <rect x="211" y="148" width="24" height="6" rx="2" class="fanout-thumb-glyph-fill" />
                 </g>
               </svg>
             </div>
@@ -272,20 +276,21 @@
             <div class="project-thumb thumb-envelope" aria-hidden="true">
               <svg viewBox="0 0 320 200" class="icon-scene envelope-scene" aria-hidden="true">
                 <g class="envelope-node envelope-node-1">
-                  <rect x="22" y="45" width="42" height="42" rx="10" class="icon-node-bg" />
-                  <image href="/assets/aws-icons/s3.png" x="28" y="51" width="30" height="30" />
+                  <rect x="22" y="45" width="42" height="42" rx="10" class="contact-thumb-box" />
+                  <path d="M34 59h18l-2 15a2 2 0 01-2 2h-10a2 2 0 01-2-2z" class="arch-glyph-stroke" fill="none" />
+                  <path d="M35 59l1-3h14l1 3" class="arch-glyph-stroke" fill="none" />
                 </g>
                 <g class="envelope-node envelope-node-2">
-                  <rect x="100" y="45" width="42" height="42" rx="10" class="icon-node-bg" />
-                  <image href="/assets/aws-icons/apigateway.png" x="106" y="51" width="30" height="30" />
+                  <rect x="100" y="45" width="42" height="42" rx="10" class="contact-thumb-box" />
+                  <path d="M112 66h14M120 59l7 7-7 7" class="arch-glyph-stroke" fill="none" />
                 </g>
                 <g class="envelope-node envelope-node-3">
-                  <rect x="178" y="45" width="42" height="42" rx="10" class="icon-node-bg" />
-                  <image href="/assets/aws-icons/lambda.png" x="184" y="51" width="30" height="30" />
+                  <rect x="178" y="45" width="42" height="42" rx="10" class="contact-thumb-box" />
+                  <path d="M204 51l-9 15h7l-4 12 12-16h-7z" class="arch-glyph-stroke" fill="none" />
                 </g>
                 <g class="envelope-node envelope-node-4">
-                  <rect x="256" y="45" width="42" height="42" rx="10" class="icon-node-bg" />
-                  <image href="/assets/aws-icons/ses.png" x="262" y="51" width="30" height="30" />
+                  <rect x="256" y="45" width="42" height="42" rx="10" class="contact-thumb-box" />
+                  <path d="M268 58l20 8-20 8 5-8z" class="arch-glyph-stroke" fill="none" />
                 </g>
 
                 <rect x="110" y="140" width="100" height="46" rx="5" class="envelope-body" />
@@ -689,8 +694,8 @@
     // a comma-separated list per card) and by deployment status (the
     // is-live/is-reference class each card already carries for its status
     // dot). .project-card-placeholder ("Next project — in progress") has
-    // neither and always stays visible, since it isn't a real project to
-    // filter against.
+    // neither, so it can't match any specific filter — it only stays
+    // visible while both filters are at "all".
     (function () {
       var serviceSelect = document.getElementById('project-filter-service');
       var statusSelect = document.getElementById('project-filter-status');
@@ -698,12 +703,16 @@
 
       var resetBtn = document.getElementById('project-filter-reset');
       var emptyMsg = document.getElementById('project-filter-empty');
+      var placeholder = document.querySelector('.project-card-placeholder');
       var cards = document.querySelectorAll('.project-card:not(.project-card-placeholder)');
 
       function applyFilters() {
         var service = serviceSelect.value;
         var status = statusSelect.value;
+        var filtersActive = service !== 'all' || status !== 'all';
         var visibleCount = 0;
+
+        if (placeholder) placeholder.hidden = filtersActive;
 
         cards.forEach(function (card) {
           var services = (card.dataset.services || '').split(',');
@@ -717,7 +726,7 @@
           if (visible) visibleCount += 1;
         });
 
-        if (resetBtn) resetBtn.hidden = service === 'all' && status === 'all';
+        if (resetBtn) resetBtn.hidden = !filtersActive;
         if (emptyMsg) emptyMsg.hidden = visibleCount > 0;
       }
 
