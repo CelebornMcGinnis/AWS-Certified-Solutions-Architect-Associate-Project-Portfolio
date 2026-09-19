@@ -64,53 +64,48 @@ export class WebsiteStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
-    // Every project's frontend calls its own project's API Gateway endpoint
-    // directly (execute-api.<region>.amazonaws.com -- see website-content.ts's
-    // buildConfigJsSources()), Movie Poll additionally opens a WebSocket API
-    // Gateway connection, and Moderated Image Gallery/Website Chatbot call
-    // Cognito's IDP API directly (USER_PASSWORD_AUTH, no Hosted UI redirect
-    // domain involved) -- connect-src has to cover all three. Every page also
-    // has inline <script> blocks (theme toggle, scroll-reveal, filters, etc.)
-    // with no build-time nonce/hash mechanism to scope them tighter, so
-    // script-src needs 'unsafe-inline' -- everything else here (style-src,
-    // img-src, font-src, connect-src) is scoped exactly to what the site
-    // actually loads, confirmed by grepping every project's frontend, not
-    // guessed.
-    const responseHeadersPolicy = new cloudfront.ResponseHeadersPolicy(this, 'SecurityHeadersPolicy', {
-      responseHeadersPolicyName: `${props.bucketName}-security-headers`,
-      comment: `Security headers for ${props.domainName}`,
-      securityHeadersBehavior: {
-        strictTransportSecurity: {
-          accessControlMaxAge: cdk.Duration.days(365),
-          includeSubdomains: true,
-          preload: true,
-          override: true,
-        },
-        contentTypeOptions: { override: true },
-        frameOptions: { frameOption: cloudfront.HeadersFrameOption.DENY, override: true },
-        referrerPolicy: {
-          referrerPolicy: cloudfront.HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
-          override: true,
-        },
-        contentSecurityPolicy: {
-          contentSecurityPolicy: [
-            "default-src 'self'",
-            "script-src 'self' 'unsafe-inline'",
-            "style-src 'self'",
-            "img-src 'self' data:",
-            "font-src 'self'",
-            "connect-src 'self' https://*.execute-api.us-east-1.amazonaws.com wss://*.execute-api.us-east-1.amazonaws.com https://cognito-idp.us-east-1.amazonaws.com",
-            "object-src 'none'",
-            "base-uri 'self'",
-            "form-action 'self'",
-            "frame-ancestors 'none'",
-          ].join('; '),
-          override: true,
-        },
+    // A CloudFront Function rather than a ResponseHeadersPolicy: both
+    // prod and beta's distributions turned out to already be subscribed to
+    // CloudFront's Free flat-rate pricing plan (bundles WAF + Route 53 DNS +
+    // a free TLS cert -- see props.webAclId), and that plan tier explicitly
+    // does not support a *custom* response headers policy (only Business/
+    // Premium do; deploying one fails with "Distributions with the Free
+    // pricing plan can't have the following features: Custom response
+    // headers policy"). CloudFront Functions, unlike that feature, are
+    // included on every tier including Free, and a viewer-response function
+    // can set arbitrary headers itself -- same end result, no plan upgrade
+    // needed. Every project's frontend calls its own project's API Gateway
+    // endpoint directly (execute-api.<region>.amazonaws.com -- see website-
+    // content.ts's buildConfigJsSources()), Movie Poll additionally opens a
+    // WebSocket API Gateway connection, and Moderated Image Gallery/Website
+    // Chatbot call Cognito's IDP API directly (USER_PASSWORD_AUTH, no Hosted
+    // UI redirect domain involved) -- connect-src has to cover all three.
+    // Every page also has inline <script> blocks (theme toggle, scroll-
+    // reveal, filters, etc.) with no build-time nonce/hash mechanism to
+    // scope them tighter, so script-src needs 'unsafe-inline' -- everything
+    // else here (style-src, img-src, font-src, connect-src) is scoped
+    // exactly to what the site actually loads, confirmed by grepping every
+    // project's frontend, not guessed.
+    const securityHeadersFunction = new cloudfront.CfnFunction(this, 'SecurityHeadersFunction', {
+      name: `mcginnisarchitecture-${props.stage}-security-headers`,
+      autoPublish: true,
+      functionConfig: {
+        comment: `Security response headers for ${props.domainName}`,
+        runtime: 'cloudfront-js-2.0',
       },
-      customHeadersBehavior: {
-        customHeaders: [{ header: 'Permissions-Policy', value: 'geolocation=(), camera=(), microphone=()', override: true }],
-      },
+      functionCode: `
+function handler(event) {
+    var response = event.response;
+    var headers = response.headers;
+    headers['strict-transport-security'] = { value: 'max-age=63072000; includeSubDomains; preload' };
+    headers['x-content-type-options'] = { value: 'nosniff' };
+    headers['x-frame-options'] = { value: 'DENY' };
+    headers['referrer-policy'] = { value: 'strict-origin-when-cross-origin' };
+    headers['permissions-policy'] = { value: 'geolocation=(), camera=(), microphone=()' };
+    headers['content-security-policy'] = { value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.execute-api.us-east-1.amazonaws.com wss://*.execute-api.us-east-1.amazonaws.com https://cognito-idp.us-east-1.amazonaws.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" };
+    return response;
+}
+`,
     });
 
     const oac = new cloudfront.CfnOriginAccessControl(this, 'OriginAccessControl', {
@@ -149,7 +144,7 @@ export class WebsiteStack extends cdk.Stack {
           compress: true,
           // Managed-CachingOptimized
           cachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6',
-          responseHeadersPolicyId: responseHeadersPolicy.responseHeadersPolicyId,
+          functionAssociations: [{ eventType: 'viewer-response', functionArn: securityHeadersFunction.attrFunctionArn }],
         },
         customErrorResponses: props.customErrorResponses,
         webAclId: props.webAclId,
@@ -251,8 +246,10 @@ function handler(event) {
             cachedMethods: ['GET', 'HEAD'],
             compress: true,
             cachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6', // Managed-CachingOptimized
-            responseHeadersPolicyId: responseHeadersPolicy.responseHeadersPolicyId,
-            functionAssociations: [{ eventType: 'viewer-request', functionArn: wwwRedirectFunction.attrFunctionArn }],
+            functionAssociations: [
+              { eventType: 'viewer-request', functionArn: wwwRedirectFunction.attrFunctionArn },
+              { eventType: 'viewer-response', functionArn: securityHeadersFunction.attrFunctionArn },
+            ],
           },
           viewerCertificate: {
             acmCertificateArn: wwwRedirect.certificateArn,
