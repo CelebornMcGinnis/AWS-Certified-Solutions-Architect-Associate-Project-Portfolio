@@ -175,7 +175,11 @@ const websiteBeta = new WebsiteStack(app, 'portfolio-website-beta', {
   ],
   createAaaaRecord: true,
   manageContent,
-  webAclId: 'arn:aws:wafv2:us-east-1:942960194803:global/webacl/CreatedByCloudFront-17dac3ad/83d6d067-3c62-45f4-9b93-d097179721cd',
+  // No WAF on beta -- its CloudFront Free flat-rate plan (which required a
+  // WAF Web ACL attached) was cancelled to free up the account's 3-plan
+  // limit for another project, and beta doesn't need standalone WAF billing
+  // for a low-traffic, freely-destroyable test environment. Prod keeps its
+  // WAF (see webAclId above) since it's still on its own Free plan.
   apiEndpoints: betaApiEndpoints,
   extraConfigReplacements: betaExtraConfigReplacements,
 });
