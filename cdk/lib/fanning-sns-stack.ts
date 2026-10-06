@@ -387,6 +387,8 @@ export class FanningSnsStack extends cdk.Stack {
     // getting the app-level Project/Stage tags.
     cdk.Tags.of(notifyApi).remove('Project');
     cdk.Tags.of(notifyApi).remove('Stage');
+    cdk.Tags.of(notifyApi).remove('AIUserEnabled');
+    cdk.Tags.of(notifyApi).remove('ProjectScope');
 
     new apigatewayv2.CfnStage(this, 'NotifyApiApiGatewayDefaultStage', {
       defaultRouteSettings: { throttlingRateLimit: 5, throttlingBurstLimit: 10 },
