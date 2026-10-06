@@ -65,3 +65,7 @@ Desktop nav is a plain `<nav>`, entirely hidden below 760px in favor of a separa
 ## Domain, DNS, and email are not managed by this CDK app
 
 `HostedZone.fromHostedZoneAttributes(...)` (in `website-stack.ts` and `multi-region-dr-stack.ts`) **imports** the existing `mcginnisarchitecture.com` hosted zone rather than creating it. The zone's other records (SES domain/DKIM verification, the `no-reply.mcginnisarchitecture.com` custom MAIL FROM domain's MX/SPF, `_dmarc` policy) were set up by hand via the AWS console/CLI and aren't tracked anywhere in this repo. `SES_FROM_ADDRESS`/`SES_TO_ADDRESS` (`cdk/lib/config.ts`) are the only email-related values CDK actually owns — everything else about deliverability has to be checked directly against the live AWS account (`aws ses get-identity-*`, `aws route53 list-resource-record-sets`), not by reading this codebase.
+
+## AI access tagging
+
+All resources are tagged `AIUserEnabled=true` and `ProjectScope=mcginnisarchitecture` via `cdk/bin/portfolio.ts` (`cdk.Tags.of(app)`). These scope the shared `mcginnisarchitecture` IAM role (assumable by `codex_user` and `claude_user`) to this project's resources. New resources, stacks and deploy scripts must carry both tags; see the global `~/.claude/CLAUDE.md` for the full convention.

@@ -22,6 +22,8 @@ const app = new cdk.App();
 // (or just eyeballing the console) reliably answer "what belongs to this
 // portfolio" without relying on naming conventions alone.
 cdk.Tags.of(app).add('Project', 'mcginnisarchitecture-portfolio');
+cdk.Tags.of(app).add('AIUserEnabled', 'true');
+cdk.Tags.of(app).add('ProjectScope', 'mcginnisarchitecture');
 
 // Both website stacks' existing S3/CloudFront resources are now imported,
 // so content publishing (BucketDeployment) and the Route53 alias record(s)
