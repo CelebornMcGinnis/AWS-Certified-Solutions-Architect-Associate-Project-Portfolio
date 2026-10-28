@@ -98,6 +98,28 @@ jobs:
         if: github.event.inputs.action != 'destroy' && contains(steps.stacks.outputs.list, 'portfolio-website-beta')
         run: node scripts/smoke-test.mjs https://betaweb.mcginnisarchitecture.com beta .website-dist-beta
 
+      # Warn-only: scores never fail the deploy. Reports are kept as a
+      # downloadable run artifact for 30 days (no third-party storage).
+      - name: Lighthouse (warn only)
+        if: github.event.inputs.action != 'destroy' && contains(steps.stacks.outputs.list, 'portfolio-website-beta')
+        continue-on-error: true
+        run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.beta.json
+
+      - name: Lighthouse summary
+        if: always() && github.event.inputs.action != 'destroy' && contains(steps.stacks.outputs.list, 'portfolio-website-beta')
+        continue-on-error: true
+        run: node scripts/lighthouse-summary.mjs .lighthouseci >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Lighthouse reports
+        if: always() && github.event.inputs.action != 'destroy' && contains(steps.stacks.outputs.list, 'portfolio-website-beta')
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-beta
+          path: cdk/.lighthouseci
+          retention-days: 30
+          if-no-files-found: ignore
+
       - name: cdk destroy
         if: github.event.inputs.action == 'destroy'
         run: npx cdk destroy --force ${{ steps.stacks.outputs.list }}

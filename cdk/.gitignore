@@ -9,3 +9,6 @@ cdk.out
 
 # Website content staged for BucketDeployment (rebuilt from website/ + projects/*/frontend/ at synth time)
 .website-dist-*
+
+# Lighthouse CI reports (local runs; CI uploads them as a workflow artifact)
+.lighthouseci
