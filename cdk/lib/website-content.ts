@@ -75,21 +75,22 @@ const PROJECTS: ProjectMapping[] = [
   },
   {
     // Reference-only: no key, no config.js, no CDK stack instantiated in
-    // bin/portfolio.ts. Ships to beta only -- see cdk/lib/container-
-    // orchestration-stack.ts's header comment for why.
+    // bin/portfolio.ts. Ships to beta and prod -- nothing is deployed, so
+    // there's no cost to showing it; see cdk/lib/container-
+    // orchestration-stack.ts's header comment for why it isn't deployed.
     frontendDir: 'projects/container-orchestration/frontend',
     destPrefix: 'project/containers',
-    stages: ['beta'],
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/container-orchestration/homepage-card.html',
     navLinkHtml: '<a href="/project/containers/index.html">Container Orchestration</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/containers/index.html">Container Orchestration</a>',
   },
   {
-    // Reference-only, beta only -- see the note on Container Orchestration
-    // above.
+    // Reference-only, shipped to beta and prod -- see the note on
+    // Container Orchestration above.
     frontendDir: 'projects/data-lake-analytics/frontend',
     destPrefix: 'project/datalake',
-    stages: ['beta'],
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/data-lake-analytics/homepage-card.html',
     navLinkHtml: '<a href="/project/datalake/index.html">Data Lake &amp; Analytics</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/datalake/index.html">Data Lake &amp; Analytics</a>',
@@ -138,11 +139,11 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>',
   },
   {
-    // Reference-only, beta only -- see the note on Container Orchestration
-    // above.
+    // Reference-only, shipped to beta and prod -- see the note on
+    // Container Orchestration above.
     frontendDir: 'projects/multi-region-dr/frontend',
     destPrefix: 'project/dr',
-    stages: ['beta'],
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/multi-region-dr/homepage-card.html',
     navLinkHtml: '<a href="/project/dr/index.html">Multi-Region Disaster Recovery</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/dr/index.html">Multi-Region Disaster Recovery</a>',
@@ -170,11 +171,11 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>',
   },
   {
-    // Reference-only, beta only -- see the note on Container Orchestration
-    // above.
+    // Reference-only, shipped to beta and prod -- see the note on
+    // Container Orchestration above.
     frontendDir: 'projects/realtime-ops-dashboard/frontend',
     destPrefix: 'project/opsdash',
-    stages: ['beta'],
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/realtime-ops-dashboard/homepage-card.html',
     navLinkHtml: '<a href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>',
@@ -189,11 +190,11 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>',
   },
   {
-    // Reference-only, beta only -- see the note on Container Orchestration
-    // above.
+    // Reference-only, shipped to beta and prod -- see the note on
+    // Container Orchestration above.
     frontendDir: 'projects/vpc-network-design/frontend',
     destPrefix: 'project/vpc',
-    stages: ['beta'],
+    stages: ['beta', 'prod'],
     homepageCardFile: 'projects/vpc-network-design/homepage-card.html',
     navLinkHtml: '<a href="/project/vpc/index.html">VPC Network Design</a>',
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/vpc/index.html">VPC Network Design</a>',
