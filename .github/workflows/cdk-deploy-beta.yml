@@ -81,9 +81,22 @@ jobs:
             echo "list=$REQUESTED" >> "$GITHUB_OUTPUT"
           fi
 
+      # Builds the staged site and checks it offline (broken links, missing
+      # assets, CSP-forbidden inline script/style, basic accessibility)
+      # before anything is deployed.
+      - name: Check staged site
+        if: github.event.inputs.action != 'destroy' && contains(steps.stacks.outputs.list, 'portfolio-website-beta')
+        run: |
+          npx cdk synth portfolio-website-beta --quiet
+          node scripts/check-dist.mjs .website-dist-beta
+
       - name: cdk deploy
         if: github.event.inputs.action != 'destroy'
         run: npx cdk deploy --require-approval never ${{ steps.stacks.outputs.list }}
+
+      - name: Smoke test live site
+        if: github.event.inputs.action != 'destroy' && contains(steps.stacks.outputs.list, 'portfolio-website-beta')
+        run: node scripts/smoke-test.mjs https://betaweb.mcginnisarchitecture.com beta .website-dist-beta
 
       - name: cdk destroy
         if: github.event.inputs.action == 'destroy'

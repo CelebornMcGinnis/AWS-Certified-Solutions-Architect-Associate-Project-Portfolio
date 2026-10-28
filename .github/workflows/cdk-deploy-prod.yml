@@ -83,9 +83,39 @@ jobs:
             echo "list=$REQUESTED" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check staged site
+        if: github.event.inputs.action != 'destroy' && contains(steps.stacks.outputs.list, 'portfolio-website-prod')
+        run: |
+          npx cdk synth portfolio-website-prod --quiet
+          node scripts/check-dist.mjs .website-dist-prod
+
+      # Shows exactly what this deploy will change (including any stacks the
+      # named ones depend on) in the run summary before it happens.
+      - name: Diff summary
+        if: github.event.inputs.action != 'destroy'
+        continue-on-error: true
+        run: |
+          npx cdk diff --no-color ${{ steps.stacks.outputs.list }} > /tmp/cdk-diff.txt 2>&1 || true
+          {
+            echo "### What this deploy changes"
+            echo ""
+            echo "Stacks with differences: \`$(grep -c '^Stack ' /tmp/cdk-diff.txt)\`"
+            echo ""
+            echo '<details><summary>Full cdk diff</summary>'
+            echo ""
+            echo '```'
+            head -c 60000 /tmp/cdk-diff.txt
+            echo '```'
+            echo '</details>'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: cdk deploy
         if: github.event.inputs.action != 'destroy'
         run: npx cdk deploy --require-approval never ${{ steps.stacks.outputs.list }}
+
+      - name: Smoke test live site
+        if: github.event.inputs.action != 'destroy' && contains(steps.stacks.outputs.list, 'portfolio-website-prod')
+        run: node scripts/smoke-test.mjs https://mcginnisarchitecture.com prod .website-dist-prod
 
       - name: cdk destroy
         if: github.event.inputs.action == 'destroy'
