@@ -105,6 +105,18 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>',
   },
   {
+    // No key, no config.js: the real pipeline runs in AWS (it lives in its own
+    // repo and CDK app) but publishes to a personal LinkedIn profile, so this
+    // site ships only a simulated, client-side review demo and no backend
+    // calls. Beta only until reviewed.
+    frontendDir: 'projects/linkedin-post-pipeline/frontend',
+    destPrefix: 'project/linkedin',
+    stages: ['beta'],
+    homepageCardFile: 'projects/linkedin-post-pipeline/homepage-card.html',
+    navLinkHtml: '<a href="/project/linkedin/index.html">LinkedIn Post Pipeline</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/linkedin/index.html">LinkedIn Post Pipeline</a>',
+  },
+  {
     key: 'moderatedImageGallery',
     frontendDir: 'projects/moderated-image-gallery/frontend',
     destPrefix: 'project/gallery',

@@ -4467,6 +4467,15 @@ body.diagram-lightbox-open {
   .opsdash-diagram .flow-node[data-node="dynamodb"] { grid-column: 1; grid-row: 3; }
   .opsdash-diagram .flow-node[data-node="apigateway"] { grid-column: 1; grid-row: 5; }
 
+  /* 6 nodes: unstepped weekly-schedule entry + 5 stepped nodes, same
+     snake shape as .summarizer-diagram/.workflow-diagram. */
+  .linkedin-diagram .flow-node[data-node="weekly"] { grid-column: 1; grid-row: 1; }
+  .linkedin-diagram .flow-node[data-node="draft"] { grid-column: 3; grid-row: 1; }
+  .linkedin-diagram .flow-node[data-node="email"] { grid-column: 3; grid-row: 3; }
+  .linkedin-diagram .flow-node[data-node="review"] { grid-column: 1; grid-row: 3; }
+  .linkedin-diagram .flow-node[data-node="onetime"] { grid-column: 1; grid-row: 5; }
+  .linkedin-diagram .flow-node[data-node="publish"] { grid-column: 3; grid-row: 5; }
+
   /* 4 nodes, no unstepped entry -- fills exactly 2 rows. */
   .datalake-diagram .flow-node[data-node="raw"] { grid-column: 1; grid-row: 1; }
   .datalake-diagram .flow-node[data-node="glue"] { grid-column: 3; grid-row: 1; }
@@ -7573,5 +7582,281 @@ body.diagram-lightbox-open {
 @media (prefers-reduced-motion: reduce) {
   .opsdash-thumb-pulse-dot {
     animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   33. LINKEDIN POST PIPELINE (project/linkedin/index.html only)
+   Weekly review simulator and homepage-card thumbnail scene.
+   --------------------------------------------------------------------- */
+.li-board {
+  margin-top: 1.5rem;
+}
+
+.li-summary {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--info-text);
+  background: var(--info-bg);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.li-posts {
+  display: grid;
+  gap: 1rem;
+}
+
+.li-post {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+}
+
+.li-post.is-approved,
+.li-post.is-published {
+  border-color: var(--success-text);
+}
+
+.li-post.is-declined {
+  border-color: var(--error-text);
+  opacity: 0.9;
+}
+
+.li-post-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: start;
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--info-bg), var(--surface));
+  border: 1px solid var(--border);
+}
+
+.li-post-image-letter {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.li-post-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.li-post-day {
+  font-weight: 800;
+}
+
+.li-post-subject {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.li-post-badge {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--info-bg);
+  color: var(--info-text);
+}
+
+.li-post.is-approved .li-post-badge,
+.li-post.is-published .li-post-badge {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.li-post.is-declined .li-post-badge {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.li-post-text {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.li-post-note {
+  margin: 0.5rem 0 0;
+}
+
+.li-post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.li-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.li-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.li-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.li-btn-approve {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.li-btn-approve:hover:not(:disabled) {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+  color: #fff;
+}
+
+.li-reason-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.li-publish-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-top: 1.25rem;
+}
+
+.li-publish-row p {
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .li-post {
+    grid-template-columns: 1fr;
+  }
+
+  .li-post-image {
+    width: 100%;
+    height: 64px;
+  }
+}
+
+/* Homepage-card thumbnail: five post cards across the top get approved
+   one after another (check badges pop in), then a paper plane flies
+   along the track below -- "approved, then published". The plane's
+   translate lives on an inner <g> so the CSS animation transform doesn't
+   replace the outer SVG transform attribute that positions it. */
+.linkedin-thumb-card {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.linkedin-thumb-lines {
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.linkedin-thumb-badge {
+  fill: var(--accent);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: linkedinBadgePop 6s ease-in-out infinite;
+}
+
+.linkedin-thumb-tick {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  animation: linkedinTickShow 6s ease-in-out infinite;
+}
+
+.linkedin-thumb-badge-2,
+.linkedin-thumb-tick.linkedin-thumb-badge-2 { animation-delay: 0.6s; }
+.linkedin-thumb-badge-3,
+.linkedin-thumb-tick.linkedin-thumb-badge-3 { animation-delay: 1.2s; }
+
+@keyframes linkedinBadgePop {
+  0% { opacity: 0; transform: scale(0.4); }
+  6% { opacity: 1; transform: scale(1.15); }
+  10% { opacity: 1; transform: scale(1); }
+  82% { opacity: 1; transform: scale(1); }
+  92%, 100% { opacity: 0; transform: scale(1); }
+}
+
+@keyframes linkedinTickShow {
+  0%, 4% { opacity: 0; }
+  8%, 82% { opacity: 1; }
+  92%, 100% { opacity: 0; }
+}
+
+.linkedin-thumb-track {
+  stroke: var(--border);
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+}
+
+.linkedin-thumb-plane {
+  fill: var(--accent);
+  opacity: 0;
+  animation: linkedinPlaneFly 6s ease-in-out infinite;
+  animation-delay: 1.8s;
+}
+
+@keyframes linkedinPlaneFly {
+  0% { transform: translateX(0); opacity: 0; }
+  6% { opacity: 1; }
+  60% { transform: translateX(236px); opacity: 1; }
+  68%, 100% { transform: translateX(236px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linkedin-thumb-badge,
+  .linkedin-thumb-tick,
+  .linkedin-thumb-plane {
+    animation: none;
+  }
+
+  .linkedin-thumb-badge,
+  .linkedin-thumb-tick {
+    opacity: 1;
+  }
+
+  .linkedin-thumb-plane {
+    opacity: 1;
+    transform: translateX(110px);
   }
 }
