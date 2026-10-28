@@ -48,7 +48,7 @@ jobs:
         run: node scripts/check-dist.mjs .website-dist-beta .website-dist-prod
 
       - name: Comment diff on PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
