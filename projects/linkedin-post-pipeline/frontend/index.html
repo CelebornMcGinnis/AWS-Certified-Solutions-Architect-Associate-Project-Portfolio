@@ -352,15 +352,6 @@
             <li><strong>CloudFront, Cognito, Route 53, ACM</strong> — the review site's front door. A single user and a handful of page views a week sit inside the free tiers of CloudFront and Cognito, the TLS certificate is free, and the two DNS alias records live in the hosted zone this account already has.</li>
             <li><strong>Image generation</strong> — programmatic text cards cost nothing; the optional Cloudflare Workers AI illustrations use Cloudflare's free tier, outside AWS billing.</li>
           </ul>
-          <p class="muted small-note pricing-measured">
-            <strong>Measured so far (AWS Cost Explorer, Oct 1&ndash;27, 2026):</strong>
-            everything in this pipeline that can carry a cost tag, meaning
-            Lambda, DynamoDB, S3, CloudFront, Cognito and the rest, came to
-            under one cent. Bedrock usage can't be tagged per project, but
-            all Claude Sonnet 4.6 usage across the entire AWS account came
-            to $1.65 for the month, so this pipeline's model cost is at
-            most that. It fits the estimates above.
-          </p>
         </div>
       </div>
     </section>
