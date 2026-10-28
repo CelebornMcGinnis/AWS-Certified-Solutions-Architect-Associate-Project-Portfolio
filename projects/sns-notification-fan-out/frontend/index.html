@@ -46,6 +46,7 @@
               <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
+              <a class="nav-dropdown-sublink" href="#what-id-change">What I'd Change</a>
             </details>
             <a href="/project/vpc/index.html">VPC Network Design</a>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
@@ -528,6 +529,30 @@
       </div>
     </section>
 
+    <section class="decisions" id="what-id-change" aria-labelledby="change-heading">
+      <div data-reveal>
+        <p class="eyebrow">Next Iteration</p>
+        <h2 id="change-heading">What I'd Change Next</h2>
+        <p class="muted section-intro">
+          The gaps I know about: what I'd add before trusting this with real traffic or real data.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Tracing across the fan-out</h3>
+          <p class="muted">
+            The dead-letter queue and its alarm are in place, but I can't follow a single message through SNS, SQS and both Lambdas in one view. I'd turn on X-Ray tracing for the whole path.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Push instead of poll, if it needed to feel instant</h3>
+          <p class="muted">
+            Polling every couple of seconds is right for a demo where two functions each run once. If delivery status had to appear immediately, I'd use the WebSocket approach from the Movie Poll project.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture Diagram</p>
@@ -612,6 +637,7 @@
           <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
+          <a class="mobile-sidebar-sublink" href="#what-id-change">What I'd Change</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/vpc/index.html">VPC Network Design</a>
         <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>

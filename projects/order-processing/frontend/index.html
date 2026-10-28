@@ -44,6 +44,7 @@
               <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
+              <a class="nav-dropdown-sublink" href="#what-id-change">What I'd Change</a>
             </details>
             <a href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
             <a href="/project/fanningsns/project3.html">SNS Notifications</a>
@@ -455,6 +456,36 @@
       </div>
     </section>
 
+    <section class="decisions" id="what-id-change" aria-labelledby="change-heading">
+      <div data-reveal>
+        <p class="eyebrow">Next Iteration</p>
+        <h2 id="change-heading">What I'd Change Next</h2>
+        <p class="muted section-intro">
+          The gaps I know about: what I'd add before trusting this with real traffic or real data.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Idempotency keys</h3>
+          <p class="muted">
+            There are none, so retrying a request could reserve stock or charge twice. A client-supplied key checked at the start of the workflow would make retries safe.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Retries for transient errors</h3>
+          <p class="muted">
+            Business failures are handled as results, which is deliberate. Transient errors such as throttling have no retry configured, though, so they fail the order outright. I'd add retries for those only.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Durable data</h3>
+          <p class="muted">
+            Like the other demos, the tables are set to delete with the stack. A real order system would retain them.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture Diagram</p>
@@ -537,6 +568,7 @@
           <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
+          <a class="mobile-sidebar-sublink" href="#what-id-change">What I'd Change</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
         <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>

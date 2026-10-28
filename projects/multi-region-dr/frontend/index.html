@@ -42,6 +42,7 @@
               <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
+              <a class="nav-dropdown-sublink" href="#what-id-change">What I'd Change</a>
             </details>
             <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
             <a href="/project/orders/project8.html">Order Processing</a>
@@ -456,6 +457,30 @@
       </div>
     </section>
 
+    <section class="decisions" id="what-id-change" aria-labelledby="change-heading">
+      <div data-reveal>
+        <p class="eyebrow">Next Iteration</p>
+        <h2 id="change-heading">What I'd Change Next</h2>
+        <p class="muted section-intro">
+          The gaps I know about: what I'd add before trusting this with real traffic or real data.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Rehearse the failover</h3>
+          <p class="muted">
+            A DR design nobody has failed over to is still a hypothesis. I'd schedule regular game-day failovers and record the recovery time and data loss actually measured.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Put numbers on each posture</h3>
+          <p class="muted">
+            I'd set a target recovery time and an acceptable amount of data loss for each of the three postures, then check every rehearsal against them. That turns the posture choice into a measured trade-off instead of a cost comparison alone.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture Diagram</p>
@@ -536,6 +561,7 @@
           <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
+          <a class="mobile-sidebar-sublink" href="#what-id-change">What I'd Change</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
         <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>

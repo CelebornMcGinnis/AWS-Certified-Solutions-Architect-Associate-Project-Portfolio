@@ -42,6 +42,7 @@
               <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
+              <a class="nav-dropdown-sublink" href="#what-id-change">What I'd Change</a>
             </details>
             <a href="/project/polling/project2.html">Movie Poll</a>
             <a href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
@@ -641,6 +642,30 @@
       </div>
     </section>
 
+    <section class="decisions" id="what-id-change" aria-labelledby="change-heading">
+      <div data-reveal>
+        <p class="eyebrow">Next Iteration</p>
+        <h2 id="change-heading">What I'd Change Next</h2>
+        <p class="muted section-intro">
+          The gaps I know about: what I'd add before trusting this with real traffic or real data.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Keep the moderation reason, privately</h3>
+          <p class="muted">
+            Rejections are deliberately binary and the visitor never sees why. I'd still store the Rekognition category server-side, never shown, so false positives can be reviewed and the confidence threshold tuned.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Alarms and upload limits</h3>
+          <p class="muted">
+            There are no alarms on the scan or upload path, and no per-user cap on uploads. I'd add both before opening it to anyone beyond a demo audience.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture Diagram</p>
@@ -721,6 +746,7 @@
           <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
+          <a class="mobile-sidebar-sublink" href="#what-id-change">What I'd Change</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
         <a class="mobile-sidebar-sublink" href="/project/dr/index.html">Multi-Region Disaster Recovery</a>

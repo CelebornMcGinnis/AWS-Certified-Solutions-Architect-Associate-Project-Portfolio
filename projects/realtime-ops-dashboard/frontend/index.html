@@ -45,6 +45,7 @@
               <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
+              <a class="nav-dropdown-sublink" href="#what-id-change">What I'd Change</a>
             </details>
             <a href="/project/fanningsns/project3.html">SNS Notifications</a>
             <a href="/project/vpc/index.html">VPC Network Design</a>
@@ -414,6 +415,30 @@
       </div>
     </section>
 
+    <section class="decisions" id="what-id-change" aria-labelledby="change-heading">
+      <div data-reveal>
+        <p class="eyebrow">Next Iteration</p>
+        <h2 id="change-heading">What I'd Change Next</h2>
+        <p class="muted section-intro">
+          The gaps I know about: what I'd add before trusting this with real traffic or real data.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Alarm on iterator age</h3>
+          <p class="muted">
+            The metric that says a Kinesis consumer is falling behind is iterator age. I'd alarm on it so a stuck aggregator is noticed before the dashboard goes stale.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Enhanced fan-out if consumers multiply</h3>
+          <p class="muted">
+            One consumer is fine on shared throughput. If an anomaly detector and an archiver joined it, I'd give each its own dedicated throughput with enhanced fan-out.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture Diagram</p>
@@ -497,6 +522,7 @@
           <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
+          <a class="mobile-sidebar-sublink" href="#what-id-change">What I'd Change</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
         <a class="mobile-sidebar-sublink" href="/project/vpc/index.html">VPC Network Design</a>

@@ -47,6 +47,7 @@
               <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
+              <a class="nav-dropdown-sublink" href="#what-id-change">What I'd Change</a>
             </details>
             <a href="/project/chatbot/project9.html">Website Chatbot</a>
             <a href="/project/workflow/project4.html">Workflow Visualizer</a>
@@ -434,6 +435,30 @@
       </div>
     </section>
 
+    <section class="decisions" id="what-id-change" aria-labelledby="change-heading">
+      <div data-reveal>
+        <p class="eyebrow">Next Iteration</p>
+        <h2 id="change-heading">What I'd Change Next</h2>
+        <p class="muted section-intro">
+          The gaps I know about: what I'd add before trusting this with real traffic or real data.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>VPC endpoints before NAT</h3>
+          <p class="muted">
+            S3 and DynamoDB gateway endpoints are free and keep that traffic off the NAT gateways, which are the expensive part of this design. I'd add them first.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Flow logs</h3>
+          <p class="muted">
+            The design has no VPC Flow Logs. I'd send them to S3 so a rejected connection can be traced after the fact.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture Diagram</p>
@@ -519,6 +544,7 @@
           <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
+          <a class="mobile-sidebar-sublink" href="#what-id-change">What I'd Change</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
         <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>

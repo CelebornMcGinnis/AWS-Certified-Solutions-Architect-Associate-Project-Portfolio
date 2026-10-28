@@ -36,6 +36,7 @@
               <a class="nav-dropdown-sublink" href="#use-cases">Use Cases</a>
               <a class="nav-dropdown-sublink" href="#pricing">Pricing</a>
               <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
+              <a class="nav-dropdown-sublink" href="#what-id-change">What I'd Change</a>
             </details>
             <a href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
             <a href="/project/habits/project6.html">Habit Tracker</a>
@@ -359,6 +360,30 @@
       </div>
     </section>
 
+    <section class="decisions" id="what-id-change" aria-labelledby="change-heading">
+      <div data-reveal>
+        <p class="eyebrow">Next Iteration</p>
+        <h2 id="change-heading">What I'd Change Next</h2>
+        <p class="muted section-intro">
+          The gaps I know about: what I'd add before trusting this with real traffic or real data.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Blue/green for real traffic</h3>
+          <p class="muted">
+            Rolling updates with a circuit breaker are enough for a reference design. For a service with paying users I'd use CodeDeploy blue/green with a canary step, so a bad release never takes all traffic.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>A real image in the pipeline</h3>
+          <p class="muted">
+            The task definition points at a public nginx image. A real build would produce its own image in CI and scan it in ECR before it could be deployed.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="architecture-diagram-section" id="architecture-diagram" aria-labelledby="architecture-diagram-heading">
       <div data-reveal>
         <p class="eyebrow">Architecture Diagram</p>
@@ -433,6 +458,7 @@
           <a class="mobile-sidebar-sublink" href="#use-cases">Use Cases</a>
           <a class="mobile-sidebar-sublink" href="#pricing">Pricing</a>
           <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
+          <a class="mobile-sidebar-sublink" href="#what-id-change">What I'd Change</a>
         </details>
         <a class="mobile-sidebar-sublink" href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
         <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
