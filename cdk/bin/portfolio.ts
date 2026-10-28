@@ -148,8 +148,8 @@ const websiteProd = new WebsiteStack(app, 'portfolio-website-prod', {
   certificateArn: APEX_CERTIFICATE_ARN,
   comment: 'McGinnisArchitecture Prod Website',
   customErrorResponses: [
-    { errorCode: 403, responsePagePath: '/index.html', responseCode: 200, errorCachingMinTtl: 10 },
-    { errorCode: 404, responsePagePath: '/index.html', responseCode: 200, errorCachingMinTtl: 10 },
+    { errorCode: 403, responsePagePath: '/404.html', responseCode: 404, errorCachingMinTtl: 10 },
+    { errorCode: 404, responsePagePath: '/404.html', responseCode: 404, errorCachingMinTtl: 10 },
   ],
   createAaaaRecord: false,
   manageContent,
@@ -172,8 +172,8 @@ const websiteBeta = new WebsiteStack(app, 'portfolio-website-beta', {
   certificateArn: WILDCARD_CERTIFICATE_ARN,
   comment: 'beta environment for the McGinnisArchitecture webpage',
   customErrorResponses: [
-    { errorCode: 403, responsePagePath: '/index.html', responseCode: 200, errorCachingMinTtl: 10 },
-    { errorCode: 404, responsePagePath: '/index.html', responseCode: 200, errorCachingMinTtl: 10 },
+    { errorCode: 403, responsePagePath: '/404.html', responseCode: 404, errorCachingMinTtl: 10 },
+    { errorCode: 404, responsePagePath: '/404.html', responseCode: 404, errorCachingMinTtl: 10 },
   ],
   createAaaaRecord: true,
   manageContent,

@@ -97,12 +97,24 @@ export class WebsiteStack extends cdk.Stack {
 function handler(event) {
     var response = event.response;
     var headers = response.headers;
+    var uri = event.request.uri;
     headers['strict-transport-security'] = { value: 'max-age=63072000; includeSubDomains; preload' };
     headers['x-content-type-options'] = { value: 'nosniff' };
     headers['x-frame-options'] = { value: 'DENY' };
     headers['referrer-policy'] = { value: 'strict-origin-when-cross-origin' };
     headers['permissions-policy'] = { value: 'geolocation=(), camera=(), microphone=()' };
-    headers['content-security-policy'] = { value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.execute-api.us-east-1.amazonaws.com wss://*.execute-api.us-east-1.amazonaws.com https://cognito-idp.us-east-1.amazonaws.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" };
+    headers['content-security-policy'] = { value: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.execute-api.us-east-1.amazonaws.com wss://*.execute-api.us-east-1.amazonaws.com https://cognito-idp.us-east-1.amazonaws.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" };
+${props.stage === 'beta' ? "    headers['x-robots-tag'] = { value: 'noindex, nofollow' };\n" : ''}    if (!headers['cache-control']) {
+        if (response.statusCode >= 400) {
+            headers['cache-control'] = { value: 'no-cache' };
+        } else if (/^\\/styles\\.[0-9a-f]{10}\\.css$/.test(uri)) {
+            headers['cache-control'] = { value: 'public, max-age=31536000, immutable' };
+        } else if (/\\.(png|jpe?g|svg|ico|webp|woff2?)$/.test(uri)) {
+            headers['cache-control'] = { value: 'public, max-age=86400' };
+        } else {
+            headers['cache-control'] = { value: 'no-cache' };
+        }
+    }
     return response;
 }
 `,

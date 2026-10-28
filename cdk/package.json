@@ -5,7 +5,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "check:dist": "node scripts/check-dist.mjs .website-dist-beta .website-dist-prod"
   },
   "devDependencies": {
     "@swc/core": "^1.15.0",

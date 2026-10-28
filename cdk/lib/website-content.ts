@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -289,6 +290,125 @@ function injectStageOnlyContent(stage: Stage, stagingDir: string) {
  * one file per project is generated separately, as a BucketDeployment
  * `Source.data()` entry that CloudFormation resolves at deploy time.
  */
+/** Public origin each stage is served from -- used for canonical tags and the sitemap. */
+export const STAGE_ORIGINS: Record<Stage, string> = {
+  prod: 'https://mcginnisarchitecture.com',
+  beta: 'https://betaweb.mcginnisarchitecture.com',
+};
+
+function walkHtml(dir: string, out: string[] = []): string[] {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkHtml(full, out);
+    else if (entry.name.endsWith('.html')) out.push(full);
+  }
+  return out;
+}
+
+/**
+ * Rebuilds every project page's "Projects" nav (desktop dropdown and mobile
+ * sidebar) from PROJECTS for this stage, so a page never links to a project
+ * that isn't deployed there (prod used to link to five beta-only pages that
+ * silently fell back to the homepage) and adding a project no longer means
+ * hand-editing every page. Each page keeps its own expanded sub-menu: that
+ * block is lifted out of the page's existing markup and slotted back in at
+ * the right alphabetical position. Throws if a page doesn't have the
+ * expected structure, so a broken page fails the build instead of shipping.
+ */
+function regenerateProjectNav(stage: Stage, stagingDir: string) {
+  const applicable = PROJECTS.filter((project) => projectAppliesToStage(project, stage) && project.navLinkHtml && project.mobileNavLinkHtml);
+
+  for (const project of applicable) {
+    const pageFile = path.join(stagingDir, project.destPrefix, project.rename?.['index.html'] ?? 'index.html');
+    let html = fs.readFileSync(pageFile, 'utf8');
+
+    const rebuild = (
+      regionRe: RegExp,
+      selfRe: RegExp,
+      linkFor: (p: ProjectMapping) => string,
+      joiner: string,
+      label: string,
+    ) => {
+      const region = html.match(regionRe);
+      if (!region) throw new Error(`${pageFile}: could not find the ${label} nav region`);
+      const self = region[2].match(selfRe);
+      if (!self) throw new Error(`${pageFile}: could not find its own ${label} sub-menu`);
+      const items = applicable.map((p) => (p === project ? self[0] : linkFor(p)));
+      html = html.replace(regionRe, (_m, open, _body, close) => `${open}${items.join(joiner)}${close}`);
+    };
+
+    rebuild(
+      /(<div class="nav-dropdown-menu">\n\s*)([\s\S]*?)(\n\s*<a class="nav-dropdown-all")/,
+      /<details class="nav-dropdown-subsection"[^>]*>[\s\S]*?<\/details>/,
+      (p) => p.navLinkHtml!,
+      '\n            ',
+      'desktop',
+    );
+    rebuild(
+      /(<div class="mobile-sidebar-group-content">\n\s*)([\s\S]*?)(\n\s*<a class="mobile-sidebar-sublink" href="\/#projects">View All Projects<\/a>)/,
+      /<details class="mobile-sidebar-subgroup"[^>]*>[\s\S]*?<\/details>/,
+      (p) => p.mobileNavLinkHtml!,
+      '\n        ',
+      'mobile',
+    );
+    fs.writeFileSync(pageFile, html);
+  }
+}
+
+/**
+ * Renames styles.css to a content-hashed filename and points every page at
+ * it, so browsers can cache it forever (see the cache-control rules in the
+ * CloudFront Function) and still pick up a changed stylesheet immediately.
+ */
+function fingerprintStylesheet(stagingDir: string) {
+  const cssPath = path.join(stagingDir, 'styles.css');
+  const hash = crypto.createHash('sha256').update(fs.readFileSync(cssPath)).digest('hex').slice(0, 10);
+  const hashedName = `styles.${hash}.css`;
+  fs.renameSync(cssPath, path.join(stagingDir, hashedName));
+  for (const file of walkHtml(stagingDir)) {
+    const html = fs.readFileSync(file, 'utf8');
+    const updated = html.replace(/(href="[^"]*?)styles\.css"/g, `$1${hashedName}"`);
+    if (updated !== html) fs.writeFileSync(file, updated);
+  }
+}
+
+/** Canonical tags on every page except the 404 page (which has no real URL). */
+function addCanonicalTags(stage: Stage, stagingDir: string) {
+  const origin = STAGE_ORIGINS[stage];
+  for (const file of walkHtml(stagingDir)) {
+    const rel = path.relative(stagingDir, file).split(path.sep).join('/');
+    if (rel === '404.html') continue;
+    const urlPath = rel === 'index.html' ? '/' : `/${rel}`;
+    const html = fs.readFileSync(file, 'utf8');
+    if (html.includes('rel="canonical"')) continue;
+    fs.writeFileSync(file, html.replace('</head>', `  <link rel="canonical" href="${origin}${urlPath}" />\n</head>`));
+  }
+}
+
+/**
+ * robots.txt and sitemap.xml. Beta tells crawlers to stay out entirely (the
+ * CloudFront Function also sends X-Robots-Tag: noindex there); prod allows
+ * everything and lists every deployed page.
+ */
+function writeCrawlerFiles(stage: Stage, stagingDir: string) {
+  const origin = STAGE_ORIGINS[stage];
+  if (stage === 'beta') {
+    fs.writeFileSync(path.join(stagingDir, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
+    return;
+  }
+  fs.writeFileSync(path.join(stagingDir, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`);
+  const urls = walkHtml(stagingDir)
+    .map((file) => path.relative(stagingDir, file).split(path.sep).join('/'))
+    .filter((rel) => rel !== '404.html')
+    .map((rel) => (rel === 'index.html' ? '/' : `/${rel}`))
+    .sort();
+  const body = urls.map((u) => `  <url><loc>${origin}${u}</loc></url>`).join('\n');
+  fs.writeFileSync(
+    path.join(stagingDir, 'sitemap.xml'),
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`,
+  );
+}
+
 export function buildWebsiteContentDir(stage: Stage): string {
   const stagingDir = stagingDirFor(stage);
   fs.rmSync(stagingDir, { recursive: true, force: true });
@@ -310,6 +430,10 @@ export function buildWebsiteContentDir(stage: Stage): string {
   }
 
   injectStageOnlyContent(stage, stagingDir);
+  regenerateProjectNav(stage, stagingDir);
+  addCanonicalTags(stage, stagingDir);
+  fingerprintStylesheet(stagingDir);
+  writeCrawlerFiles(stage, stagingDir);
 
   return stagingDir;
 }

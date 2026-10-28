@@ -2,16 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <script>
-    // Applied before first paint to avoid a flash of the wrong theme.
-    // A toggle in the nav can override the system preference; that
-    // choice is remembered in localStorage from then on.
-    (function () {
-      var stored = localStorage.getItem('theme');
-      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
+  <script src="/assets/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Data Lake &amp; Analytics — McGinnis Architecture</title>
   <meta name="description" content="A serverless S3 + Glue + Athena + QuickSight data lake pattern, documented in full — the query demo runs client-side against a sample dataset since the real pipeline isn't deployed." />
