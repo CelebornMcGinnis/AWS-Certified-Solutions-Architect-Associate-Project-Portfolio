@@ -226,6 +226,37 @@ document.getElementById('year').textContent = new Date().getFullYear();
     setStatus('');
   });
 
+  // Floating notice shown after the fast-forward: the cards re-render and the
+  // page jumps back to the top of the demo, so without this the click would
+  // look like nothing happened.
+  var toast = null;
+  var toastTimer = null;
+
+  function hideToast() {
+    if (toastTimer) {
+      clearTimeout(toastTimer);
+      toastTimer = null;
+    }
+    if (toast) {
+      toast.remove();
+      toast = null;
+    }
+  }
+
+  function showToast(title, message) {
+    hideToast();
+    toast = el('div', 'li-toast');
+    toast.setAttribute('role', 'status');
+    toast.appendChild(el('strong', 'li-toast-title', title));
+    toast.appendChild(el('p', 'li-toast-text', message));
+    var close = el('button', 'li-btn li-toast-close', 'Got it');
+    close.type = 'button';
+    close.addEventListener('click', hideToast);
+    toast.appendChild(close);
+    document.body.appendChild(toast);
+    toastTimer = setTimeout(hideToast, 12000);
+  }
+
   publishButton.addEventListener('click', function () {
     var n = 0;
     posts.forEach(function (p) {
@@ -236,6 +267,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
     });
     setStatus(n + (n === 1 ? ' scheduled post' : ' scheduled posts') + ' published (simulated). Drafts, declined, and deferred posts were left alone.');
     render();
+
+    var demo = document.getElementById('demo');
+    if (demo) {
+      demo.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
+    }
+    showToast(
+      n + (n === 1 ? ' post published (simulated)' : ' posts published (simulated)'),
+      'Each approved post just reached its scheduled minute. In the real pipeline, a one-time EventBridge Scheduler entry fires the Publish function at that exact time and then deletes itself. Drafts, declined, and deferred posts were not published.'
+    );
   });
 })();
 
