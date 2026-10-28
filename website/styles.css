@@ -186,7 +186,14 @@ body {
   gap: 1.25rem;
 }
 
-/* --- Hearts badge (assets/heart-badge.png, the three recolored hearts) --- */
+/* Images carry intrinsic width/height attributes so the browser reserves space
+   before they load (no layout shift); :where() keeps this at zero specificity so
+   any class that sets a height still wins. */
+:where(img[width][height]) {
+  height: auto;
+}
+
+/* --- Hearts badge (assets/heart-badge.webp, the three recolored hearts) --- */
 .top-mark {
   display: block;
   height: 55px;      /* <-- HEARTS BADGE SIZE. Change this one number to resize it. */
@@ -2612,12 +2619,17 @@ footer {
   background: rgba(10, 12, 20, 0.92);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  /* visibility (after the fade) takes the closed lightbox's close button out
+     of the tab order, which aria-hidden alone does not. */
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
 .arch-diagram-lightbox.is-open {
   opacity: 1;
   pointer-events: auto;
+  visibility: visible;
+  transition: opacity 0.2s ease, visibility 0s;
 }
 
 .arch-diagram-lightbox-img {

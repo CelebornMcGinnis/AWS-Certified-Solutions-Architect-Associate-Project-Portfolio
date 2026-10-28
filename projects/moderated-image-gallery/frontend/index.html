@@ -18,11 +18,11 @@
     <div class="site-header-inner">
       <div class="brand-row">
         <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
-          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
-          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+          <img class="logo-light" src="/assets/logo.webp" alt="McGinnis Architecture" width="376" height="120" />
+          <img class="logo-dark" src="/assets/logo_darkmode.webp" alt="McGinnis Architecture" width="383" height="120" />
         </a>
       </div>
-      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <img class="top-mark" src="/assets/heart-badge.webp" alt="" aria-hidden="true" width="168" height="56" />
       <nav aria-label="Main navigation">
         <a href="/">Home</a>
         <details class="nav-dropdown">
@@ -349,7 +349,7 @@
 
           <div class="flow-node" data-node="cognito" data-step="1" role="button" tabindex="0" aria-label="Step 1: Visitor signs in via Cognito">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/cognito.png" alt="" />
+              <img src="/assets/aws-icons/cognito.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Cognito</span>
           </div>
@@ -361,7 +361,7 @@
 
           <div class="flow-node" data-node="apigateway" data-step="2" role="button" tabindex="0" aria-label="Step 2: Browser requests an upload slot from API Gateway">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/apigateway.png" alt="" />
+              <img src="/assets/aws-icons/apigateway.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">API Gateway</span>
           </div>
@@ -373,7 +373,7 @@
 
           <div class="flow-node" data-node="lambda" data-step="3" role="button" tabindex="0" aria-label="Step 3: Lambda creates a pending record and a presigned upload URL">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/lambda.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Lambda</span>
           </div>
@@ -383,21 +383,19 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="s3quarantine" data-step="4" role="button" tabindex="0" aria-label="Step 4: Browser uploads the image directly to a private S3 quarantine bucket">
+          <div class="flow-node" data-node="s3quarantine" data-step="4" role="button" tabindex="0" aria-label="S3 (quarantine). Step 4: Browser uploads the image directly to a private S3 quarantine bucket">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/s3.png" alt="" />
+              <img src="/assets/aws-icons/s3.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">S3 (quarantine)</span>
-          </div>
-
-          <div class="flow-connector" data-step="5" aria-hidden="true">
+          </div><div class="flow-connector" data-step="5" aria-hidden="true">
             <span class="flow-connector-num">5</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
           <div class="flow-node" data-node="rekognition" data-step="5" role="button" tabindex="0" aria-label="Step 5: A Lambda function runs Rekognition content moderation">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/rekognition.png" alt="" />
+              <img src="/assets/aws-icons/rekognition.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Rekognition</span>
           </div>
@@ -407,13 +405,12 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="outcome" data-step="6" role="button" tabindex="0" aria-label="Step 6: Approved images move to the public gallery bucket, rejected ones are deleted">
+          <div class="flow-node" data-node="outcome" data-step="6" role="button" tabindex="0" aria-label="DynamoDB + S3 (gallery). Step 6: Approved images move to the public gallery bucket, rejected ones are deleted">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/dynamodb.png" alt="" />
+              <img src="/assets/aws-icons/dynamodb.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">DynamoDB + S3 (gallery)</span>
-          </div>
-        </div>
+          </div></div>
       </div>
 
       <ol class="flow-steps" id="flow-steps">
@@ -674,8 +671,8 @@
           The complete AWS architecture diagram for this project, built with draw.io. Click it to expand full screen.
         </p>
       </div>
-      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the Moderated Image Gallery architecture diagram to full screen">
-        <img src="architecture.png" alt="Moderated Image Gallery AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Click to expand the Moderated Image Gallery architecture diagram to full screen">
+        <img src="architecture.webp" alt="Moderated Image Gallery AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" width="1028" height="678" />
         <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
       </button>
     </section>
@@ -692,10 +689,10 @@
         </nav>
         <div class="social-links">
           <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
-            <img src="/assets/linkedin.png" alt="" />
+            <img src="/assets/linkedin.webp" alt="" width="52" height="53" />
           </a>
           <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
-            <img src="/assets/github.png" alt="" />
+            <img src="/assets/github.webp" alt="" width="52" height="52" />
           </a>
         </div>
       </div>
@@ -772,7 +769,7 @@
   <script src="config.js"></script>
   <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
     <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
-    <img src="architecture.png" alt="Moderated Image Gallery AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
+    <img src="architecture.webp" alt="Moderated Image Gallery AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" width="1028" height="678" />
   </div>
 
   <script src="script.js"></script>

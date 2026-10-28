@@ -18,11 +18,11 @@
     <div class="site-header-inner">
       <div class="brand-row">
         <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
-          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
-          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+          <img class="logo-light" src="/assets/logo.webp" alt="McGinnis Architecture" width="376" height="120" />
+          <img class="logo-dark" src="/assets/logo_darkmode.webp" alt="McGinnis Architecture" width="383" height="120" />
         </a>
       </div>
-      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <img class="top-mark" src="/assets/heart-badge.webp" alt="" aria-hidden="true" width="168" height="56" />
       <nav aria-label="Main navigation">
         <a href="/">Home</a>
         <details class="nav-dropdown">
@@ -143,7 +143,7 @@
         <div class="flow-track">
           <div class="flow-node" data-node="weekly">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/eventbridge.png" alt="" />
+              <img src="/assets/aws-icons/eventbridge.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Saturday 10:00 ET</span>
           </div>
@@ -153,61 +153,52 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="draft" data-step="1" role="button" tabindex="0" aria-label="Step 1: A Lambda function researches and drafts the week with Bedrock">
+          <div class="flow-node" data-node="draft" data-step="1" role="button" tabindex="0" aria-label="Lambda + Bedrock (draft). Step 1: A Lambda function researches and drafts the week with Bedrock">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/bedrock.png" alt="" />
+              <img src="/assets/aws-icons/bedrock.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Lambda + Bedrock (draft)</span>
-          </div>
-
-          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+          </div><div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
             <span class="flow-connector-num">2</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="email" data-step="2" role="button" tabindex="0" aria-label="Step 2: Drafts are saved and a review link is emailed through SES">
+          <div class="flow-node" data-node="email" data-step="2" role="button" tabindex="0" aria-label="SES (review email). Step 2: Drafts are saved and a review link is emailed through SES">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/ses.png" alt="" />
+              <img src="/assets/aws-icons/ses.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">SES (review email)</span>
-          </div>
-
-          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
+          </div><div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
             <span class="flow-connector-num">3</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="review" data-step="3" role="button" tabindex="0" aria-label="Step 3: A human reviews each post on the review page">
+          <div class="flow-node" data-node="review" data-step="3" role="button" tabindex="0" aria-label="Lambda (review page). Step 3: A human reviews each post on the review page">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/lambda.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Lambda (review page)</span>
-          </div>
-
-          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
+          </div><div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
             <span class="flow-connector-num">4</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="onetime" data-step="4" role="button" tabindex="0" aria-label="Step 4: Approving a post creates a one-time EventBridge Scheduler entry">
+          <div class="flow-node" data-node="onetime" data-step="4" role="button" tabindex="0" aria-label="EventBridge (one-time). Step 4: Approving a post creates a one-time EventBridge Scheduler entry">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/eventbridge.png" alt="" />
+              <img src="/assets/aws-icons/eventbridge.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">EventBridge (one-time)</span>
-          </div>
-
-          <div class="flow-connector" data-step="5" aria-hidden="true">
+          </div><div class="flow-connector" data-step="5" aria-hidden="true">
             <span class="flow-connector-num">5</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="publish" data-step="5" role="button" tabindex="0" aria-label="Step 5: A Lambda function publishes the post to LinkedIn">
+          <div class="flow-node" data-node="publish" data-step="5" role="button" tabindex="0" aria-label="Lambda (publish). Step 5: A Lambda function publishes the post to LinkedIn">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/linkedin.png" alt="" />
+              <img src="/assets/linkedin.webp" alt="" width="52" height="53" />
             </span>
             <span class="flow-node-label">Lambda (publish)</span>
-          </div>
-        </div>
+          </div></div>
       </div>
 
       <ol class="flow-steps" id="flow-steps">
@@ -458,8 +449,8 @@
           The complete AWS architecture diagram for this project, built with draw.io. The numbered arrows match the five steps above. Click it to expand full screen.
         </p>
       </div>
-      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the LinkedIn Post Pipeline architecture diagram to full screen">
-        <img src="architecture.png" alt="LinkedIn Post Pipeline AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Click to expand the LinkedIn Post Pipeline architecture diagram to full screen">
+        <img src="architecture.webp" alt="LinkedIn Post Pipeline AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" width="1269" height="1150" />
         <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
       </button>
     </section>
@@ -476,10 +467,10 @@
         </nav>
         <div class="social-links">
           <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
-            <img src="/assets/linkedin.png" alt="" />
+            <img src="/assets/linkedin.webp" alt="" width="52" height="53" />
           </a>
           <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
-            <img src="/assets/github.png" alt="" />
+            <img src="/assets/github.webp" alt="" width="52" height="52" />
           </a>
         </div>
       </div>
@@ -553,7 +544,7 @@
 
   <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
     <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
-    <img src="architecture.png" alt="LinkedIn Post Pipeline AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
+    <img src="architecture.webp" alt="LinkedIn Post Pipeline AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" width="1269" height="1150" />
   </div>
 
   <script src="script.js"></script>

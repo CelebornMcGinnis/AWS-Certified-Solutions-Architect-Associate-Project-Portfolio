@@ -18,11 +18,11 @@
     <div class="site-header-inner">
       <div class="brand-row">
         <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
-          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
-          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+          <img class="logo-light" src="/assets/logo.webp" alt="McGinnis Architecture" width="376" height="120" />
+          <img class="logo-dark" src="/assets/logo_darkmode.webp" alt="McGinnis Architecture" width="383" height="120" />
         </a>
       </div>
-      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <img class="top-mark" src="/assets/heart-badge.webp" alt="" aria-hidden="true" width="168" height="56" />
       <nav aria-label="Main navigation">
         <a href="/">Home</a>
         <details class="nav-dropdown">
@@ -151,21 +151,19 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="apigateway" data-step="1" role="button" tabindex="0" aria-label="Step 1: Visitor clicks Check in today">
+          <div class="flow-node" data-node="apigateway" data-step="1" role="button" tabindex="0" aria-label="API Gateway. Step 1: Visitor clicks Check in today">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/apigateway.png" alt="" />
+              <img src="/assets/aws-icons/apigateway.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">API Gateway</span>
-          </div>
-
-          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+          </div><div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
             <span class="flow-connector-num">2</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
           <div class="flow-node" data-node="lambda" data-step="2" role="button" tabindex="0" aria-label="Step 2: Lambda updates the streak in DynamoDB">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/lambda.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Lambda</span>
           </div>
@@ -177,7 +175,7 @@
 
           <div class="flow-node" data-node="dynamodb" data-step="3" role="button" tabindex="0" aria-label="Step 3: DynamoDB stores the habit and its check-ins">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/dynamodb.png" alt="" />
+              <img src="/assets/aws-icons/dynamodb.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">DynamoDB</span>
           </div>
@@ -189,7 +187,7 @@
 
           <div class="flow-node" data-node="scheduler" data-step="4" role="button" tabindex="0" aria-label="Step 4: EventBridge Scheduler runs once every night">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/eventbridge.png" alt="" />
+              <img src="/assets/aws-icons/eventbridge.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">EventBridge Scheduler</span>
           </div>
@@ -199,13 +197,12 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="resetlambda" data-step="5" role="button" tabindex="0" aria-label="Step 5: A Lambda function resets any streak that missed yesterday">
+          <div class="flow-node" data-node="resetlambda" data-step="5" role="button" tabindex="0" aria-label="Reset Lambda. Step 5: A Lambda function resets any streak that missed yesterday">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/lambda.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Reset Lambda</span>
-          </div>
-        </div>
+          </div></div>
       </div>
 
       <ol class="flow-steps" id="flow-steps">
@@ -432,8 +429,8 @@
           The complete AWS architecture diagram for this project, built with draw.io. Click it to expand full screen.
         </p>
       </div>
-      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the Habit Tracker architecture diagram to full screen">
-        <img src="architecture.png" alt="Habit Tracker AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Click to expand the Habit Tracker architecture diagram to full screen">
+        <img src="architecture.webp" alt="Habit Tracker AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" width="1050" height="760" />
         <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
       </button>
     </section>
@@ -450,10 +447,10 @@
         </nav>
         <div class="social-links">
           <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
-            <img src="/assets/linkedin.png" alt="" />
+            <img src="/assets/linkedin.webp" alt="" width="52" height="53" />
           </a>
           <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
-            <img src="/assets/github.png" alt="" />
+            <img src="/assets/github.webp" alt="" width="52" height="52" />
           </a>
         </div>
       </div>
@@ -528,7 +525,7 @@
   <script src="config.js"></script>
   <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
     <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
-    <img src="architecture.png" alt="Habit Tracker AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
+    <img src="architecture.webp" alt="Habit Tracker AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" width="1050" height="760" />
   </div>
 
   <script src="script.js"></script>

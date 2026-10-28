@@ -18,11 +18,11 @@
     <div class="site-header-inner">
       <div class="brand-row">
         <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
-          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
-          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+          <img class="logo-light" src="/assets/logo.webp" alt="McGinnis Architecture" width="376" height="120" />
+          <img class="logo-dark" src="/assets/logo_darkmode.webp" alt="McGinnis Architecture" width="383" height="120" />
         </a>
       </div>
-      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <img class="top-mark" src="/assets/heart-badge.webp" alt="" aria-hidden="true" width="168" height="56" />
       <nav aria-label="Main navigation">
         <a href="/">Home</a>
         <details class="nav-dropdown">
@@ -150,7 +150,7 @@
         <div class="flow-track">
           <div class="flow-node is-done" data-node="raw" data-step="1" role="button" tabindex="0" aria-label="Step 1: Source data lands in the S3 raw zone">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/s3.png" alt="" />
+              <img src="/assets/aws-icons/s3.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">S3 (raw zone)</span>
           </div>
@@ -160,9 +160,9 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node is-done" data-node="glue" data-step="2" role="button" tabindex="0" aria-label="Step 2: A Glue crawler updates the Data Catalog">
+          <div class="flow-node is-done" data-node="glue" data-step="2" role="button" tabindex="0" aria-label="Glue crawler + catalog. Step 2: A Glue crawler updates the Data Catalog">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/glue.png" alt="" />
+              <img src="/assets/aws-icons/glue.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Glue Crawler + Catalog</span>
           </div>
@@ -172,9 +172,9 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node is-done" data-node="athena" data-step="3" role="button" tabindex="0" aria-label="Step 3: Athena runs serverless SQL against the catalog">
+          <div class="flow-node is-done" data-node="athena" data-step="3" role="button" tabindex="0" aria-label="Athena (serverless SQL). Step 3: Athena runs serverless SQL against the catalog">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/athena.png" alt="" />
+              <img src="/assets/aws-icons/athena.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Athena (serverless SQL)</span>
           </div>
@@ -186,7 +186,7 @@
 
           <div class="flow-node is-done" data-node="quicksight" data-step="4" role="button" tabindex="0" aria-label="Step 4: QuickSight visualizes the results">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/quicksight.png" alt="" />
+              <img src="/assets/aws-icons/quicksight.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">QuickSight</span>
           </div>
@@ -389,8 +389,8 @@
           The complete AWS architecture diagram for this project, built with draw.io. Click it to expand full screen.
         </p>
       </div>
-      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the Data Lake & Analytics architecture diagram to full screen">
-        <img src="architecture.png" alt="Data Lake & Analytics AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Click to expand the Data Lake & Analytics architecture diagram to full screen">
+        <img src="architecture.webp" alt="Data Lake & Analytics AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" width="1098" height="718" />
         <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
       </button>
     </section>
@@ -407,10 +407,10 @@
         </nav>
         <div class="social-links">
           <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
-            <img src="/assets/linkedin.png" alt="" />
+            <img src="/assets/linkedin.webp" alt="" width="52" height="53" />
           </a>
           <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
-            <img src="/assets/github.png" alt="" />
+            <img src="/assets/github.webp" alt="" width="52" height="52" />
           </a>
         </div>
       </div>
@@ -484,7 +484,7 @@
 
   <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
     <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
-    <img src="architecture.png" alt="Data Lake & Analytics AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
+    <img src="architecture.webp" alt="Data Lake & Analytics AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" width="1098" height="718" />
   </div>
 
   <script src="script.js"></script>

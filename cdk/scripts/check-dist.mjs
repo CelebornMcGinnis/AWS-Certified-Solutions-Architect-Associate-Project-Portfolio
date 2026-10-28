@@ -109,6 +109,22 @@ for (const dir of dirs) {
       const hasName = /aria-label=|aria-labelledby=|title=/.test(m[1]) || stripTags(m[2]) !== '' || /<img[^>]*\balt="[^"]+"/.test(m[2]);
       if (!hasName) add(page, `<a> with no accessible name: ${m[0].slice(0, 80).replace(/\s+/g, ' ')}`);
     }
+    // Local images should carry width/height so the browser can reserve space (no layout shift).
+    for (const m of html.matchAll(/<img\b[^>]*>/g)) {
+      const src = (m[0].match(/\bsrc="([^"]+)"/) || [])[1];
+      if (!src || /^(https?:|data:|\/\/)/.test(src) || src.endsWith('.svg')) continue;
+      if (!/\bwidth="/.test(m[0]) || !/\bheight="/.test(m[0])) add(page, `<img> without width/height: ${src}`);
+    }
+    // Accessible name must contain the visible text (WCAG "label in name", what Lighthouse's
+    // label-content-name-mismatch audit enforces). Buttons only, comparing letters and digits.
+    const alnum = (t) => stripTags(t).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    for (const m of html.matchAll(/<(button|div)\b([^>]*)>([\s\S]*?)<\/\1>/g)) {
+      if (m[1] === 'div' && !/role="button"/.test(m[2])) continue;
+      const label = (m[2].match(/aria-label="([^"]*)"/) || [])[1];
+      if (!label) continue;
+      const visible = alnum(m[3]);
+      if (visible && !alnum(label).includes(visible)) add(page, `aria-label "${label.slice(0, 50)}" does not contain its visible text "${visible.slice(0, 40)}"`);
+    }
     const seenIds = new Set();
     for (const m of html.matchAll(/\bid="([^"]+)"/g)) {
       if (seenIds.has(m[1])) add(page, `duplicate id "${m[1]}"`);

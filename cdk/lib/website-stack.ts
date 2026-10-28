@@ -110,7 +110,7 @@ ${props.stage === 'beta' ? "    headers['x-robots-tag'] = { value: 'noindex, nof
         } else if (/^\\/styles\\.[0-9a-f]{10}\\.css$/.test(uri)) {
             headers['cache-control'] = { value: 'public, max-age=31536000, immutable' };
         } else if (/\\.(png|jpe?g|svg|ico|webp|woff2?)$/.test(uri)) {
-            headers['cache-control'] = { value: 'public, max-age=86400' };
+            headers['cache-control'] = { value: 'public, max-age=604800' };
         } else {
             headers['cache-control'] = { value: 'no-cache' };
         }

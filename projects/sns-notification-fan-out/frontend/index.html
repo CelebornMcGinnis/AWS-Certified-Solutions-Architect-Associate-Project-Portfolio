@@ -18,11 +18,11 @@
     <div class="site-header-inner">
       <div class="brand-row">
         <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
-          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
-          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+          <img class="logo-light" src="/assets/logo.webp" alt="McGinnis Architecture" width="376" height="120" />
+          <img class="logo-dark" src="/assets/logo_darkmode.webp" alt="McGinnis Architecture" width="383" height="120" />
         </a>
       </div>
-      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <img class="top-mark" src="/assets/heart-badge.webp" alt="" aria-hidden="true" width="168" height="56" />
       <nav aria-label="Main navigation">
         <a href="/">Home</a>
         <details class="nav-dropdown">
@@ -171,21 +171,19 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="webpage" data-step="1" role="button" tabindex="0" aria-label="Step 1: Visitor loads the page">
+          <div class="flow-node" data-node="webpage" data-step="1" role="button" tabindex="0" aria-label="Website. Step 1: Visitor loads the page">
             <span class="flow-node-icon" aria-hidden="true">
               <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="20" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M3 12h26" stroke="currentColor" stroke-width="2"/><circle cx="7.5" cy="9" r="1" fill="currentColor"/><circle cx="11" cy="9" r="1" fill="currentColor"/></svg>
             </span>
             <span class="flow-node-label">Website</span>
-          </div>
-
-          <div class="flow-connector" data-step="2" aria-hidden="true">
+          </div><div class="flow-connector" data-step="2" aria-hidden="true">
             <span class="flow-connector-num">2</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
           <div class="flow-node" data-node="apigateway" data-step="2" role="button" tabindex="0" aria-label="Step 2: Browser calls API Gateway">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/apigateway.png" alt="" />
+              <img src="/assets/aws-icons/apigateway.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">API Gateway</span>
           </div>
@@ -197,7 +195,7 @@
 
           <div class="flow-node" data-node="lambda-publisher" data-step="3" role="button" tabindex="0" aria-label="Step 3: Lambda publishes to SNS">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/lambda.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Lambda</span>
           </div>
@@ -209,7 +207,7 @@
 
           <div class="flow-node" data-node="sns" data-step="4" role="button" tabindex="0" aria-label="Step 4: SNS fans the message out">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/sns.png" alt="" />
+              <img src="/assets/aws-icons/sns.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">SNS</span>
           </div>
@@ -229,7 +227,7 @@
 
           <div class="flow-node" data-node="lambda-notifier" data-step="5" role="button" tabindex="0" aria-label="Step 5: Lambda subscriber sends email">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/lambda.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Lambda</span>
           </div>
@@ -244,7 +242,7 @@
 
           <div class="flow-node" data-node="sqs" data-step="5" role="button" tabindex="0" aria-label="Step 5: SNS also delivers to an SQS queue">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/sqs.png" alt="" />
+              <img src="/assets/aws-icons/sqs.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">SQS</span>
           </div>
@@ -260,14 +258,14 @@
 
           <div class="flow-node" data-node="ses" data-step="6" role="button" tabindex="0" aria-label="Step 6: SES sends the email">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/ses.png" alt="" />
+              <img src="/assets/aws-icons/ses.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">SES</span>
           </div>
 
           <div class="flow-node" data-node="lambda-logger" data-step="6" role="button" tabindex="0" aria-label="Step 6: Lambda subscriber logs the delivery">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/lambda.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Lambda</span>
           </div>
@@ -279,7 +277,7 @@
 
           <div class="flow-node" data-node="dynamodb" data-step="7" role="button" tabindex="0" aria-label="Step 7: DynamoDB stores the delivery row">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/dynamodb.png" alt="" />
+              <img src="/assets/aws-icons/dynamodb.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">DynamoDB</span>
           </div>
@@ -561,8 +559,8 @@
           The complete AWS architecture diagram for this project, built with draw.io. Click it to expand full screen.
         </p>
       </div>
-      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the SNS Notification Fan-Out architecture diagram to full screen">
-        <img src="architecture.png" alt="SNS Notification Fan-Out AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Click to expand the SNS Notification Fan-Out architecture diagram to full screen">
+        <img src="architecture.webp" alt="SNS Notification Fan-Out AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" width="1748" height="660" />
         <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
       </button>
     </section>
@@ -579,10 +577,10 @@
         </nav>
         <div class="social-links">
           <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
-            <img src="/assets/linkedin.png" alt="" />
+            <img src="/assets/linkedin.webp" alt="" width="52" height="53" />
           </a>
           <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
-            <img src="/assets/github.png" alt="" />
+            <img src="/assets/github.webp" alt="" width="52" height="52" />
           </a>
         </div>
       </div>
@@ -657,7 +655,7 @@
   <script src="config.js"></script>
   <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
     <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
-    <img src="architecture.png" alt="SNS Notification Fan-Out AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
+    <img src="architecture.webp" alt="SNS Notification Fan-Out AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" width="1748" height="660" />
   </div>
 
   <script src="script.js"></script>

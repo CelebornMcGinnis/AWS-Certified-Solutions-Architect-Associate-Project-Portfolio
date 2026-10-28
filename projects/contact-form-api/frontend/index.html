@@ -18,11 +18,11 @@
     <div class="site-header-inner">
       <div class="brand-row">
         <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
-          <img class="logo-light" src="/assets/logo.png" alt="McGinnis Architecture" />
-          <img class="logo-dark" src="/assets/logo_darkmode.png" alt="McGinnis Architecture" />
+          <img class="logo-light" src="/assets/logo.webp" alt="McGinnis Architecture" width="376" height="120" />
+          <img class="logo-dark" src="/assets/logo_darkmode.webp" alt="McGinnis Architecture" width="383" height="120" />
         </a>
       </div>
-      <img class="top-mark" src="/assets/heart-badge.png" alt="" aria-hidden="true" />
+      <img class="top-mark" src="/assets/heart-badge.webp" alt="" aria-hidden="true" width="168" height="56" />
       <nav aria-label="Main navigation">
         <a href="/">Home</a>
         <details class="nav-dropdown">
@@ -147,45 +147,39 @@
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="route53" data-step="1" role="button" tabindex="0" aria-label="Step 1: DNS lookup">
+          <div class="flow-node" data-node="route53" data-step="1" role="button" tabindex="0" aria-label="Route 53. Step 1: DNS lookup">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/route53.png" alt="" />
+              <img src="/assets/aws-icons/route53.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Route 53</span>
-          </div>
-
-          <div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
+          </div><div class="flow-connector is-vertical" data-step="2" aria-hidden="true">
             <span class="flow-connector-num">2</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="cloudfront" data-step="2" role="button" tabindex="0" aria-label="Step 2: Route 53 resolves the domain">
+          <div class="flow-node" data-node="cloudfront" data-step="2" role="button" tabindex="0" aria-label="CloudFront. Step 2: Route 53 resolves the domain">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/cloudfront.png" alt="" />
+              <img src="/assets/aws-icons/cloudfront.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">CloudFront</span>
-          </div>
-
-          <div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
+          </div><div class="flow-connector is-reversed" data-step="3" aria-hidden="true">
             <span class="flow-connector-num">3</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
-          <div class="flow-node" data-node="s3" data-step="3" role="button" tabindex="0" aria-label="Step 3: CloudFront serves the static assets">
+          <div class="flow-node" data-node="s3" data-step="3" role="button" tabindex="0" aria-label="S3 Bucket. Step 3: CloudFront serves the static assets">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/s3.png" alt="" />
+              <img src="/assets/aws-icons/s3.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">S3 Bucket</span>
-          </div>
-
-          <div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
+          </div><div class="flow-connector is-vertical" data-step="4" aria-hidden="true">
             <span class="flow-connector-num">4</span>
             <span class="flow-connector-line" aria-hidden="true"><span class="flow-dot"></span></span>
           </div>
 
           <div class="flow-node" data-node="apigateway" data-step="4" role="button" tabindex="0" aria-label="Step 4: API Gateway routes the request">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/apigateway.png" alt="" />
+              <img src="/assets/aws-icons/apigateway.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">API Gateway</span>
           </div>
@@ -197,7 +191,7 @@
 
           <div class="flow-node" data-node="lambda" data-step="5" role="button" tabindex="0" aria-label="Step 5: Lambda validates the submission">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/lambda.png" alt="" />
+              <img src="/assets/aws-icons/lambda.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">Lambda</span>
           </div>
@@ -209,7 +203,7 @@
 
           <div class="flow-node" data-node="ses" data-step="6" role="button" tabindex="0" aria-label="Step 6: SES sends the emails">
             <span class="flow-node-icon" aria-hidden="true">
-              <img src="/assets/aws-icons/ses.png" alt="" />
+              <img src="/assets/aws-icons/ses.png" alt="" width="80" height="80" />
             </span>
             <span class="flow-node-label">SES</span>
           </div>
@@ -484,8 +478,8 @@
           The complete AWS architecture diagram for this project, built with draw.io. Click it to expand full screen.
         </p>
       </div>
-      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Expand the Contact Form API architecture diagram to full screen">
-        <img src="architecture.png" alt="Contact Form API AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" />
+      <button type="button" class="arch-diagram-trigger" id="arch-diagram-trigger" aria-label="Click to expand the Contact Form API architecture diagram to full screen">
+        <img src="architecture.webp" alt="Contact Form API AWS architecture diagram" class="arch-diagram-thumb" loading="lazy" width="2001" height="901" />
         <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
       </button>
     </section>
@@ -502,10 +496,10 @@
         </nav>
         <div class="social-links">
           <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
-            <img src="/assets/linkedin.png" alt="" />
+            <img src="/assets/linkedin.webp" alt="" width="52" height="53" />
           </a>
           <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
-            <img src="/assets/github.png" alt="" />
+            <img src="/assets/github.webp" alt="" width="52" height="52" />
           </a>
         </div>
       </div>
@@ -580,7 +574,7 @@
   <script src="config.js"></script>
   <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
     <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
-    <img src="architecture.png" alt="Contact Form API AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" />
+    <img src="architecture.webp" alt="Contact Form API AWS architecture diagram, expanded" class="arch-diagram-lightbox-img" width="2001" height="901" />
   </div>
 
   <script src="script.js"></script>

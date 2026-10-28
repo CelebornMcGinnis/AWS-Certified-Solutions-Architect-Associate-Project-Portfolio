@@ -33,10 +33,10 @@ website/
 └── assets/
     ├── favicon.png
     ├── github.png
-    ├── heart-badge.png
+    ├── heart-badge.webp
     ├── linkedin.png
     ├── logo.png
-    ├── logo_darkmode.png
+    ├── logo_darkmode.webp
     ├── aws-icons/
     │   ├── apigateway.png
     │   ├── cloudfront.png
