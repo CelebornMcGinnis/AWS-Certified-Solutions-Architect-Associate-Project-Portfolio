@@ -8,7 +8,7 @@ This folder contains the public-facing homepage, custom error page, shared style
 - Custom `404.html` page with project navigation and `noindex` metadata
 - Light and dark themes with the selected theme stored in `localStorage`
 - Separate light-mode and dark-mode logo assets
-- Navigation to the Contact Form, Movie Poll, and SNS Notification Fan-Out projects
+- Navigation to all 16 project pages (generated at build time from `cdk/lib/website-content.ts`)
 - Project-page “On this page” navigation for major sections
 - Desktop and mobile menus that close after selection, outside clicks, or scrolling
 - LinkedIn and GitHub footer links

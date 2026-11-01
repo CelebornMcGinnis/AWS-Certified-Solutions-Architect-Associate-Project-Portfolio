@@ -7916,3 +7916,100 @@ body.diagram-lightbox-open {
     transform: translateX(110px);
   }
 }
+
+/* ---------------------------------------------------------------------
+   34. PAYDAYCOMPASS (project/paydaycompass/index.html only)
+   Diagram sections and the homepage-card thumbnail scene.
+   --------------------------------------------------------------------- */
+.pc-also {
+  margin: 1.5rem 0 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.pc-flows {
+  padding: 1rem 0 4rem;
+}
+
+.pc-flow {
+  margin-top: 3rem;
+}
+
+.pc-flow h3 {
+  margin: 0 0 0.5rem;
+}
+
+.pc-flow p {
+  max-width: 70ch;
+  margin: 0 0 1.25rem;
+}
+
+.payday-thumb-ring {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.payday-thumb-ticks {
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.payday-thumb-needle {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: paydayNeedleSwing 6s ease-in-out infinite;
+}
+
+.payday-thumb-needle-n {
+  fill: var(--accent);
+}
+
+.payday-thumb-needle-s {
+  fill: var(--border);
+}
+
+.payday-thumb-hub {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.payday-thumb-bar {
+  fill: var(--accent);
+  opacity: 0.85;
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: paydayBarFill 6s ease-in-out infinite;
+}
+
+.payday-thumb-bar-2 { animation-delay: 0.5s; }
+.payday-thumb-bar-3 { animation-delay: 1s; }
+
+.payday-thumb-bar-track {
+  fill: var(--border);
+}
+
+@keyframes paydayNeedleSwing {
+  0%, 100% { transform: rotate(-28deg); }
+  50% { transform: rotate(28deg); }
+}
+
+@keyframes paydayBarFill {
+  0% { transform: scaleX(0.15); }
+  50%, 80% { transform: scaleX(1); }
+  100% { transform: scaleX(0.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .payday-thumb-needle,
+  .payday-thumb-bar {
+    animation: none;
+  }
+
+  .payday-thumb-needle {
+    transform: rotate(20deg);
+  }
+}

@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script src="/assets/theme-init.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PaydayCompass — McGinnis Architecture</title>
+  <meta name="description" content="An architecture walkthrough of PaydayCompass, a serverless personal finance app: the big picture plus separate flows for the payday calculator, daily recurring processing, AI auto-categorizing, and sign-in and sharing." />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f7fb" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1320" />
+  <link rel="stylesheet" href="../../styles.css" />
+</head>
+<body id="top">
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand-row">
+        <a class="logo-mark" href="/" aria-label="McGinnis Architecture home">
+          <img class="logo-light" src="/assets/logo.webp" alt="McGinnis Architecture" width="376" height="120" />
+          <img class="logo-dark" src="/assets/logo_darkmode.webp" alt="McGinnis Architecture" width="383" height="120" />
+        </a>
+      </div>
+      <img class="top-mark" src="/assets/heart-badge.webp" alt="" aria-hidden="true" width="168" height="56" />
+      <nav aria-label="Main navigation">
+        <a href="/">Home</a>
+        <details class="nav-dropdown">
+          <summary>Projects</summary>
+          <div class="nav-dropdown-menu">
+            <a href="/project/contactform/project1.html">Contact Form</a>
+            <a href="/project/containers/index.html">Container Orchestration</a>
+            <a href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
+            <a href="/project/habits/project6.html">Habit Tracker</a>
+            <a href="/project/linkedin/index.html">LinkedIn Post Pipeline</a>
+            <a href="/project/gallery/project5.html">Moderated Image Gallery</a>
+            <a href="/project/polling/project2.html">Movie Poll</a>
+            <a href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
+            <a href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+            <a href="/project/orders/project8.html">Order Processing</a>
+            <details class="nav-dropdown-subsection" open>
+              <summary class="nav-dropdown-group-label">PaydayCompass</summary>
+              <a class="nav-dropdown-sublink" href="#overview">Overview</a>
+              <a class="nav-dropdown-sublink" href="#flows">Feature Flows</a>
+              <a class="nav-dropdown-sublink" href="#design-decisions">Design Decisions</a>
+              <a class="nav-dropdown-sublink" href="#security">Security</a>
+              <a class="nav-dropdown-sublink" href="#what-id-change">What I'd Change</a>
+            </details>
+            <a href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
+            <a href="/project/fanningsns/project3.html">SNS Notifications</a>
+            <a href="/project/vpc/index.html">VPC Network Design</a>
+            <a href="/project/chatbot/project9.html">Website Chatbot</a>
+            <a href="/project/workflow/project4.html">Workflow Visualizer</a>
+            <a class="nav-dropdown-all" href="/#projects">View All Projects</a>
+          </div>
+        </details>
+        <a href="/#about">About</a>
+              <button type="button" class="theme-toggle theme-toggle-icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Project</p>
+      <h1 class="hero-title-compact">PaydayCompass</h1>
+      <div class="reference-build-notice">
+        This page is an architecture walkthrough of a real, deployed product. There is no live demo here, and security is described at a high level on purpose.
+      </div>
+      <p>
+        PaydayCompass is a serverless personal finance app: accounts,
+        budgets, recurring bills, and a payday calculator that shows what a
+        paycheck covers before it lands. It also supports shared accounts,
+        AI auto-categorizing, and free and paid plans. This page shows how
+        the pieces fit together, then walks through four of its flows.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href="#overview">See the Architecture</a>
+        <a class="button-link ghost" href="https://paydaycompass.app" target="_blank" rel="noopener noreferrer">Visit PaydayCompass</a>
+      </div>
+    </section>
+
+    <section class="architecture-diagram-section" id="overview" aria-labelledby="overview-heading">
+      <div data-reveal>
+        <p class="eyebrow">The Big Picture</p>
+        <h2 id="overview-heading">How the Pieces Fit Together</h2>
+        <p class="muted section-intro">
+          A React app is served from S3 through CloudFront. Calls to /api go
+          through API Gateway, which checks the Cognito sign-in token before
+          any code runs, then to one Lambda function per feature area. They
+          share one library for the rules that must never drift apart, such
+          as moving money and resolving sharing permissions. DynamoDB holds
+          the data. Scheduled jobs run the daily work, and CloudWatch alarms
+          watch the jobs nobody is watching.
+        </p>
+      </div>
+      <button type="button" class="arch-diagram-trigger" data-diagram="diagram-overview.webp" data-diagram-alt="PaydayCompass architecture overview: CloudFront, S3, API Gateway with Cognito, Lambda, DynamoDB, Bedrock, scheduled jobs, SES, and CloudWatch alarms" data-diagram-width="1481" data-diagram-height="1141" aria-label="Click to expand the architecture overview diagram to full screen">
+        <img src="diagram-overview.webp" alt="PaydayCompass architecture overview: CloudFront, S3, API Gateway with Cognito, Lambda, DynamoDB, Bedrock, scheduled jobs, SES, and CloudWatch alarms" class="arch-diagram-thumb" loading="lazy" width="1481" height="1141" />
+        <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
+      </button>
+      <ul class="pc-also">
+        <li><strong>Bank connections and plans:</strong> Stripe handles subscriptions and secure bank linking; a scheduled refresh runs twice a day.</li>
+        <li><strong>Receipts:</strong> a separate stack reads a photographed or forwarded receipt with Bedrock and proposes how to split the matching transaction.</li>
+        <li><strong>Help bot:</strong> a small Bedrock model answers how-do-I questions, behind a guardrail that blocks harmful content and investment, tax, and legal advice.</li>
+      </ul>
+    </section>
+
+    <section class="pc-flows" id="flows" aria-labelledby="flows-heading">
+      <div data-reveal>
+        <p class="eyebrow">Feature Flows</p>
+        <h2 id="flows-heading">Four Flows, Up Close</h2>
+        <p class="muted section-intro">
+          Each diagram follows one feature from the first request to the last
+          write. The numbers match the steps in the text. Click any diagram
+          to expand it.
+        </p>
+      </div>
+
+      <div class="pc-flow" data-reveal>
+        <h3>Payday calculator</h3>
+        <p class="muted">
+          Before a paycheck lands, the Payday Lambda looks across every
+          account for the income due and every recurring bill due before the
+          next payday, then adds budgeted set-asides and planned expenses.
+          The customer adjusts the amounts and submits once. Everything posts
+          in a single batch, and each bill's next due date moves forward so
+          the daily job never posts it twice. Money for budget categories and
+          planned expenses moves through the same shared transfer code as a
+          manual transfer. The payday is saved to a history that expires on
+          its own, so it can be reversed, and people the customer shares
+          money with can be told, but only if they agreed to that.
+        </p>
+      <button type="button" class="arch-diagram-trigger" data-diagram="diagram-payday-calculator.webp" data-diagram-alt="Payday calculator flow: preview, adjust, submit, post transactions, move budgeted money, save history, notify" data-diagram-width="1481" data-diagram-height="960" aria-label="Click to expand the payday calculator diagram to full screen">
+        <img src="diagram-payday-calculator.webp" alt="Payday calculator flow: preview, adjust, submit, post transactions, move budgeted money, save history, notify" class="arch-diagram-thumb" loading="lazy" width="1481" height="960" />
+        <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
+      </button>
+      </div>
+
+      <div class="pc-flow" data-reveal>
+        <h3>Daily recurring processor</h3>
+        <p class="muted">
+          Recurring income and expenses (weekly, biweekly, semimonthly,
+          monthly, annual, custom intervals, or the "nth weekday" of a month)
+          post themselves. An EventBridge rule starts a Lambda every morning.
+          It finds every template that is due, backfills any days that were
+          missed, writes the transactions, updates balances, and moves the
+          next due date forward. Each template runs on its own, so one bad
+          record never blocks anyone else. If an item fails, the customer is
+          emailed the same day, and the run is flagged so a CloudWatch alarm
+          emails the owner too.
+        </p>
+      <button type="button" class="arch-diagram-trigger" data-diagram="diagram-recurring-processor.webp" data-diagram-alt="Daily recurring processor flow: EventBridge starts a Lambda that posts due items, with a dead-letter queue, email alerts, and a CloudWatch alarm" data-diagram-width="1070" data-diagram-height="750" aria-label="Click to expand the daily recurring processor diagram to full screen">
+        <img src="diagram-recurring-processor.webp" alt="Daily recurring processor flow: EventBridge starts a Lambda that posts due items, with a dead-letter queue, email alerts, and a CloudWatch alarm" class="arch-diagram-thumb" loading="lazy" width="1070" height="750" />
+        <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
+      </button>
+      </div>
+
+      <div class="pc-flow" data-reveal>
+        <h3>AI auto-categorize</h3>
+        <p class="muted">
+          When a transaction arrives with no category and no saved rule
+          matches, a shared library asks Amazon Bedrock to pick one. Claude
+          Haiku 4.5 goes first, and Claude Sonnet 4.6 only sees the
+          transactions Haiku was unsure about. It is suggest-only: the
+          category is applied so budgets stay accurate, but the row is marked
+          as automatic until the customer accepts or changes it, and those
+          corrections become examples for next time. Only the description
+          (with long number runs masked), the amount, and the direction leave
+          the database. It is a fraction of a cent per transaction, is
+          limited by plan, and can be switched off.
+        </p>
+      <button type="button" class="arch-diagram-trigger" data-diagram="diagram-ai-categorize.webp" data-diagram-alt="AI auto-categorize flow: rules first, then Bedrock Haiku, Sonnet if unsure, suggest-only review, and learned examples" data-diagram-width="1331" data-diagram-height="780" aria-label="Click to expand the AI auto-categorize diagram to full screen">
+        <img src="diagram-ai-categorize.webp" alt="AI auto-categorize flow: rules first, then Bedrock Haiku, Sonnet if unsure, suggest-only review, and learned examples" class="arch-diagram-thumb" loading="lazy" width="1331" height="780" />
+        <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
+      </button>
+      </div>
+
+      <div class="pc-flow" data-reveal>
+        <h3>Sign-in, sharing, and peer alerts</h3>
+        <p class="muted">
+          Customers sign up and sign in with Amazon Cognito, with email
+          verification and authenticator-app MFA. API Gateway validates the
+          token on every request, and one shared access check then decides
+          whether the caller owns the account or has an accepted share, and
+          at what permission level. Sharing is invite-based and set per kind
+          of data. Alerts about money moving between people use a separate,
+          mutual agreement, so sharing an account never implies being
+          notified about payments.
+        </p>
+      <button type="button" class="arch-diagram-trigger" data-diagram="diagram-auth-sharing.webp" data-diagram-alt="Sign-in, sharing, and peer alerts flow: Cognito, API Gateway, shared access check, invites by email, and mutual-consent notifications" data-diagram-width="1411" data-diagram-height="980" aria-label="Click to expand the sign-in, sharing, and peer alerts diagram to full screen">
+        <img src="diagram-auth-sharing.webp" alt="Sign-in, sharing, and peer alerts flow: Cognito, API Gateway, shared access check, invites by email, and mutual-consent notifications" class="arch-diagram-thumb" loading="lazy" width="1411" height="980" />
+        <span class="arch-diagram-expand-hint" aria-hidden="true">Click to expand</span>
+      </button>
+      </div>
+    </section>
+
+    <section class="decisions" id="design-decisions" aria-labelledby="decisions-heading">
+      <div data-reveal>
+        <p class="eyebrow">Design Decisions</p>
+        <h2 id="decisions-heading">Why I Designed It This Way</h2>
+        <p class="muted section-intro">
+          The choices that keep a money app predictable as it grows.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>One path for moving money</h3>
+          <p class="muted">
+            Transfers and division balances each have exactly one shared
+            implementation, used by manual actions and by Payday's automatic
+            ones. A second path is how balances drift apart, so there isn't one.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>One Lambda per feature, one shared library</h3>
+          <p class="muted">
+            Each area (accounts, budgets, payday, sharing and so on) is its
+            own function, and anything two of them need lives in a shared
+            layer. Features stay small and independently deployable without
+            copying rules between them.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Unattended jobs fail loudly, and safely</h3>
+          <p class="muted">
+            Scheduled work isolates each item, tells the affected customer the
+            same day, keeps failed runs in a dead-letter queue, and raises an
+            alarm. User-facing functions surface their own errors instead.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>AI that suggests, with the least data possible</h3>
+          <p class="muted">
+            The model never creates categories or changes anything final, and
+            it sees only a masked description, an amount, and a direction.
+            Cheap model first, stronger model only when needed.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Pay-per-request data, separate environments</h3>
+          <p class="muted">
+            DynamoDB runs pay-per-request, so there is no capacity to plan,
+            and production data has point-in-time recovery. Dev, beta, and
+            production are separate stacks from one CDK app, each with its
+            own data.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="decisions" id="security" aria-labelledby="security-heading">
+      <div data-reveal>
+        <p class="eyebrow">Security</p>
+        <h2 id="security-heading">Security at a High Level</h2>
+        <p class="muted section-intro">
+          A finance app has to earn trust. These are the principles it is
+          built on. I deliberately don't publish more detail than this.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Strong sign-in</h3>
+          <p class="muted">Email-verified accounts, strong password rules, and authenticator-app MFA.</p>
+        </div>
+        <div class="decision-item">
+          <h3>Every request is checked</h3>
+          <p class="muted">The gateway validates the caller before any application code runs, and each request is then checked against what that person owns or has been shared.</p>
+        </div>
+        <div class="decision-item">
+          <h3>Least privilege</h3>
+          <p class="muted">Each function is granted only the data it needs, and sharing is limited to the kinds of data an owner chooses.</p>
+        </div>
+        <div class="decision-item">
+          <h3>Protected data</h3>
+          <p class="muted">Traffic is encrypted in transit and data is encrypted at rest. Production data has point-in-time recovery. Payments are handled by Stripe.</p>
+        </div>
+        <div class="decision-item">
+          <h3>Privacy in AI features</h3>
+          <p class="muted">Models receive the minimum needed, and the help bot runs behind a guardrail that also blocks financial identifiers.</p>
+        </div>
+        <div class="decision-item">
+          <h3>Watched and recoverable</h3>
+          <p class="muted">Alarms cover the jobs that run unattended, and the site itself ships with strict browser security headers.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="decisions" id="what-id-change" aria-labelledby="change-heading">
+      <div data-reveal>
+        <p class="eyebrow">Next Iteration</p>
+        <h2 id="change-heading">What I'd Change Next</h2>
+        <p class="muted section-intro">
+          The gaps I know about: what I'd add before the next stage of growth.
+        </p>
+      </div>
+      <div class="decision-list">
+        <div class="decision-item">
+          <h3>Automated tests</h3>
+          <p class="muted">
+            Correctness is checked today with a written pre-commit checklist
+            (syntax, imports, synthesizing both environments, hand-traced date
+            math), not an automated suite. Money and date rules are exactly
+            what tests should guard.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Split the main stack</h3>
+          <p class="muted">
+            The main CloudFormation stack is close to its resource limit, which
+            is why receipts already live in their own stack. I'd split the rest
+            by feature area so each can grow and deploy independently.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>Alarms and tracing beyond the scheduled jobs</h3>
+          <p class="muted">
+            Alarms watch the unattended jobs, while user-facing functions rely
+            on their own error handling. I'd add alarms on error rates and
+            latency for the main paths, plus request tracing.
+          </p>
+        </div>
+        <div class="decision-item">
+          <h3>One source for help content</h3>
+          <p class="muted">
+            Help text is kept in sync by hand across the app's help topics, the
+            chatbot's knowledge, the setup wizards, and page tooltips. A single
+            source would remove the chance of them disagreeing.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <p>&copy; <span id="year"></span> McGinnis Architecture. All rights reserved.</p>
+      <div class="footer-right">
+        <nav aria-label="Footer navigation">
+          <a href="/">Home</a>
+          <a href="/#projects">Projects</a>
+          <a href="/#about">About</a>
+        </nav>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/celebornmcginnis" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+            <img src="/assets/linkedin.webp" alt="" width="52" height="53" />
+          </a>
+          <a href="https://github.com/CelebornMcGinnis/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <img src="/assets/github.webp" alt="" width="52" height="52" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <div class="mobile-sidebar" id="mobile-sidebar">
+    <div class="mobile-sidebar-backdrop" id="mobile-sidebar-backdrop"></div>
+    <div class="mobile-sidebar-rail">
+      <button type="button" class="mobile-sidebar-toggle" id="mobile-sidebar-toggle" aria-expanded="false" aria-controls="mobile-sidebar-panel" aria-label="Open menu">
+        <svg class="icon-expand" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+        <svg class="icon-collapse" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </button>
+      <a class="mobile-sidebar-home" href="/" aria-label="Home">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9h5v-5h2v5h5v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <button type="button" class="theme-toggle mobile-sidebar-rail-theme" id="theme-toggle-sidebar-rail" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <nav class="mobile-sidebar-panel" id="mobile-sidebar-panel" aria-label="Mobile navigation" aria-hidden="true">
+      <a class="mobile-sidebar-link" href="/">Home</a>
+      <details class="mobile-sidebar-group" open>
+        <summary class="mobile-sidebar-group-summary">Projects</summary>
+        <div class="mobile-sidebar-group-content">
+        <a class="mobile-sidebar-sublink" href="/project/contactform/project1.html">Contact Form</a>
+        <a class="mobile-sidebar-sublink" href="/project/containers/index.html">Container Orchestration</a>
+        <a class="mobile-sidebar-sublink" href="/project/datalake/index.html">Data Lake &amp; Analytics</a>
+        <a class="mobile-sidebar-sublink" href="/project/habits/project6.html">Habit Tracker</a>
+        <a class="mobile-sidebar-sublink" href="/project/linkedin/index.html">LinkedIn Post Pipeline</a>
+        <a class="mobile-sidebar-sublink" href="/project/gallery/project5.html">Moderated Image Gallery</a>
+        <a class="mobile-sidebar-sublink" href="/project/polling/project2.html">Movie Poll</a>
+        <a class="mobile-sidebar-sublink" href="/project/dr/index.html">Multi-Region Disaster Recovery</a>
+        <a class="mobile-sidebar-sublink" href="/project/summarizer/project7.html">Nova Lite Summarizer</a>
+        <a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>
+        <details class="mobile-sidebar-subgroup" open>
+          <summary class="mobile-sidebar-group-label">PaydayCompass</summary>
+          <a class="mobile-sidebar-sublink" href="#overview">Overview</a>
+          <a class="mobile-sidebar-sublink" href="#flows">Feature Flows</a>
+          <a class="mobile-sidebar-sublink" href="#design-decisions">Design Decisions</a>
+          <a class="mobile-sidebar-sublink" href="#security">Security</a>
+          <a class="mobile-sidebar-sublink" href="#what-id-change">What I'd Change</a>
+        </details>
+        <a class="mobile-sidebar-sublink" href="/project/opsdash/index.html">Real-Time Operations Dashboard</a>
+        <a class="mobile-sidebar-sublink" href="/project/fanningsns/project3.html">SNS Notifications</a>
+        <a class="mobile-sidebar-sublink" href="/project/vpc/index.html">VPC Network Design</a>
+        <a class="mobile-sidebar-sublink" href="/project/chatbot/project9.html">Website Chatbot</a>
+        <a class="mobile-sidebar-sublink" href="/project/workflow/project4.html">Workflow Visualizer</a>
+        <a class="mobile-sidebar-sublink" href="/#projects">View All Projects</a>
+        </div>
+      </details>
+      <a class="mobile-sidebar-link" href="/#about">About</a>
+      <button type="button" class="theme-toggle mobile-sidebar-link mobile-sidebar-theme-toggle" id="theme-toggle-sidebar-panel" aria-pressed="false" aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Dark Mode</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="arch-diagram-lightbox" id="arch-diagram-lightbox" aria-hidden="true">
+    <button type="button" class="arch-diagram-lightbox-close" id="arch-diagram-lightbox-close" aria-label="Close diagram">&times;</button>
+    <img src="diagram-overview.webp" alt="" class="arch-diagram-lightbox-img" id="arch-diagram-lightbox-img" width="1481" height="1141" />
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

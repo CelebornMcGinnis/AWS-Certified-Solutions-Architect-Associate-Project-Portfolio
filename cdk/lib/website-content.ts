@@ -171,6 +171,18 @@ const PROJECTS: ProjectMapping[] = [
     mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/orders/project8.html">Order Processing</a>',
   },
   {
+    // No key, no config.js: PaydayCompass is a real, deployed product that lives in its own
+    // repo (and its own CDK app), so this site ships only an architecture walkthrough (diagrams
+    // and write-up) with no backend calls and no demo. Security is described at a high level on
+    // purpose. Beta first.
+    frontendDir: 'projects/payday-compass/frontend',
+    destPrefix: 'project/paydaycompass',
+    stages: ['beta'],
+    homepageCardFile: 'projects/payday-compass/homepage-card.html',
+    navLinkHtml: '<a href="/project/paydaycompass/index.html">PaydayCompass</a>',
+    mobileNavLinkHtml: '<a class="mobile-sidebar-sublink" href="/project/paydaycompass/index.html">PaydayCompass</a>',
+  },
+  {
     // Reference-only, shipped to beta and prod -- see the note on
     // Container Orchestration above.
     frontendDir: 'projects/realtime-ops-dashboard/frontend',
