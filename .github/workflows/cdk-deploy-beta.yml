@@ -113,7 +113,7 @@ jobs:
       - name: Upload Lighthouse reports
         if: always() && github.event.inputs.action != 'destroy' && contains(steps.stacks.outputs.list, 'portfolio-website-beta')
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lighthouse-beta
           path: cdk/.lighthouseci
