@@ -193,3 +193,11 @@ new GitHubOidcStack(app, 'portfolio-github-oidc', {
   env,
   githubRepoSubject: 'CelebornMcGinnis@25270109/AWS-Certified-Solutions-Architect-Associate-Project-Portfolio@1319607228',
 });
+
+// `Tags.of(app)` above tags the RESOURCES in each stack but CDK does not send it as the stack's own
+// CloudFormation tags (the synthesized manifest carried none), so every stack showed as untagged and a
+// deploy would clear tags set by hand. Set the two AI-access tags on each stack record explicitly.
+for (const stack of app.node.children.filter((c): c is cdk.Stack => c instanceof cdk.Stack)) {
+  stack.tags.setTag('AIUserEnabled', 'true');
+  stack.tags.setTag('ProjectScope', 'mcginnisarchitecture');
+}
