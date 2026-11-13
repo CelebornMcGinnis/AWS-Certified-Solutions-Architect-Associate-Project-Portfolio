@@ -83,7 +83,11 @@ export class FanningSnsStack extends cdk.Stack {
     // notice before it's gone for good. The alarm re-evaluates (and
     // re-notifies) every 6 hours for as long as the condition holds,
     // rather than a single email that's easy to miss in an inbox.
-    const dlqAgeAlarm = new cloudwatch.Alarm(this, 'DlqMessageNearExpiryAlarm', {
+    //
+    // Prod only: beta has no alarm (dropped to stay within the CloudWatch
+    // free tier); beta failures still show in the dashboard's daily incident
+    // findings. The topic and Lambda below stay in both stages.
+    const dlqAgeAlarm = stage !== 'prod' ? undefined : new cloudwatch.Alarm(this, 'DlqMessageNearExpiryAlarm', {
       alarmDescription: `Oldest message in ${namePrefix}'s dead-letter queue is within 2 days of its 4-day retention limit.`,
       metric: new cloudwatch.Metric({
         namespace: 'AWS/SQS',
@@ -99,7 +103,7 @@ export class FanningSnsStack extends cdk.Stack {
     });
 
     const dlqAlertTopic = new sns.Topic(this, 'DlqAgeAlertTopic');
-    dlqAgeAlarm.addAlarmAction(new cloudwatchActions.SnsAction(dlqAlertTopic));
+    dlqAgeAlarm?.addAlarmAction(new cloudwatchActions.SnsAction(dlqAlertTopic));
 
     const dlqAlertFunction = new lambda.Function(this, 'DlqAlertFunction', {
       runtime: lambda.Runtime.PYTHON_3_13,
